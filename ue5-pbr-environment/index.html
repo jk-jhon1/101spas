@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UE5 PBR Sanctuary - Next-Gen 3D Real-Time Environment</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #080a0f;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #e2e8f0;
+    }
+
+    #app-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Loading Screen */
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #141a24 0%, #06080c 100%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.8s ease;
+    }
+
+    #loading-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader-emblem {
+      width: 64px;
+      height: 64px;
+      border: 3px solid rgba(255, 170, 0, 0.2);
+      border-top-color: #ffaa00;
+      border-radius: 50%;
+      animation: spin 1.2s linear infinite;
+      margin-bottom: 24px;
+      box-shadow: 0 0 25px rgba(255, 170, 0, 0.35);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loader-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: #f1f5f9;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .loader-sub {
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: #94a3b8;
+      margin-bottom: 28px;
+    }
+
+    .progress-bar-container {
+      width: 320px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 10%;
+      background: linear-gradient(90deg, #ff8800, #ffbb33);
+      box-shadow: 0 0 12px #ffaa00;
+      transition: width 0.3s ease;
+    }
+
+    .loading-status {
+      font-size: 12px;
+      color: #cbd5e1;
+      font-family: monospace;
+    }
+
+    /* HUD Top */
+    .hud-top {
+      position: absolute;
+      top: 16px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .hud-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .hud-badge {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: rgba(255, 150, 0, 0.15);
+      border: 1px solid rgba(255, 170, 0, 0.4);
+      color: #ffaa33;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      width: fit-content;
+      backdrop-filter: blur(8px);
+    }
+
+    .hud-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: #ffffff;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    .hud-telemetry {
+      display: flex;
+      gap: 16px;
+      background: rgba(10, 15, 24, 0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .tele-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .tele-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: #64748b;
+    }
+
+    .tele-val {
+      font-size: 12px;
+      font-weight: 700;
+      font-family: monospace;
+      color: #cbd5e1;
+    }
+
+    .glow-amber {
+      color: #ffaa33;
+      text-shadow: 0 0 8px rgba(255, 170, 51, 0.5);
+    }
+
+    .glow-cyan {
+      color: #38bdf8;
+      text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+    }
+
+    /* HUD Bottom Bar */
+    .hud-bottom {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(12, 17, 26, 0.82);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 10px 18px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      z-index: 50;
+      max-width: 95vw;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .mode-selector, .preset-selector, .action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preset-selector {
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0 14px;
+    }
+
+    .preset-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: #94a3b8;
+      margin-right: 2px;
+    }
+
+    .hud-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .hud-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .hud-btn.active {
+      background: rgba(255, 170, 50, 0.2);
+      border-color: #ffaa33;
+      color: #ffaa33;
+      box-shadow: 0 0 14px rgba(255, 170, 50, 0.3);
+    }
+
+    .preset-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .preset-pill:hover {
+      background: rgba(255, 170, 50, 0.15);
+      border-color: rgba(255, 170, 50, 0.4);
+      color: #f1f5f9;
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+    }
+
+    .action-btn.active {
+      color: #38bdf8;
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+    }
+
+    .action-btn.highlight {
+      background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(255, 180, 0, 0.2));
+      border-color: rgba(255, 160, 0, 0.6);
+      color: #ffc966;
+    }
+
+    .action-btn.highlight:hover {
+      background: linear-gradient(135deg, rgba(255, 140, 0, 0.5), rgba(255, 180, 0, 0.35));
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(255, 160, 0, 0.4);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.hidden {
+      display: none;
+    }
+
+    .modal-window {
+      background: #0f141e;
+      border: 1px solid rgba(255, 170, 0, 0.3);
+      border-radius: 12px;
+      max-width: 900px;
+      width: 100%;
+      overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.8);
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .modal-header h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffaa33;
+      letter-spacing: 1px;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 24px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: #ffffff;
+    }
+
+    .modal-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-img {
+      width: 100%;
+      max-height: 60vh;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-desc {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    /* Lil GUI Styling tweaks */
+    .lil-gui {
+      --background-color: rgba(12, 17, 26, 0.92) !important;
+      --text-color: #cbd5e1 !important;
+      --title-background-color: rgba(20, 28, 42, 0.95) !important;
+      --widget-color: rgba(255, 255, 255, 0.08) !important;
+      --hover-color: rgba(255, 170, 50, 0.25) !important;
+      --focus-color: #ffaa33 !important;
+      --number-color: #38bdf8 !important;
+      --string-color: #ffaa33 !important;
+      font-family: inherit !important;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      top: 16px !important;
+      right: 16px !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loader-emblem"></div>
+    <div class="loader-title">Unreal Engine 5 PBR Engine</div>
+    <div class="loader-sub">Ray Tracing Lumen • GTAO • Bokeh DOF • Atmospheric Scattering</div>
+    <div class="progress-bar-container">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="loading-status" id="loading-status">Carregando shaders e geometria de alta densidade...</div>
+  </div>
+
+  <!-- 3D Canvas Container -->
+  <div id="app-container"></div>
+
+  <!-- Main Application Script -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
