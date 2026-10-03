@@ -3,7 +3,9 @@
 Jogo 2D de exploração, mineração e combate no estilo *Terraria*, com **120 espadas únicas**, implementado a partir do
 documento **"GDD & MASTER PROMPT: SANDBOX 2D PLATFORMER"** (PDF enviado).
 
-> **Como jogar:** abra o arquivo **`index.html`** num navegador moderno (Chrome, Edge, Firefox, Safari). É um único
+> **Jogar online:** **https://jk-jhon1.github.io/101spas/** — direto no navegador, sem instalar nada.
+>
+> **Offline:** abra o arquivo **`index.html`** num navegador moderno (Chrome, Edge, Firefox, Safari). É um único
 > arquivo autocontido — sem instalação, sem internet, sem assets externos. Use teclado + mouse, ou um controle (gamepad) com mira analógica.
 
 ---
@@ -58,7 +60,7 @@ Catálogo completo (com receitas): [`docs/catalogo_120_espadas.md`](docs/catalog
 
 ### Jogar online / publicar
 
-- **GitHub Pages (este repositório):** *Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch `main`, pasta `/ (root)` → Save*. Em 1–2 minutos o jogo fica em `https://SEU_USUARIO.github.io/101spas/`. O `index.html` já está na raiz e o arquivo `.nojekyll` dispensa o processamento do Jekyll.
+- **GitHub Pages (este repositório):** já ativado — o jogo está em `https://jk-jhon1.github.io/101spas/`. Para ativar numa cópia/fork: *Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch `main`, pasta `/ (root)` → Save* (em 1–2 minutos o jogo fica em `https://SEU_USUARIO.github.io/NOME_DO_REPO/`). O `index.html` já está na raiz e o arquivo `.nojekyll` dispensa o processamento do Jekyll.
 - **Local:** `python3 serve.py` abre o jogo em `http://localhost:8080/` (servido por http, o salvamento e o controle funcionam em qualquer navegador).
 - **Outras hospedagens:** o jogo é um único `index.html`; qualquer hospedagem estática serve — por exemplo **itch.io** (*Kind of project: HTML*, envie um `.zip` com o `index.html` na raiz e marque *"This file will be played in the browser"*) ou **Netlify Drop** (`netlify.com/drop`, arraste a pasta; crie uma conta gratuita para o site não expirar).
 
