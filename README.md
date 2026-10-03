@@ -34,5 +34,3 @@ cd ue5-pbr-environment
 npm install
 npm run dev
 ```
-
-Abra no navegador em `http://localhost:5173`.
