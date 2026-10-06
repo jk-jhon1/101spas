@@ -18,7 +18,7 @@ terminam logo após o cabeçalho, sem nenhuma linha. Só os Tiers **1, 3 e 5** (
 - As **80 espadas do PDF** foram implementadas com **nome, Dano/Vel/KB e mecânica exatamente como no documento**.
 - As **40 espadas faltantes foram criadas** seguindo as regras de cada tier do próprio GDD (faixa de multiplicador de dano,
   cor e tipo de mecânica). Elas aparecem marcadas com **★** no jogo e no catálogo.
-  Se você tiver o PDF completo, basta editar as linhas correspondentes em `src/11_swords.js` e rodar `python3 build.py`.
+  Se você tiver o PDF completo, basta editar as linhas correspondentes em `src/11_swords.js` e rodar `node build.js`.
 
 | Tier | Espadas | Origem | Regra do GDD que guiou as criadas |
 |---|---|---|---|
@@ -61,7 +61,7 @@ Catálogo completo (com receitas): [`docs/catalogo_120_espadas.md`](docs/catalog
 ### Jogar online / publicar
 
 - **GitHub Pages (este repositório):** já ativado — o jogo está em `https://jk-jhon1.github.io/101spas/`. Para ativar numa cópia/fork: *Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch `main`, pasta `/ (root)` → Save* (em 1–2 minutos o jogo fica em `https://SEU_USUARIO.github.io/NOME_DO_REPO/`). O `index.html` já está na raiz e o arquivo `.nojekyll` dispensa o processamento do Jekyll.
-- **Local:** `python3 serve.py` abre o jogo em `http://localhost:8080/` (servido por http, o salvamento e o controle funcionam em qualquer navegador).
+- **Local:** `node serve.js` (ou `npm run serve`) abre o jogo em `http://localhost:8080/` (servido por http, o salvamento e o controle funcionam em qualquer navegador).
 - **Outras hospedagens:** o jogo é um único `index.html`; qualquer hospedagem estática serve — por exemplo **itch.io** (*Kind of project: HTML*, envie um `.zip` com o `index.html` na raiz e marque *"This file will be played in the browser"*) ou **Netlify Drop** (`netlify.com/drop`, arraste a pasta; crie uma conta gratuita para o site não expirar).
 
 ### Controle (gamepad) — mira analógica
@@ -136,8 +136,9 @@ casas válidas (sala fechada com paredes de fundo, luz, mesa/bancada, cadeira e 
 
 ```
 index.html            ← JOGO (arquivo único gerado; é o que você abre)
-build.py              ← concatena src/ em index.html:  python3 build.py
-serve.py              ← servidor local (python3 serve.py → http://localhost:8080/)
+build.js              ← concatena src/ em index.html:  node build.js
+serve.js              ← servidor local (node serve.js → http://localhost:8080/)
+package.json          ← scripts npm; única dependência: Playwright (só para os testes de navegador)
 src/
   00_util.js            matemática, RNG, ruído Perlin, cores
   01_data.js            TIERS, tiles, paredes, itens, receitas
@@ -180,14 +181,14 @@ Os dados (tiles, itens, receitas, 120 espadas) estão em tabelas simples, fácei
 ---
 
 ## Testes realizados (automatizados, Chromium headless)
-> **Como rodar:** `node dev/validate.js` (catálogo; também regenera `docs/catalogo_*`), `node dev/reach.js` e `node dev/seeds.js` precisam só do Node. Os `dev/*.py` usam Playwright: `pip install playwright pillow && python3 -m playwright install chromium`, depois `python3 dev/test_swords.py` etc. Os scripts localizam o `index.html` pelo próprio caminho; capturas temporárias vão para `dev/*.png` (ignoradas pelo git). Depois de editar `src/`, recompile com `python3 build.py`.
+> **Como rodar:** `node dev/validate.js` (catálogo; também regenera `docs/catalogo_*`), `node dev/reach.js` e `node dev/seeds.js` precisam só do Node (`npm test` roda os três). Os testes de navegador usam Playwright: `npm install && npx playwright install chromium`, depois `node dev/test_swords.js` etc. (`npm run test:browser` roda os cinco com veredito: controle, arsenal, inimigos, soak e espadas). `node dev/http_check.js [url]` confere uma URL do jogo (local ou publicada) de ponta a ponta: carrega, salva, recarrega e continua. Os scripts localizam o `index.html` pelo próprio caminho e dividem utilitários em `dev/lib.js`; capturas temporárias vão para `dev/*.png` (ignoradas pelo git). Depois de editar `src/`, recompile com `node build.js`.
 
 - **Catálogo**: 120 espadas, 20 por tier, faixas de dano por tier, receitas válidas (`node dev/validate.js`).
 - **Progressão**: todo item é obtível e as 120 espadas são craftáveis a partir de fontes reais do mundo (`node dev/reach.js`); gerador testado em 8 sementes (`node dev/seeds.js`).
-- **120 espadas em combate** (`dev/test_swords.py`): cada uma ataca bonecos/inimigos por ~4,5 s — sem exceções, todas causam dano, status esperados observados (sangramento, veneno, gelo, atordoamento, tempo parado, podridão, pânico, cegueira…).
-- **Todos os inimigos, variantes elementais e os 4 chefes** (`dev/test_enemies.py`) e **~45.000 passos** de simulação com spawn natural em 14 cenários, todas as camadas e estágios (`dev/soak.py`): zero erros.
+- **120 espadas em combate** (`dev/test_swords.js`): cada uma ataca bonecos/inimigos por ~4,5 s — sem exceções, todas causam dano, status esperados observados (sangramento, veneno, gelo, atordoamento, tempo parado, podridão, pânico, cegueira…).
+- **Todos os inimigos, variantes elementais e os 4 chefes** (`dev/test_enemies.js`) e **~45.000 passos** de simulação com spawn natural em 14 cenários, todas as camadas e estágios (`dev/soak.js`): zero erros.
 - Entrada real de teclado/mouse, crafting pela interface, NPC/moradia, salvar/carregar, fluidos/areia, capturas de tela de biomas e de efeitos.
-- **Controle** (`dev/test_gamepad.py`, gamepad simulado, 70 verificações): menus, andar/pular, ângulo real do arco para ↑ → ← ↖ ↘, distância pela inclinação, acerto de inimigo só na direção da mira, minerar/colocar bloco, interagir, cursor virtual (hover, clique, craft, comprar do NPC), pausa/guia, volta do mouse e API bloqueada.
+- **Controle** (`dev/test_gamepad.js`, gamepad simulado, 70 verificações): menus, andar/pular, ângulo real do arco para ↑ → ← ↖ ↘, distância pela inclinação, acerto de inimigo só na direção da mira, minerar/colocar bloco, interagir, cursor virtual (hover, clique, craft, comprar do NPC), pausa/guia, volta do mouse e API bloqueada.
 
 ## Limitações conhecidas
 - Sem música (apenas efeitos sonoros sintetizados); sem multiplayer. O suporte a controle foi validado com gamepad simulado (não com hardware real); o som só liga após o primeiro clique/tecla/botão, regra dos navegadores.

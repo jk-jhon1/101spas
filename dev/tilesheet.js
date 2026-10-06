@@ -1,10 +1,16 @@
-import pathlib as _pl
-DEV = _pl.Path(__file__).resolve().parent; ROOT = DEV.parent   # caminhos relativos à raiz do repositório
-INDEX_URL = (ROOT / 'index.html').as_uri(); devfile = lambda n: str(DEV / n)
-import asyncio, io, sys
-from playwright.async_api import async_playwright
-JS = r'''
-() => {
+'use strict';
+// Folha com todos os tiles/itens do jogo: node dev/tilesheet.js SAIDA.png
+const { launch, INDEX_URL, run } = require('./lib');
+
+const OUT = process.argv[2];
+if (!OUT) { console.error('uso: node dev/tilesheet.js SAIDA.png'); process.exit(2); }
+
+run(async () => {
+  const b = await launch();
+  const pg = await b.newPage({ viewport: { width: 1100, height: 800 } });
+  await pg.goto(INDEX_URL);
+  await pg.waitForTimeout(400);
+  const dim = await pg.evaluate(() => {
   const ids = []; for (let i = 1; i < TD.length; i++) ids.push(i);
   const cols = 14, S = 4, cell = 16 * S + 6, rows = Math.ceil(ids.length / cols) * 2;
   const c = document.createElement('canvas'); c.width = cols * cell; c.height = rows * cell + 4; const g = c.getContext('2d');
@@ -17,16 +23,9 @@ JS = r'''
   });
   document.body.innerHTML = ''; document.body.style.background = '#000'; document.body.appendChild(c); c.style.cssText = 'position:fixed;left:0;top:0;z-index:99999';
   return [c.width, c.height];
-}
-'''
-async def main():
-    async with async_playwright() as p:
-        b = await p.chromium.launch(args=['--use-gl=swiftshader','--enable-unsafe-swiftshader'])
-        pg = await b.new_page(viewport={'width':1100,'height':800})
-        await pg.goto(INDEX_URL)
-        await pg.wait_for_timeout(400)
-        dim = await pg.evaluate(JS)
-        await pg.set_viewport_size({'width':dim[0],'height':dim[1]})
-        await pg.screenshot(path=sys.argv[1], full_page=False); print(dim)
-        await b.close()
-asyncio.run(main())
+});
+  await pg.setViewportSize({ width: dim[0], height: dim[1] });
+  await pg.screenshot({ path: OUT, fullPage: false });
+  console.log(dim);
+  await b.close();
+});

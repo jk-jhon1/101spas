@@ -1,10 +1,8 @@
-import pathlib as _pl
-DEV = _pl.Path(__file__).resolve().parent; ROOT = DEV.parent   # caminhos relativos à raiz do repositório
-INDEX_URL = (ROOT / 'index.html').as_uri(); devfile = lambda n: str(DEV / n)
-import asyncio, json, time
-from playwright.async_api import async_playwright
-JS = r'''
-() => {
+'use strict';
+// Todos os inimigos, variantes elementais e os 4 chefes lutando contra o jogador, sem exceções.
+const { launch, INDEX_URL, devfile, run, waitPlay, collectErrors } = require('./lib');
+
+const JS = () => {
   const res = [], P = G.P; G.opts.god = true; G.opts.noSpawn = true;
   const aim = (wx, wy) => { const c = G.cam; G.mouse.sx = (wx - c.x) * c.zoom / DPR; G.mouse.sy = (wy - c.y) * c.zoom / DPR; };
   const water = [60, 130]; // oceano
@@ -34,23 +32,24 @@ JS = r'''
   for (const el of Object.keys(ELEMS)) run('zombie', 2, el); for (const el of ['fire', 'ice', 'time']) run('slime_blue', 2, el); run('eye', 2, 'lightning'); run('skeleton', 3, 'blood');
   G.stage = 0;
   return res;
-}
-'''
-async def main():
-    async with async_playwright() as p:
-        b = await p.chromium.launch(args=['--use-gl=swiftshader','--enable-unsafe-swiftshader'])
-        pg = await b.new_page(viewport={'width':960,'height':540})
-        errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)[:300])); pg.on('console', lambda m: errs.append(m.text[:300]) if m.type=='error' else None)
-        await pg.goto(INDEX_URL)
-        await pg.fill('#seed','31337'); await pg.click('#btn-cre')
-        await pg.wait_for_function('window.__G.state === "play"', timeout=90000)
-        t0=time.time(); out = await pg.evaluate(JS); print('tempo %.1fs'%(time.time()-t0))
-        bad=0
-        for e in out:
-            flag = 'ERR' if e['err'] else 'ok'
-            if e['err']: bad+=1
-            print(f"{e['key']:<18} st={e['stage']} {e['elem']:<9} {flag:<3} alive={e['alive']} hp={e.get('hp')} drops={e.get('drops')} proj={e.get('projs')} {e['err'] or ''}")
-        print('problemas:', bad, '| erros de página:', errs[:5])
-        await pg.screenshot(path=devfile('shot_enemies_end.png'))
-        await b.close()
-asyncio.run(main())
+};
+
+run(async () => {
+  const b = await launch();
+  const pg = await b.newPage({ viewport: { width: 960, height: 540 } });
+  const errs = collectErrors(pg);
+  await pg.goto(INDEX_URL);
+  await pg.fill('#seed', '31337'); await pg.click('#btn-cre');
+  await waitPlay(pg);
+  const t0 = Date.now(); const out = await pg.evaluate(JS); console.log(`tempo ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+  let bad = 0;
+  for (const e of out) {
+    const flag = e.err ? 'ERR' : 'ok';
+    if (e.err) bad += 1;
+    console.log(`${String(e.key).padEnd(18)} st=${e.stage} ${String(e.elem).padEnd(9)} ${flag.padEnd(3)} alive=${e.alive} hp=${e.hp} drops=${e.drops} proj=${e.projs} ${e.err || ''}`);
+  }
+  console.log('problemas:', bad, '| erros de página:', errs.slice(0, 5));
+  await pg.screenshot({ path: devfile('shot_enemies_end.png') });
+  await b.close();
+  process.exitCode = (bad || errs.length) ? 1 : 0;
+});

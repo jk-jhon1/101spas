@@ -1,10 +1,9 @@
-import pathlib as _pl
-DEV = _pl.Path(__file__).resolve().parent; ROOT = DEV.parent   # caminhos relativos à raiz do repositório
-INDEX_URL = (ROOT / 'index.html').as_uri(); devfile = lambda n: str(DEV / n)
-import asyncio, json, sys, time
-from playwright.async_api import async_playwright
-JS = r'''
-() => {
+'use strict';
+// As 120 espadas em combate: cada uma ataca bonecos/inimigos por ~4,5 s. Sem exceções, todas causam dano.
+//   node dev/test_swords.js        (só as que têm problema)      node dev/test_swords.js -v      (todas)
+const { launch, INDEX_URL, devfile, run, waitPlay } = require('./lib');
+
+const JS = () => {
   const res = [], P = G.P; G.opts.god = true; G.opts.showDps = true; G.opts.noSpawn = true;
   const aim = (wx, wy) => { const c = G.cam; G.mouse.sx = (wx - c.x) * c.zoom / DPR; G.mouse.sy = (wy - c.y) * c.zoom / DPR; };
   const errs = [];
@@ -27,27 +26,33 @@ JS = r'''
   }
   console.error = origErr;
   return { res, errs: errs.slice(0, 20) };
-}
-'''
-async def main():
-    async with async_playwright() as p:
-        b = await p.chromium.launch(args=['--use-gl=swiftshader','--enable-unsafe-swiftshader'])
-        pg = await b.new_page(viewport={'width':1280,'height':720})
-        logs=[]; pg.on('console', lambda m: logs.append(m.type+': '+m.text[:200])); pg.on('pageerror', lambda e: logs.append('PAGEERROR '+str(e)[:300]))
-        await pg.goto(INDEX_URL)
-        await pg.fill('#seed','777'); await pg.click('#btn-cre')
-        await pg.wait_for_function('window.__G.state === "play"', timeout=90000)
-        await pg.wait_for_timeout(500)
-        t0=time.time()
-        out = await pg.evaluate(JS)
-        print('tempo: %.1fs'%(time.time()-t0))
-        bad = [e for e in out['res'] if e['err'] or e['dmg']<=0]
-        for e in out['res']:
-            flag = 'ERR' if e['err'] else ('SEM DANO' if e['dmg']<=0 else 'ok')
-            if flag!='ok' or '-v' in sys.argv: print(f"{e['num']:03d} {e['name']:<24} dmg={e['dmg']:<6} sw={e.get('swings')} hit={e.get('hits')} proj={e['projs']:<4} st=[{e.get('st')}] buff=[{e.get('buff')}] {flag} {e['err'] or ''}")
-        print('espadas testadas:', len(out['res']), '| problemas:', len(bad))
-        print('console.error capturados:', out['errs'])
-        print('page logs:', [l for l in logs if 'error' in l.lower()][:10])
-        await pg.screenshot(path=devfile('shot_swords_end.png'))
-        await b.close()
-asyncio.run(main())
+};
+const nz = (v) => (v === undefined || v === null ? 'None' : v);
+
+run(async () => {
+  const b = await launch();
+  const pg = await b.newPage({ viewport: { width: 1280, height: 720 } });
+  const logs = [];
+  pg.on('console', (m) => logs.push(m.type() + ': ' + m.text().slice(0, 200)));
+  pg.on('pageerror', (e) => logs.push('PAGEERROR ' + e.message.slice(0, 300)));
+  await pg.goto(INDEX_URL);
+  await pg.fill('#seed', '777'); await pg.click('#btn-cre');
+  await waitPlay(pg);
+  await pg.waitForTimeout(500);
+  const t0 = Date.now();
+  const out = await pg.evaluate(JS);
+  console.log(`tempo: ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+  const bad = out.res.filter((e) => e.err || e.dmg <= 0);
+  for (const e of out.res) {
+    const flag = e.err ? 'ERR' : (e.dmg <= 0 ? 'SEM DANO' : 'ok');
+    if (flag !== 'ok' || process.argv.includes('-v')) {
+      console.log(`${String(e.num).padStart(3, '0')} ${String(e.name).padEnd(24)} dmg=${String(e.dmg).padEnd(6)} sw=${nz(e.swings)} hit=${nz(e.hits)} proj=${String(e.projs).padEnd(4)} st=[${nz(e.st)}] buff=[${nz(e.buff)}] ${flag} ${e.err || ''}`);
+    }
+  }
+  console.log('espadas testadas:', out.res.length, '| problemas:', bad.length);
+  console.log('console.error capturados:', out.errs);
+  console.log('page logs:', logs.filter((l) => l.toLowerCase().includes('error')).slice(0, 10));
+  await pg.screenshot({ path: devfile('shot_swords_end.png') });
+  await b.close();
+  process.exitCode = bad.length ? 1 : 0;
+});

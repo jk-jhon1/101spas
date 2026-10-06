@@ -1,10 +1,8 @@
-import pathlib as _pl
-DEV = _pl.Path(__file__).resolve().parent; ROOT = DEV.parent   # caminhos relativos à raiz do repositório
-INDEX_URL = (ROOT / 'index.html').as_uri(); devfile = lambda n: str(DEV / n)
-import asyncio, json
-from playwright.async_api import async_playwright
-JS = r'''
-() => {
+'use strict';
+// Líquidos (água + lava = obsidiana), areia que cai e plantas sem apoio, numa arena isolada no céu.
+const { launch, INDEX_URL, run, waitPlay, collectErrors } = require('./lib');
+
+const JS = () => {
   const wd = G.world, W = wd.w, out = {};
   // arena isolada em área alta do céu (y 8..24, x 40..80) — limpar tudo
   const X0 = 600, Y0 = 20;
@@ -37,16 +35,15 @@ JS = r'''
   // tocha no ar permanece
   wd.set(X0 + 20, Y0 + 3, T.torch); out.torch = TD[wd.get(X0 + 20, Y0 + 3)].k;
   return out;
-}
-'''
-async def main():
-    async with async_playwright() as p:
-        b = await p.chromium.launch(args=['--use-gl=swiftshader','--enable-unsafe-swiftshader'])
-        pg = await b.new_page(viewport={'width':960,'height':540})
-        errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)[:300])); pg.on('console', lambda m: errs.append(m.text[:300]) if m.type=='error' else None)
-        await pg.goto(INDEX_URL)
-        await pg.fill('#seed','5'); await pg.click('#btn-cre')
-        await pg.wait_for_function('window.__G.state === "play"', timeout=90000)
-        print(json.dumps(await pg.evaluate(JS))); print('erros', errs[:3])
-        await b.close()
-asyncio.run(main())
+};
+
+run(async () => {
+  const b = await launch();
+  const pg = await b.newPage({ viewport: { width: 960, height: 540 } });
+  const errs = collectErrors(pg);
+  await pg.goto(INDEX_URL);
+  await pg.fill('#seed', '5'); await pg.click('#btn-cre');
+  await waitPlay(pg);
+  console.log(JSON.stringify(await pg.evaluate(JS))); console.log('erros', errs.slice(0, 3));
+  await b.close();
+});
