@@ -1,12 +1,11 @@
 'use strict';
-const { launch, INDEX_URL, run, waitPlay } = require('./lib');
+const { launch, INDEX_URL, run, waitPlay, startWorld } = require('./lib');
 
 run(async () => {
   const b = await launch();
   const pg = await b.newPage({ viewport: { width: 960, height: 540 } });
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '777'); await pg.click('#btn-cre');
-  await waitPlay(pg);
+  await startWorld(pg, 777, 'btn-cre');
   const r = await pg.evaluate(() => { const sw = SWORD_BY_NUM[3], P = G.P; G.opts.god=true; G.opts.noSpawn=true; G.enemies.length=0; G.time=.3; P.x=G.world.spawn.x; P.y=G.world.spawn.y; P.vx=P.vy=0; P.cb.cd=0; P.inv[1]={id:sw.id,n:1}; P.sel=1; recalcStats(); G.cam.init=false;
           for (let i=0;i<30;i++) __step(1/60);
           const aim = () => { const c=G.cam; const tx = P.x + 140, ty = P.y; G.mouse.sx=(tx-c.x)*c.zoom/DPR; G.mouse.sy=(ty-c.y)*c.zoom/DPR; }; const out=[];

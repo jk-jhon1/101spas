@@ -43,7 +43,7 @@ run(async () => {
   check('analógico ↓ move o foco', (await ev(focusId)) === 'btn-cre', await ev(focusId));
   await axes([0, -1, 0, 0], 120); await axes([0, 0, 0, 0], 120);
   check('analógico ↑ move o foco', (await ev(focusId)) === 'btn-adv', await ev(focusId));
-  await pg.fill('#seed', '4242');
+  await ev('window.__nextSeed = 4242');   // sem campo de semente: o gancho força a semente do próximo mundo
   await tap(0);
   await waitPlay(pg);
   check('A inicia o jogo', true);
@@ -223,6 +223,33 @@ run(async () => {
   check('mover o mouse devolve a mira ao mouse', (await ev('__PAD.aimDrive')) === false);
   await pg.waitForTimeout(300);
   const sx = await ev('G.mouse.sx'); check('mira segue o mouse (sx≈420)', Math.abs(sx - 420) < 3, sx);
+
+  console.log('== mundos salvos (controle) ==');
+  const toTitleByPad = async () => {   // Start (pausa) -> ↓ até "Salvar e voltar ao menu" -> A
+    await tap(9); for (let k = 0; k < 4; k++) await tap(13);
+    const f = await ev(focusId); await tap(0);
+    await pg.waitForFunction('G.state === "title"', null, { timeout: 15000 }); await pg.waitForTimeout(400);
+    return f;
+  };
+  check('menu de pausa: ↓ x4 chega em "Salvar e voltar ao menu"', (await toTitleByPad()) === 'p-menu');
+  check('o mundo foi salvo e "Continuar" aparece no título', (await ev('Worlds.list.length')) === 1 && !(await ev("document.getElementById('btn-load').classList.contains('hidden')")));
+  check('foco inicial no título é o "Continuar"', (await ev(focusId)) === 'btn-load', await ev(focusId));
+  await tap(13); await tap(13); await tap(13);
+  check('↓ x3 chega em "Meus Mundos"', (await ev(focusId)) === 'btn-worlds', await ev(focusId));
+  await tap(0);
+  check('A abre a tela Meus Mundos', !(await ev("document.getElementById('worlds').classList.contains('hidden')")));
+  await pg.waitForTimeout(200);
+  check('o foco vai para o "Jogar" do mundo', await ev("(document.querySelector('.menu-btn.padfocus') || {}).className.includes('wplay')"), await ev("(document.querySelector('.menu-btn.padfocus') || {}).id || (document.querySelector('.menu-btn.padfocus') || {}).className"));
+  await tap(0); await waitPlay(pg); await pg.waitForTimeout(500);
+  check('A em "Jogar" reabre o mundo salvo (mesma semente)', (await ev('G.seed')) === 4242 && (await ev('G.state')) === 'play', await ev('G.seed'));
+  await toTitleByPad();
+  await tap(13); await tap(13); await tap(13); await tap(0); await pg.waitForTimeout(250);
+  await tap(3);
+  check('Y pede confirmação antes de excluir', (await ev("document.querySelector('.wdel').textContent")) === 'Confirmar exclusão?' && (await ev('Worlds.list.length')) === 1);
+  await tap(3); await pg.waitForTimeout(300);
+  check('Y de novo exclui o mundo', (await ev('Worlds.list.length')) === 0 && (await ev("!!document.getElementById('worlds-empty')")));
+  await tap(1);
+  check('B fecha Meus Mundos e "Continuar" some', (await ev("document.getElementById('worlds').classList.contains('hidden')")) && (await ev("document.getElementById('btn-load').classList.contains('hidden')")));
 
   console.log('== desconexão ==');
   await ev('window.__padOn = false'); await pg.waitForTimeout(300);

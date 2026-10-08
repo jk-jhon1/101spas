@@ -11,7 +11,7 @@ run(async () => {
   pg.on('console', (m) => logs.push(m.type() + ': ' + m.text()));
   pg.on('pageerror', (e) => logs.push('PAGEERROR: ' + e.message));
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '12345');
+  await pg.evaluate(() => { window.__nextSeed = 12345; });
   const t0 = Date.now();
   await pg.click('#' + MODE);
   await waitPlay(pg);

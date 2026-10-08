@@ -7,8 +7,8 @@
     "build": "node build.js",
     "serve": "node serve.js",
     "validate": "node dev/validate.js",
-    "test": "node dev/validate.js && node dev/reach.js && node dev/seeds.js",
-    "test:browser": "node dev/test_gamepad.js && node dev/test_arsenal_clicks.js && node dev/test_enemies.js && node dev/soak.js && node dev/test_swords.js",
+    "test": "node dev/validate.js && node dev/reach.js && node dev/seeds.js && node dev/layouts.js",
+    "test:browser": "node dev/test_worlds.js && node dev/test_gamepad.js && node dev/test_arsenal_clicks.js && node dev/test_enemies.js && node dev/soak.js && node dev/test_swords.js",
     "browsers": "playwright install chromium"
   },
   "engines": {

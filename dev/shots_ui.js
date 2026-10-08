@@ -1,7 +1,7 @@
 'use strict';
 // Painéis da interface (menu, arsenal, tooltip, mapa, inventário) numa folha só: grava dev/sheet_ui.png
 const fs = require('fs');
-const { launch, INDEX_URL, devfile, run, waitPlay, collectErrors, makeSheet } = require('./lib');
+const { launch, INDEX_URL, devfile, run, waitPlay, startWorld, collectErrors, makeSheet } = require('./lib');
 
 run(async () => {
   const b = await launch();
@@ -11,7 +11,7 @@ run(async () => {
   const shots = [];
   const snap = async (name) => { shots.push({ png: await pg.screenshot(), size: [683, 384], label: name, barH: 14 }); };
   await snap('menu');
-  await pg.fill('#seed', '888'); await pg.click('#btn-cre'); await waitPlay(pg); await pg.waitForTimeout(600);
+  await startWorld(pg, 888, 'btn-cre'); await pg.waitForTimeout(600);
   await pg.evaluate("document.getElementById('toasts').innerHTML=''");
   await pg.keyboard.press('KeyB'); await pg.waitForTimeout(300);
   await pg.click('#ars-tabs .tab >> nth=5'); await pg.waitForTimeout(200); await snap('arsenal T6');

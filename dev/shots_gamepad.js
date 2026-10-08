@@ -23,7 +23,7 @@ run(async () => {
   };
   await pg.goto(INDEX_URL); await pg.waitForTimeout(900);
   await tap(0); await tap(13); await pg.waitForTimeout(200); await snap('titulo com foco do controle');
-  await tap(12); await pg.fill('#seed', '31337'); await tap(0);
+  await tap(12); await pg.evaluate(() => { window.__nextSeed = 31337; }); await tap(0);
   await waitPlay(pg); await pg.waitForTimeout(1000);
   await ev((() => { const P = G.P; G.opts.god = true; G.opts.noSpawn = true; G.time = .3; document.getElementById('toasts').innerHTML = '';
           P.inv[0] = { id: 's113', n: 1 }; P.sel = 0; recalcStats(); G.invChanged = true;

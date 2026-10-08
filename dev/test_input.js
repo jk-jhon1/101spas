@@ -1,14 +1,13 @@
 'use strict';
 // Entrada real de teclado e mouse: andar, pular, minerar, colocar bloco, inventário/crafting, catálogo e mapa.
-const { launch, INDEX_URL, devfile, run, waitPlay, collectErrors } = require('./lib');
+const { launch, INDEX_URL, devfile, run, waitPlay, startWorld, collectErrors } = require('./lib');
 
 run(async () => {
   const b = await launch();
   const pg = await b.newPage({ viewport: { width: 1280, height: 720 } });
   const errs = collectErrors(pg);
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '2024'); await pg.click('#btn-adv');
-  await waitPlay(pg);
+  await startWorld(pg, 2024, 'btn-adv');
   await pg.waitForTimeout(1200);
   const st = () => pg.evaluate("JSON.stringify({x:Math.round(__G.P.x),y:Math.round(__G.P.y),vy:Math.round(__G.P.vy),g:__G.P.onGround,hp:__G.P.hp,sel:__G.P.sel})");
   console.log('start', await st());
@@ -28,7 +27,7 @@ run(async () => {
   const slot = await pg.evaluate("__G.P.inv.findIndex(s=>s&&s.id==='dirt')");
   if (slot >= 0) {
     if (slot < 10) await pg.keyboard.press('Digit' + String(slot < 9 ? (slot + 1) % 10 : 0));
-    await pg.evaluate('(i)=>{ __G.P.sel=i }', slot);
+    await pg.evaluate((i) => { __G.P.sel = i; }, slot);
     await pg.mouse.move(info.sx, info.sy); await pg.mouse.down(); await pg.waitForTimeout(300); await pg.mouse.up();
     const r2 = await pg.evaluate((t) => ({tile: TD[__G.world.get(t.tx,t.ty)].k}), info); console.log('colocou ->', r2);
   }

@@ -1,6 +1,6 @@
 'use strict';
 // Estresse: ~45.000 passos de simulação com spawn natural em 14 cenários (todas as camadas e estágios).
-const { launch, INDEX_URL, run, waitPlay, collectErrors } = require('./lib');
+const { launch, INDEX_URL, run, waitPlay, startWorld, collectErrors } = require('./lib');
 
 const JS = ([name, tx, ty, time_, stage, frames, swordId]) => {
   const P = G.P, wd = G.world; G.opts.god = false; G.opts.noSpawn = false; G.stage = stage; if (stage >= 2 && !wd.hardmode) spawnHardmodeOres(wd);
@@ -33,11 +33,10 @@ run(async () => {
   const pg = await b.newPage({ viewport: { width: 960, height: 540 } });
   const errs = collectErrors(pg);
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '4242'); await pg.click('#btn-adv');
-  await waitPlay(pg);
+  await startWorld(pg, 4242, 'btn-adv');
   const loc = await pg.evaluate(() => { const wd=G.world, o={}; const fl=(x,y0,y1)=>{for(let y=y0;y<y1;y++) if(!wd.solid(x,y)&&wd.solid(x,y+1)&&!wd.solid(x,y-1)&&!wd.solid(x,y-2)&&wd.liqAt(x,y)<30) return y; return -1;};
           for (const [k,y0,y1,x0] of [['cave',190,300,500],['deep',320,398,650],['hell',425,452,820],['cave2',200,290,1000],['cave3',200,290,250]]) { for (let dx=0;dx<500;dx++){ const x=x0+dx,y=fl(x,y0,y1); if(y>0){o[k]=[x,y];break;} } } 
-          o.surf=[575, wd.surf[575]-3]; o.des=[250, wd.surf[250]-3]; o.snow=[1150, wd.surf[1150]-3]; o.jun=[900, wd.surf[900]-3]; o.ocean=[40,124]; return o; });
+          const sp=wd.biomeSpots(), at=k=>[sp[k].x, wd.surf[sp[k].x]-3], sx=Math.round(wd.spawn.x/TS); o.surf=[sx, wd.surf[sx]-3]; o.des=at('desert'); o.snow=at('snow'); o.jun=at('jungle'); o.ocean=[sp.ocean.x,124]; return o; });
   console.log(loc);
   const plan = [['superfície dia', 'surf', .3, 0, 's001', 3600], ['superfície noite', 'surf', .8, 0, 's043', 3600], ['deserto noite', 'des', .8, 1, 's021', 2400], ['neve noite', 'snow', .8, 1, 's041', 2400],
     ['selva dia', 'jun', .3, 1, 's058', 2400], ['oceano', 'ocean', .3, 0, 's012', 2400], ['cavernas', 'cave', .3, 1, 's066', 3600], ['cav profundas', 'deep', .3, 1, 's083', 3600], ['inferno', 'hell', .3, 1, 's102', 3600],
@@ -49,6 +48,7 @@ run(async () => {
     if (r.err) totalErr += 1;
     console.log(`${name.padEnd(22)} stage=${st} ${sw} steps=${r.steps} ms=${r.ms} (${(r.ms / Math.max(1, r.steps)).toFixed(2)}ms/step) deaths=${r.deaths} kills=${r.kills} maxEn=${r.maxEn} maxProj=${r.maxProj} maxPart=${r.maxPart} liq=${r.liq} ${r.err || ''}`);
   }
+  await pg.waitForTimeout(300);   // a página fica ocupada num laço longo: deixa chegar eventos de erro ainda na fila antes do veredito
   console.log('cenários com erro:', totalErr, '| erros de página:', errs.slice(0, 5));
   await b.close();
   process.exitCode = (totalErr || errs.length) ? 1 : 0;

@@ -34,6 +34,15 @@ function run(main) {
 // Espera o jogo entrar no estado "play".
 const waitPlay = (pg, timeout = 90000) => pg.waitForFunction('window.__G.state === "play"', null, { timeout });
 
+// Cria um mundo pelo botão do título (btn-adv = Aventura, btn-cre = Criativo) e espera o jogo entrar em "play".
+// Não existe campo de semente: o gancho window.__nextSeed força a semente do PRÓXIMO mundo (testes reproduzíveis).
+// seed = null sorteia como no jogo de verdade.
+async function startWorld(pg, seed, btn = 'btn-adv', timeout = 90000) {
+  if (seed !== null && seed !== undefined) await pg.evaluate((s) => { window.__nextSeed = s; }, seed);
+  await pg.click('#' + btn);
+  await waitPlay(pg, timeout);
+}
+
 // Erros de página (exceções) e mensagens console.error, cortados em `max` caracteres.
 function collectErrors(pg, max = 300) {
   const errs = [];
@@ -79,4 +88,4 @@ async function makeSheet(browser, tiles, { cols, cellW, cellH }) {
   }
 }
 
-module.exports = { DEV, ROOT, INDEX_URL, devfile, devUrl, LAUNCH_ARGS, chromium, launch, mod, run, waitPlay, collectErrors, fmtDetail, makeSheet };
+module.exports = { DEV, ROOT, INDEX_URL, devfile, devUrl, LAUNCH_ARGS, chromium, launch, mod, run, waitPlay, startWorld, collectErrors, fmtDetail, makeSheet };

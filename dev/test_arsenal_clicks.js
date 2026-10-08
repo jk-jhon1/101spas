@@ -1,14 +1,13 @@
 'use strict';
 // Clica em (quase) tudo do Arsenal do modo Criativo: abas de espadas, itens, inimigos e mundo — sem exceções.
-const { launch, INDEX_URL, run, waitPlay, collectErrors } = require('./lib');
+const { launch, INDEX_URL, run, waitPlay, startWorld, collectErrors } = require('./lib');
 
 run(async () => {
   const b = await launch();
   const pg = await b.newPage({ viewport: { width: 1280, height: 720 } });
   const errs = collectErrors(pg);
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '4'); await pg.click('#btn-cre');
-  await waitPlay(pg); await pg.waitForTimeout(400);
+  await startWorld(pg, 4, 'btn-cre'); await pg.waitForTimeout(400);
   const arsenalOpen = () => pg.evaluate("document.getElementById('panel-arsenal').classList.contains('hidden') === false");
   let n = 0;
   for (const tab of [9, 8, 7, 6, 0, 2, 5]) {

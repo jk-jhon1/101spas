@@ -1,15 +1,14 @@
 'use strict';
-const { launch, INDEX_URL, run, waitPlay } = require('./lib');
+const { launch, INDEX_URL, run, waitPlay, startWorld } = require('./lib');
 
 run(async () => {
   const b = await launch();
   const pg = await b.newPage({ viewport: { width: 1280, height: 720 } });
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '777'); await pg.click('#btn-cre');
-  await waitPlay(pg);
-  const r = await pg.evaluate(() => { const P=G.P; G.opts.god=true; G.opts.noSpawn=true; G.time=.3; P.x=900*16; P.y=(G.world.surf[900]-3)*16; P.vx=P.vy=0; G.cam.init=false; for (let i=0;i<30;i++) __step(1/60); G.paused=true; __render();
+  await startWorld(pg, 777, 'btn-cre');
+  const r = await pg.evaluate(() => { const P=G.P; G.opts.god=true; G.opts.noSpawn=true; G.time=.3; const jx=G.world.biomeSpots().jungle.x; P.x=jx*16; P.y=(G.world.surf[jx]-3)*16; P.vx=P.vy=0; G.cam.init=false; for (let i=0;i<30;i++) __step(1/60); G.paused=true; __render();
           const out = {}; const wd = G.world, L = G.light;
-          const tx = 900 - 5, ty = wd.surf[tx];
+          const tx = jx - 5, ty = wd.surf[tx];
           const li = (x,y) => { const i = (y - L.y0) * L.w + (x - L.x0); return [L.r[i], L.g[i], L.b[i]].map(v => +v.toFixed(2)); };
           out.light = [0,1,2,3,4].map(d => li(tx, ty + d));
           out.tiles = [0,1,2,3].map(d => TD[wd.t[tx + (ty+d)*wd.w]].k);

@@ -21,11 +21,12 @@
     <div id="top-right"><canvas id="mini" width="180" height="110"></canvas><div id="clock"></div></div>
     <div id="bossbar" class="hidden"><div id="boss-name"></div><div id="boss-wrap"><div id="boss-fill"></div></div></div>
     <div id="toasts"></div>
+    <div id="savebadge" class="hidden">Mundo salvo</div>
     <div id="dps" class="hidden"></div>
     <div id="dbg" class="hidden"></div>
     <div id="item-name"></div>
     <div id="hotbar"></div>
-    <div id="deadmsg" class="hidden"><div>VOCÊ foi MOGADO</div><small id="dead-sub"></small></div>
+    <div id="deadmsg" class="hidden"><div>VOCÊ FOI MOGADO</div><small id="dead-sub"></small></div>
   </div>
 
   <div id="panel-inv" class="panel hidden">
@@ -58,12 +59,20 @@
     <canvas id="menu-bg"></canvas>
     <div id="logo">ESPADAS DO DESTINO<small>SANDBOX 2D PLATFORMER</small></div>
     <div id="tiers-strip"></div>
-    <button class="menu-btn hidden" id="btn-load">Continuar Jogo<small>Carregar o mundo salvo</small></button>
-    <button class="menu-btn" id="btn-adv">Nova Aventura<small>Mine, crie, derrote chefes e forje as 120 espadas</small></button>
+    <button class="menu-btn hidden" id="btn-load">Continuar<small id="btn-load-sub"></small></button>
+    <button class="menu-btn" id="btn-adv">Nova Aventura<small>Mine, crie, derrote chefes e forje as 120 espadas · cada mundo é único</small></button>
     <button class="menu-btn" id="btn-cre">Modo Criativo<small>Arsenal completo: todas as espadas, inimigos e bonecos de treino</small></button>
+    <button class="menu-btn" id="btn-worlds">Meus Mundos<small id="btn-worlds-sub">Nenhum mundo salvo ainda</small></button>
     <button class="menu-btn" id="btn-help">Controles e Guia</button>
-    <div id="seed-row"><label for="seed">Semente do mundo:</label><input id="seed" placeholder="aleatória" maxlength="20" autocomplete="off"></div>
     <div id="pad-hint">Aceita controle (gamepad): aperte um botão para ativar</div>
+  </div>
+
+  <div id="worlds" class="screen hidden">
+    <div class="box" id="worlds-box">
+      <h2>Meus Mundos <span id="worlds-count"></span></h2>
+      <div id="worlds-list"></div>
+      <div id="worlds-foot"><span id="worlds-info"></span><button class="menu-btn" id="worlds-back">Voltar</button></div>
+    </div>
   </div>
 
   <div id="loading" class="screen hidden">
@@ -76,10 +85,11 @@
   <div id="pause" class="screen hidden">
     <div class="box" style="text-align:center;min-width:300px">
       <h2>Pausado</h2>
+      <div id="pause-world"></div>
       <button class="menu-btn" id="p-resume" style="font-size:15px">Continuar</button>
       <button class="menu-btn" id="p-help" style="font-size:15px">Controles e Guia</button>
       <button class="menu-btn" id="p-sound" style="font-size:15px">Som: ligado</button>
-      <button class="menu-btn" id="p-save" style="font-size:15px">Salvar jogo</button>
+      <button class="menu-btn" id="p-save" style="font-size:15px">Salvar mundo</button>
       <button class="menu-btn" id="p-menu" style="font-size:15px">Salvar e voltar ao menu</button>
     </div>
   </div>

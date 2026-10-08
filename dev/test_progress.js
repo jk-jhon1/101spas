@@ -1,6 +1,6 @@
 'use strict';
 // Progressão: morte e renascimento, derrota dos 4 chefes (drops, flags, estágio, minérios do modo difícil).
-const { launch, INDEX_URL, run, waitPlay, collectErrors } = require('./lib');
+const { launch, INDEX_URL, run, waitPlay, startWorld, collectErrors } = require('./lib');
 
 const JS = () => {
   const out = {}, P = G.P, wd = G.world; G.opts.noSpawn = true; G.opts.god = false;
@@ -24,8 +24,7 @@ run(async () => {
   const pg = await b.newPage({ viewport: { width: 960, height: 540 } });
   const errs = collectErrors(pg);
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '9'); await pg.click('#btn-adv');
-  await waitPlay(pg);
+  await startWorld(pg, 9, 'btn-adv');
   const r = await pg.evaluate(JS);
   for (const [k, v] of Object.entries(r)) console.log(k, '->', JSON.stringify(v));
   console.log('erros', errs.slice(0, 3), await pg.evaluate('window.__lastErr'));

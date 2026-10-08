@@ -1,7 +1,7 @@
 'use strict';
 // Folha de contato com o efeito de espadas escolhidas: node dev/shots_fx.js SAIDA.png 12,43,120
 const fs = require('fs');
-const { launch, INDEX_URL, run, waitPlay, makeSheet } = require('./lib');
+const { launch, INDEX_URL, run, waitPlay, startWorld, makeSheet } = require('./lib');
 
 const [OUT, NUMS_ARG] = process.argv.slice(2);
 if (!OUT || !NUMS_ARG) { console.error('uso: node dev/shots_fx.js SAIDA.png 12,43,120'); process.exit(2); }
@@ -25,8 +25,7 @@ run(async () => {
   pg.on('pageerror', (e) => errs.push(e.message.slice(0, 200)));
   pg.on('console', (m) => { if (m.type() === 'error') errs.push(m.text().slice(0, 200)); });
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '777'); await pg.click('#btn-cre');
-  await waitPlay(pg);
+  await startWorld(pg, 777, 'btn-cre');
   await pg.evaluate("document.getElementById('toasts').style.display='none'; document.getElementById('hud').style.display='none'");
   const tiles = [];
   for (const n of NUMS) {

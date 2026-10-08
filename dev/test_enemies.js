@@ -1,6 +1,6 @@
 'use strict';
 // Todos os inimigos, variantes elementais e os 4 chefes lutando contra o jogador, sem exceções.
-const { launch, INDEX_URL, devfile, run, waitPlay, collectErrors } = require('./lib');
+const { launch, INDEX_URL, devfile, run, waitPlay, startWorld, collectErrors } = require('./lib');
 
 const JS = () => {
   const res = [], P = G.P; G.opts.god = true; G.opts.noSpawn = true;
@@ -39,8 +39,7 @@ run(async () => {
   const pg = await b.newPage({ viewport: { width: 960, height: 540 } });
   const errs = collectErrors(pg);
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '31337'); await pg.click('#btn-cre');
-  await waitPlay(pg);
+  await startWorld(pg, 31337, 'btn-cre');
   const t0 = Date.now(); const out = await pg.evaluate(JS); console.log(`tempo ${((Date.now() - t0) / 1000).toFixed(1)}s`);
   let bad = 0;
   for (const e of out) {
@@ -48,6 +47,7 @@ run(async () => {
     if (e.err) bad += 1;
     console.log(`${String(e.key).padEnd(18)} st=${e.stage} ${String(e.elem).padEnd(9)} ${flag.padEnd(3)} alive=${e.alive} hp=${e.hp} drops=${e.drops} proj=${e.projs} ${e.err || ''}`);
   }
+  await pg.waitForTimeout(300);   // a página fica ocupada num laço longo: deixa chegar eventos de erro ainda na fila antes do veredito
   console.log('problemas:', bad, '| erros de página:', errs.slice(0, 5));
   await pg.screenshot({ path: devfile('shot_enemies_end.png') });
   await b.close();

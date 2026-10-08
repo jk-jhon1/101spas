@@ -86,10 +86,12 @@ function padMenu(hit, L, dt, act, root) {
     if (hit(12)) mv = -1; else if (hit(13)) mv = 1;
     else if (Math.abs(L.y * L.m) > .55) { if (PAD.navT <= 0) { mv = L.y > 0 ? 1 : -1; PAD.navT = .24; } } else PAD.navT = 0;
     if (mv) { i = (i + mv + btns.length) % btns.length; sfx('tick'); }
-    PAD.focusEl = btns[i];
+    PAD.focusEl = btns[i]; if (mv && PAD.focusEl.scrollIntoView) PAD.focusEl.scrollIntoView({ block: 'nearest' });
     if (hit(0)) btns[i].click();
   }
-  for (const b of all) b.classList.toggle('padfocus', b === PAD.focusEl);
+  // um único anel de foco na página inteira: ao trocar de tela (título -> Meus Mundos) o anel antigo não pode ficar aceso por trás
+  document.querySelectorAll('.padfocus').forEach(b => { if (b !== PAD.focusEl) b.classList.remove('padfocus'); });
+  if (PAD.focusEl) PAD.focusEl.classList.add('padfocus');
 }
 
 // ---------- painéis (inventário, criação, catálogo, NPC, mapa) ----------
@@ -177,7 +179,11 @@ function padUpdate(dt) {
   if (PAD.ring && G.state === 'play' && !G.paused && !G.ui.open && $('help').classList.contains('hidden')) padClearRing();   // anel de foco só existe nos menus
   try {
     if (!$('help').classList.contains('hidden')) { padRelease(); if (any) PAD.swallow = true; if (hit(0) || hit(1) || hit(9)) showHelp(false); }
-    else if (G.state === 'title') { padRelease(); padMenu(hit, L, dt, act, $('menu')); }
+    else if (G.state === 'title') {   // título ou tela "Meus Mundos" (B volta, Y exclui o mundo em foco — pede confirmação apertando de novo)
+      padRelease(); const wv = !$('worlds').classList.contains('hidden');
+      padMenu(hit, L, dt, act, wv ? $('worlds') : $('menu'));
+      if (wv) { if (hit(1) || hit(9)) openWorlds(false); else if (hit(3) && PAD.focusEl) { const c = PAD.focusEl.closest('.wcard'), d = c && c.querySelector('[data-act="del"]'); if (d) d.click(); } }
+    }
     else if (G.state !== 'play') padRelease();
     else if (G.paused) { padRelease(); if (any) PAD.swallow = true; padMenu(hit, L, dt, act, $('pause')); if (hit(1) || hit(9)) setPause(false); }
     else if (G.ui.open) padPanel(hit, L, R, dt, any);

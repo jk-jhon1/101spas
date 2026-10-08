@@ -217,19 +217,28 @@ function renderArsenal() {
     row('Ações', [['Curar tudo', () => { P.hp = P.maxHp; }], ['Remover inimigos', () => { G.enemies.length = 0; G.projs = G.projs.filter(p => p.friendly); G.boss = null; }], ['+500 moedas', () => arsGive('coin', 500)], ['+4 Cristais de Vida', () => { P.crystals = Math.min(15, P.crystals + 4); recalcStats(); P.hp = P.maxHp; }]]);
     row('Progressão do mundo (estágio dos inimigos)', [['Estágio 0 · Início', () => { G.stage = 0; }, G.stage === 0], ['Estágio 1 · Pós-Olho', () => { G.stage = 1; G.flags.eye = true; }, G.stage === 1], ['Estágio 2 · Hardmode', () => { if (!G.world.hardmode) spawnHardmodeOres(G.world); G.stage = 2; G.flags.eye = G.flags.guardian = true; toast('Hardmode ativado: minérios T3/T4 gerados.', '#fb923c'); }, G.stage === 2], ['Estágio 3 · Pós-Colosso', () => { if (!G.world.hardmode) spawnHardmodeOres(G.world); G.stage = 3; G.flags.guardian = true; }, G.stage === 3]]);
     const tp = (x, y) => () => { P.x = x * TS; P.y = (y - 3) * TS; P.vx = P.vy = 0; P.fallStart = 0; closePanels(); }; const sf = x => G.world.surf[x];
-    row('Teletransporte', [['Spawn', () => { P.x = G.world.spawn.x; P.y = G.world.spawn.y; P.vy = 0; closePanels(); }], ['Deserto', () => tp(240, sf(240))()], ['Selva', () => tp(900, sf(900))()], ['Neve', () => tp(1150, sf(1150))()], ['Oceano', () => tp(40, 124)()], ['Ilha do céu', () => { const x = 90 + Math.round(5 * (WW - 180) / 10); tp(x, 40)(); }], ['Cavernas', () => { const x = 600; for (let y = 200; y < 400; y++) if (!G.world.solid(x, y) && G.world.solid(x, y + 1) && !G.world.solid(x, y - 1) && !G.world.solid(x, y - 2)) { tp(x, y + 3)(); break; } }], ['Inferno', () => { const x = 700; for (let y = 425; y < 470; y++) if (!G.world.solid(x, y) && G.world.solid(x, y + 1) && G.world.liqAt(x, y) === 0) { tp(x, y + 3)(); break; } }]]);
+    // os biomas mudam de lugar em cada mundo: os botões levam ao bioma de verdade (maior faixa de cada um), e só aparecem se ele existir
+    const sp = G.world.biomeSpots(), toBio = k => () => { const s = sp[k]; tp(s.x, sf(s.x))(); };
+    const toIsland = () => { const wd = G.world, mid = wd.w >> 1; for (let d = 0; d < mid; d++) for (const x of [mid - d, mid + d]) for (let y = 28; y < 76; y++) if (wd.get(x, y) === T.grass && wd.get(x, y - 1) === 0 && wd.get(x, y - 2) === 0) { tp(x, y)(); return; } };
+    const tpBtns = [['Spawn', () => { P.x = G.world.spawn.x; P.y = G.world.spawn.y; P.vy = 0; closePanels(); }]];
+    for (const [k, n] of [['forest', 'Floresta'], ['desert', 'Deserto'], ['jungle', 'Selva'], ['snow', 'Neve']]) if (sp[k]) tpBtns.push([n, toBio(k)]);
+    if (sp.ocean) tpBtns.push(['Oceano', () => tp(sp.ocean.x, 124)()]);
+    tpBtns.push(['Ilha do céu', toIsland], ['Cavernas', () => { const x = 600; for (let y = 200; y < 400; y++) if (!G.world.solid(x, y) && G.world.solid(x, y + 1) && !G.world.solid(x, y - 1) && !G.world.solid(x, y - 2)) { tp(x, y + 3)(); break; } }],
+      ['Inferno', () => { const x = 700; for (let y = 425; y < 470; y++) if (!G.world.solid(x, y) && G.world.solid(x, y + 1) && G.world.liqAt(x, y) === 0) { tp(x, y + 3)(); break; } }]);
+    row('Teletransporte', tpBtns);
     const info = document.createElement('div'); info.style.cssText = 'margin-top:12px;font-size:12px;color:var(--mut)'; info.textContent = 'Dica: use o Boneco de Treino (aba Inimigos) com "Mostrar DPS" ligado para comparar as espadas.'; body.appendChild(info);
   }
 }
 // ---------- mapa ----------
-function paintMapPixel(x, y) {
-  const wd = G.world, i = x + y * wd.w, g = G.mapCtx; if (!g) return; const id = wd.t[i], q = wd.lq[i];
-  let c;
-  if (q > 40) c = wd.lt[i] === LIQ_LAVA ? '#ff6a1a' : '#2f6fe0';
-  else if (id) { const d = TD[id]; c = d.x === 'ore' ? d.ore : d.s ? (d.cap && !SOLID[wd.get(x, y - 1)] ? d.cap[0] : d.c[0]) : (d.tree ? d.c[0] : d.c[2] || d.c[0]); }
-  else if (wd.wl[i]) c = '#2b2a33'; else c = y > wd.surf[x] + 10 ? '#1b1a22' : '#6aa8ec';
-  g.fillStyle = c; g.fillRect(x, y, 1, 1);
+// cor de um pixel do mapa (tile, líquido, parede ou céu) — também usada nas miniaturas dos mundos salvos
+function mapColor(wd, x, y) {
+  const i = x + y * wd.w, id = wd.t[i], q = wd.lq[i];
+  if (q > 40) return wd.lt[i] === LIQ_LAVA ? '#ff6a1a' : '#2f6fe0';
+  if (id) { const d = TD[id]; return d.x === 'ore' ? d.ore : d.s ? (d.cap && !SOLID[wd.get(x, y - 1)] ? d.cap[0] : d.c[0]) : (d.tree ? d.c[0] : d.c[2] || d.c[0]); }
+  if (wd.wl[i]) return '#2b2a33';
+  return y > wd.surf[x] + 10 ? '#1b1a22' : '#6aa8ec';
 }
+function paintMapPixel(x, y) { const g = G.mapCtx; if (!g) return; g.fillStyle = mapColor(G.world, x, y); g.fillRect(x, y, 1, 1); }
 function drawMinimap() {
   const cv = $('mini'), g = cv.getContext('2d'), P = G.P; g.fillStyle = '#05080f'; g.fillRect(0, 0, 180, 110); if (!G.mapC) return;
   const px = Math.floor(pcx(P) / TS), py = Math.floor(pcy(P) / TS), sx = clamp(px - 90, 0, G.world.w - 180), sy = clamp(py - 55, 0, G.world.h - 110);
@@ -251,7 +260,7 @@ function helpHTML() {
 <tr><td>Botão esquerdo (segurar)</td><td>Atacar (arco em direção ao cursor) · minerar · colocar bloco · usar item</td></tr><tr><td>Botão direito</td><td>Abrir baú · abrir/fechar porta · falar com NPC</td></tr>
 <tr><td><kbd>1</kbd>–<kbd>0</kbd> / roda do mouse</td><td>Selecionar item da barra</td></tr><tr><td><kbd>E</kbd> / <kbd>Tab</kbd></td><td>Inventário + criação (fique perto de Bancada, Fornalha, Bigorna...)</td></tr>
 <tr><td><kbd>B</kbd></td><td>Arsenal (criativo) · Catálogo das 120 espadas (aventura)</td></tr><tr><td><kbd>M</kbd></td><td>Mapa do mundo</td></tr><tr><td><kbd>Q</kbd></td><td>Poção de cura rápida</td></tr>
-<tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoom</td></tr><tr><td><kbd>F3</kbd></td><td>Informações de depuração</td></tr><tr><td><kbd>Esc</kbd></td><td>Fechar painéis / pausar</td></tr></table>
+<tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoom</td></tr><tr><td><kbd>F3</kbd></td><td>Informações de depuração</td></tr><tr><td><kbd>Esc</kbd></td><td>Fechar painéis / pausar · no menu de pausa: <b>Salvar mundo</b> ou <b>Salvar e voltar ao menu</b> (o jogo também salva sozinho a cada minuto; seus mundos ficam em <b>Meus Mundos</b>)</td></tr></table>
 <h2 style="margin-top:16px">Controle (gamepad)</h2><table>
 <tr><td>Analógico esq. / <kbd>◀</kbd> <kbd>▶</kbd></td><td>Mover</td></tr><tr><td><kbd>A</kbd></td><td>Pular · nadar para cima</td></tr>
 <tr><td>Analógico dir.</td><td>Mira analógica: o arco da espada aponta para onde o analógico aponta; a inclinação define a distância (ferramentas ficam no alcance)</td></tr>

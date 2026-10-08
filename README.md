@@ -41,7 +41,7 @@ Catálogo completo (com receitas): [`docs/catalogo_120_espadas.md`](docs/catalog
 | ![Biomas e camadas](docs/img/03_biomas_e_camadas.png) | ![Arco de ataque](docs/img/04_arco_de_ataque.png) |
 | ![Efeitos Tier 4](docs/img/05_efeitos_tier4.png) | ![Efeitos Tier 5 e 6](docs/img/06_efeitos_tier5_6.png) |
 | ![Interface](docs/img/07_interface.png) | ![Tiles](docs/img/08_tiles.png) |
-| ![Controle (gamepad): menu, mira analógica, cursor virtual](docs/img/09_controle.png) | |
+| ![Controle (gamepad): menu, mira analógica, cursor virtual](docs/img/09_controle.png) | ![Meus Mundos: vários mundos salvos, cada um com os biomas numa ordem diferente](docs/img/10_meus_mundos.png) |
 
 ---
 
@@ -57,6 +57,16 @@ Catálogo completo (com receitas): [`docs/catalogo_120_espadas.md`](docs/catalog
 | `E` / `Tab` | Inventário + criação (fique perto de Bancada, Fornalha, Bigorna…) |
 | `B` | **Arsenal** (modo Criativo) · **Catálogo das 120 espadas** (modo Aventura) |
 | `M` | Mapa do mundo · `Q` poção de cura · `+` `-` zoom · `F3` debug · `Esc` pausar/fechar |
+
+### Mundos: criar, salvar e continuar
+
+- **Sem campo de semente.** *Nova Aventura* e *Modo Criativo* criam um mundo **novo e único**: a semente é sorteada na hora (`crypto.getRandomValues`) e **nunca se repete** — o jogo guarda todas as sementes já usadas, inclusive as de mundos que você excluiu.
+- **Nenhum mundo parece o outro.** Cada mundo sorteia a **ordem e a largura dos biomas** (deserto, floresta, selva e neve: 24 ordens possíveis), o tamanho dos oceanos das bordas, o ponto de partida (sempre dentro da floresta, para haver árvores logo no começo) e o estilo do relevo (montanhosidade de cada bioma, dunas, cavernas, lagos e ilhas flutuantes). Ao criar um mundo, o jogo escolhe entre 32 candidatos o de mapa de biomas **menos parecido** com os que você já tem — e, enquanto existir uma ordem de biomas inédita, usa uma: **os 24 primeiros mundos têm 24 ordens diferentes**.
+- **Vários mundos salvos.** *Meus Mundos* lista cada mundo com a miniatura do mapa, nome, modo, dia/estágio/chefes, ordem dos biomas e tempo de jogo; *Continuar*, no topo do menu, abre o último. Dá para **renomear** e **excluir** (o 1º clique pede confirmação). Cada mundo recebe um nome automático (ex.: "Aurora do Aço"), único na sua lista.
+- **Salvamento automático**: a cada minuto, logo depois de criar o mundo, ao esconder a aba e em *Salvar e voltar ao menu*; *Salvar mundo*, no menu de pausa, salva na hora. A "foto" do jogo leva ~4 ms (sem engasgo) e a gravação segue em segundo plano.
+- **Onde fica**: no IndexedDB do navegador (banco `espadas120`, ~150 KB por mundo), então cabem centenas de mundos. Os mundos ficam **no navegador de quem joga** (por endereço): em outro navegador, aparelho ou endereço a lista começa vazia. Sem IndexedDB (ex.: `<iframe sandbox>`), os mundos duram só enquanto a página estiver aberta, com aviso na tela. Se o espaço acabar, o jogo avisa — nada é perdido em silêncio.
+- **Save antigo**: quem tinha o save de um slot só (formato antigo, em `localStorage`) tem o mundo importado automaticamente para *Meus Mundos*, uma única vez.
+- Nos testes, `window.__nextSeed = N` força a semente do próximo mundo criado pelos botões; a interface não oferece como escolher semente.
 
 ### Jogar online / publicar
 
@@ -108,7 +118,7 @@ casas válidas (sala fechada com paredes de fundo, luz, mesa/bancada, cadeira e 
 | Seção do GDD | Onde / como foi feito |
 |---|---|
 | Grid de tiles **16×16**, blocos destrutíveis/colocáveis | `TS = 16`; camadas `Uint8Array` de tile/parede/líquido (`02_world.js`, `12_player.js`) |
-| Mundo procedural **assíncrono** | `genWorld()` é um *generator* (`03_worldgen.js`) consumido em fatias de ~14 ms por frame, com barra de progresso. 1400×480 tiles (~0,8 s); biomas horizontais (oceano/deserto/floresta/selva/neve) + camadas verticais (céu, superfície, cavernas, profundas, Inferno) |
+| Mundo procedural **assíncrono** | `genWorld()` é um *generator* (`03_worldgen.js`) consumido em fatias de ~14 ms por frame, com barra de progresso. 1400×480 tiles (~0,8 s); biomas horizontais (oceano/deserto/floresta/selva/neve) **em ordem e largura sorteadas por mundo** (`makeLayout`) + camadas verticais (céu, superfície, cavernas, profundas, Inferno) |
 | **Iluminação dinâmica** por propagação de opacidade | `04_light.js`: luz RGB por célula, decaimento pela opacidade do tile de origem, 2×4 varreduras, fontes dinâmicas (projéteis, tochas, lava), ciclo dia/noite. Composição multiplicativa preservando o céu (`16_main.js`) |
 | **Simulação de fluidos / gravidade** | Autômato celular de água e lava (lava+água = obsidiana), areia com gravidade, plantas e objetos sem apoio quebram (`02_world.js`) |
 | Pilares: biomas verticais · minérios progressivos · crafting encadeado · abrigo/NPCs · combate rápido com curva de poder | Camadas do mundo; picaretas de poder 1–9 × dureza dos minérios; 5 estações; `15b_npc.js`; DPS base médio por tier: **17 → 37 → 62 → 88 → 156 → 245** |
@@ -155,8 +165,10 @@ src/
   12_player.js          jogador, inventário, crafting, mineração, blocos
   13_enemies.js         inimigos, IA, spawn, drops · 13b_bosses.js: 4 chefes
   14_draw_enemies.js    sprites de inimigos e chefes
-  15_ui.js / 15b_npc.js / 15c_save.js   HUD, inventário, arsenal, NPCs, salvar/carregar
+  15_ui.js / 15b_npc.js   HUD, inventário, arsenal, NPCs
+  15c_save.js           biblioteca de mundos: IndexedDB, autosave, miniaturas, migração do save antigo
   15d_gamepad.js        suporte a controle: mira analógica, menus, cursor virtual nos painéis
+  15e_worlds.js         tela "Meus Mundos", menu do título, criar / abrir / sair
   16_main.js            loop, câmera, renderização em camadas, input
 docs/                 catálogo das 120 espadas (md/csv) e capturas de tela (img/)
 dev/                  scripts de teste (Node + Playwright)
@@ -181,17 +193,19 @@ Os dados (tiles, itens, receitas, 120 espadas) estão em tabelas simples, fácei
 ---
 
 ## Testes realizados (automatizados, Chromium headless)
-> **Como rodar:** `node dev/validate.js` (catálogo; também regenera `docs/catalogo_*`), `node dev/reach.js` e `node dev/seeds.js` precisam só do Node (`npm test` roda os três). Os testes de navegador usam Playwright: `npm install && npx playwright install chromium`, depois `node dev/test_swords.js` etc. (`npm run test:browser` roda os cinco com veredito: controle, arsenal, inimigos, soak e espadas). `node dev/http_check.js [url]` confere uma URL do jogo (local ou publicada) de ponta a ponta: carrega, salva, recarrega e continua. Os scripts localizam o `index.html` pelo próprio caminho e dividem utilitários em `dev/lib.js`; capturas temporárias vão para `dev/*.png` (ignoradas pelo git). Depois de editar `src/`, recompile com `node build.js`.
+> **Como rodar:** `node dev/validate.js` (catálogo; também regenera `docs/catalogo_*`), `node dev/reach.js`, `node dev/seeds.js` e `node dev/layouts.js` (variedade dos mundos) precisam só do Node (`npm test` roda os quatro). Os testes de navegador usam Playwright: `npm install && npx playwright install chromium`, depois `node dev/test_swords.js` etc. (`npm run test:browser` roda os seis com veredito: mundos salvos, controle, arsenal, inimigos, soak e espadas). `node dev/http_check.js [url]` confere uma URL do jogo (local ou publicada) de ponta a ponta: carrega, salva, recarrega e continua. Os scripts localizam o `index.html` pelo próprio caminho e dividem utilitários em `dev/lib.js`; capturas temporárias vão para `dev/*.png` (ignoradas pelo git). Depois de editar `src/`, recompile com `node build.js`.
 
 - **Catálogo**: 120 espadas, 20 por tier, faixas de dano por tier, receitas válidas (`node dev/validate.js`).
 - **Progressão**: todo item é obtível e as 120 espadas são craftáveis a partir de fontes reais do mundo (`node dev/reach.js`); gerador testado em 8 sementes (`node dev/seeds.js`).
+- **Variedade dos mundos** (`dev/layouts.js`): 20.000 layouts (as 24 ordens de bioma equilibradas, oceanos de 90 a 220 colunas, spawn sempre na floresta, larguras mínimas), o sorteio de sementes (nunca repete; os 24 primeiros mundos têm 24 ordens diferentes) e 14 mundos completos comparados entre si — biomas, relevo, terreno bloco a bloco — mais o determinismo (mesma semente = mesmo mundo).
+- **Mundos salvos** (`dev/test_worlds.js`, 60 verificações): 6 mundos criados pelos botões (sementes, nomes, ordens de bioma e miniaturas diferentes), reabrir depois de recarregar a página, **fidelidade do save bloco a bloco** (blocos, paredes, líquidos, baús, inventário, chefes, Hardmode…), autosave, renomear/excluir, teletransporte do Arsenal para o bioma certo, semente excluída que nunca volta, migração do save antigo (inclusive sem IndexedDB: o save antigo nunca é apagado se o mundo não puder ser gravado de verdade), ambiente sem IndexedDB, cota estourada e mundo corrompido.
 - **120 espadas em combate** (`dev/test_swords.js`): cada uma ataca bonecos/inimigos por ~4,5 s — sem exceções, todas causam dano, status esperados observados (sangramento, veneno, gelo, atordoamento, tempo parado, podridão, pânico, cegueira…).
 - **Todos os inimigos, variantes elementais e os 4 chefes** (`dev/test_enemies.js`) e **~45.000 passos** de simulação com spawn natural em 14 cenários, todas as camadas e estágios (`dev/soak.js`): zero erros.
 - Entrada real de teclado/mouse, crafting pela interface, NPC/moradia, salvar/carregar, fluidos/areia, capturas de tela de biomas e de efeitos.
-- **Controle** (`dev/test_gamepad.js`, gamepad simulado, 70 verificações): menus, andar/pular, ângulo real do arco para ↑ → ← ↖ ↘, distância pela inclinação, acerto de inimigo só na direção da mira, minerar/colocar bloco, interagir, cursor virtual (hover, clique, craft, comprar do NPC), pausa/guia, volta do mouse e API bloqueada.
+- **Controle** (`dev/test_gamepad.js`, gamepad simulado, 80 verificações): menus, andar/pular, ângulo real do arco para ↑ → ← ↖ ↘, distância pela inclinação, acerto de inimigo só na direção da mira, minerar/colocar bloco, interagir, mundos salvos (Continuar, Meus Mundos, Jogar, Y exclui), cursor virtual (hover, clique, craft, comprar do NPC), pausa/guia, volta do mouse e API bloqueada.
 
 ## Limitações conhecidas
 - Sem música (apenas efeitos sonoros sintetizados); sem multiplayer. O suporte a controle foi validado com gamepad simulado (não com hardware real); o som só liga após o primeiro clique/tecla/botão, regra dos navegadores.
-- Mundo de tamanho fixo (1400×480). Um único slot de save em `localStorage` (não funciona dentro de iframes *sandbox*; abra o HTML direto no navegador).
+- Mundo de tamanho fixo (1400×480). Os mundos salvos ficam no IndexedDB do navegador (não funciona dentro de iframes *sandbox*: lá duram só a sessão; abra o HTML direto no navegador ou por http) e não são sincronizados entre aparelhos.
 - Balanceamento de chefes/drops validado por simulação, mas não por playtest humano extenso — ajuste os números em `13_enemies.js` / `11_swords.js` se quiser.
 - As 40 espadas ★ são interpretações minhas do GDD; trocar pelas originais é simples (ver acima).

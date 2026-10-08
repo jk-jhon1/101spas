@@ -1,5 +1,5 @@
 'use strict';
-const { launch, INDEX_URL, run, waitPlay } = require('./lib');
+const { launch, INDEX_URL, run, waitPlay, startWorld } = require('./lib');
 
 run(async () => {
   const b = await launch();
@@ -8,8 +8,7 @@ run(async () => {
   pg.on('console', (m) => logs.push(m.text()));
   pg.on('pageerror', (e) => logs.push('ERR ' + e.message));
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '12345'); await pg.click('#btn-cre');
-  await waitPlay(pg);
+  await startWorld(pg, 12345, 'btn-cre');
   await pg.waitForTimeout(800);
   const r = await pg.evaluate(() => {
           const L = G.light, wd = G.world; const out = {};

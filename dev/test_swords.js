@@ -1,7 +1,7 @@
 'use strict';
 // As 120 espadas em combate: cada uma ataca bonecos/inimigos por ~4,5 s. Sem exceções, todas causam dano.
 //   node dev/test_swords.js        (só as que têm problema)      node dev/test_swords.js -v      (todas)
-const { launch, INDEX_URL, devfile, run, waitPlay } = require('./lib');
+const { launch, INDEX_URL, devfile, run, waitPlay, startWorld } = require('./lib');
 
 const JS = () => {
   const res = [], P = G.P; G.opts.god = true; G.opts.showDps = true; G.opts.noSpawn = true;
@@ -36,8 +36,7 @@ run(async () => {
   pg.on('console', (m) => logs.push(m.type() + ': ' + m.text().slice(0, 200)));
   pg.on('pageerror', (e) => logs.push('PAGEERROR ' + e.message.slice(0, 300)));
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '777'); await pg.click('#btn-cre');
-  await waitPlay(pg);
+  await startWorld(pg, 777, 'btn-cre');
   await pg.waitForTimeout(500);
   const t0 = Date.now();
   const out = await pg.evaluate(JS);
@@ -51,6 +50,7 @@ run(async () => {
   }
   console.log('espadas testadas:', out.res.length, '| problemas:', bad.length);
   console.log('console.error capturados:', out.errs);
+  await pg.waitForTimeout(300);   // a página fica ocupada num laço longo: deixa chegar eventos de erro ainda na fila antes do veredito
   console.log('page logs:', logs.filter((l) => l.toLowerCase().includes('error')).slice(0, 10));
   await pg.screenshot({ path: devfile('shot_swords_end.png') });
   await b.close();

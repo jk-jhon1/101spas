@@ -8,6 +8,23 @@ const SKY_SCAN_Y = 78;   // exposição ao céu é medida só abaixo da faixa da
 const SOLID = new Uint8Array(256), FALLS = new Uint8Array(256), OPAC = new Float32Array(256);
 for (const d of TD) { SOLID[d.id] = d.s ? 1 : 0; FALLS[d.id] = d.fall ? 1 : 0; OPAC[d.id] = d.o; }
 const LIQ_WATER = 1, LIQ_LAVA = 2;
+const BIO_NAMES = ['ocean', 'desert', 'forest', 'jungle', 'snow'];   // índice de bio[] -> nome
+
+// Faixas contínuas de bioma, da esquerda para a direita: [{b, x0, x1}]. Trechos curtos (< minW colunas, ex.: o "tremor" da
+// divisa) são absorvidos e faixas vizinhas do mesmo bioma são fundidas. Serve para teletransporte, miniaturas e nomes de layout.
+function biomeRunsOf(bio, minW = 40) {
+  const raw = []; let s = 0;
+  for (let x = 1; x <= bio.length; x++) if (x === bio.length || bio[x] !== bio[s]) { raw.push({ b: bio[s], x0: s, x1: x - 1 }); s = x; }
+  const out = [];
+  for (const r of raw) {
+    if (r.x1 - r.x0 + 1 < minW) { if (out.length) out[out.length - 1].x1 = r.x1; continue; }
+    if (out.length && out[out.length - 1].b === r.b) out[out.length - 1].x1 = r.x1; else out.push({ b: r.b, x0: r.x0, x1: r.x1 });
+  }
+  if (out.length && out[0].x0 > 0) out[0].x0 = 0;
+  return out;
+}
+// "neve-floresta-selva-deserto": a ordem dos biomas de terra (sem os oceanos das bordas)
+const biomeKeyOf = bio => biomeRunsOf(bio).filter(r => r.b !== 0).map(r => BIO_NAMES[r.b]).join('-');
 
 class World {
   constructor(w = WW, h = WH, seed = 1) {
@@ -25,6 +42,7 @@ class World {
     this.liqAct = new Set(); this.sandAct = new Set();
     this.spawn = { x: 0, y: 0 };
     this.hardmode = false;
+    this.layout = null;                // layout dos biomas sorteado para este mundo (ver makeLayout)
     this.onBreak = null;               // callback(x,y,tileId) para drops de objetos soltos
     this.onTile = null;                // callback(x,y) quando um tile muda (mapa)
     this.chunkAct = new Uint8Array(Math.ceil(w / CHUNK) * Math.ceil(h / CHUNK));
@@ -36,7 +54,15 @@ class World {
   wallAt(x, y) { return (x < 0 || x >= this.w || y < 0 || y >= this.h) ? 0 : this.wl[x + y * this.w]; }
   liqAt(x, y) { return (x < 0 || x >= this.w || y < 0 || y >= this.h) ? 0 : this.lq[x + y * this.w]; }
   liqType(x, y) { return (x < 0 || x >= this.w || y < 0 || y >= this.h) ? 0 : this.lt[x + y * this.w]; }
-  biomeName(x) { return ['ocean', 'desert', 'forest', 'jungle', 'snow'][this.bio[clamp(x | 0, 0, this.w - 1)]]; }
+  biomeName(x) { return BIO_NAMES[this.bio[clamp(x | 0, 0, this.w - 1)]]; }
+  biomeRuns() { return biomeRunsOf(this.bio); }
+  layoutKey() { return biomeKeyOf(this.bio); }
+  // onde fica cada bioma: { desert: {x (centro), w, x0, x1}, ... } — usa a maior faixa de cada um (vale também para saves antigos)
+  biomeSpots() {
+    const out = {};
+    for (const r of this.biomeRuns()) { const k = BIO_NAMES[r.b], wd = r.x1 - r.x0 + 1; if (!out[k] || wd > out[k].w) out[k] = { x: (r.x0 + r.x1) >> 1, w: wd, x0: r.x0, x1: r.x1 }; }
+    return out;
+  }
   layerAt(x, y) {
     if (y < Y_SKY) return 'sky';
     if (y >= Y_HELL) return 'hell';

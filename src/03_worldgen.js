@@ -2,10 +2,77 @@
    03_worldgen: geração procedural (assíncrona, em fatias/chunks)
    Cada "yield" devolve [progresso 0..1, mensagem] para o loader.
    ============================================================ */
-const SPAWN_X = 575;
-const BIO_LO = [-9999, 125, 370, 790, 1020, 1280], BIO_HI = [125, 370, 790, 1020, 1280, 9999];
-const BIO_OF_RANGE = [0, 1, 2, 3, 4, 0]; // oceano, deserto, floresta, selva, neve, oceano
 const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+
+// ---------- layout do mundo ----------
+// O que mais diferencia um mundo do outro: a ORDEM e a LARGURA dos 4 biomas de terra (24 ordens x larguras contínuas), o tamanho
+// de cada oceano das bordas, o ponto de partida (sempre dentro da floresta, para haver árvores no começo) e o "estilo" do relevo
+// (montanhosidade própria de cada bioma, dunas, cavernas, lagos, ilhas). Função pura: só usa o RNG da semente.
+function makeLayout(seed) {
+  const R = mulberry32((seed ^ 0x51ed270b) >>> 0);
+  const land = [1, 2, 3, 4];                                   // deserto, floresta, selva, neve
+  for (let i = land.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)), t = land[i]; land[i] = land[j]; land[j] = t; }
+  const land0 = 90 + Math.floor(R() * 131), land1 = WW - (90 + Math.floor(R() * 131));    // oceanos de 90 a 220 colunas em cada borda
+  const TOTAL = land1 - land0, MIN = 150;
+  const wF = 260 + Math.floor(R() * 231);                      // floresta (bioma inicial): 260 a 490 colunas
+  const wts = [.25 + R() * 1.5, .25 + R() * 1.5, .25 + R() * 1.5], sw = wts[0] + wts[1] + wts[2];
+  const free = TOTAL - wF - 3 * MIN;                           // sobra a repartir entre as outras 3 faixas
+  const widths = []; let k = 0, used = 0;
+  for (let i = 0; i < 4; i++) {
+    const w = land[i] === 2 ? wF : MIN + Math.floor(free * wts[k++] / sw);
+    widths.push(w); used += w;
+  }
+  widths[3] += TOTAL - used;                                   // ajuste de arredondamento: a soma é sempre TOTAL
+  const lo = [-9999], hi = [land0], kind = [0]; let x = land0, fLo = 0, fHi = 0;
+  for (let i = 0; i < 4; i++) {
+    lo.push(x); hi.push(x + widths[i]); kind.push(land[i]);
+    if (land[i] === 2) { fLo = x; fHi = x + widths[i]; }
+    x += widths[i];
+  }
+  lo.push(land1); hi.push(9999); kind.push(0);
+  const half = Math.max(0, (fHi - fLo) / 2 - 110);             // o spawn fica longe das bordas da floresta (relevo plano de ±40 + árvores)
+  const spawnX = Math.round((fLo + fHi) / 2 + (R() * 2 - 1) * half);
+  const style = {
+    hillF: .65 + R() * .85, hillJ: .65 + R() * .85, hillS: .65 + R() * .85,   // montanhosidade da floresta / selva / neve (0.65 a 1.5)
+    dune: .6 + R() * 1.8,                                      // altura das dunas do deserto
+    cave: .85 + R() * .4,                                      // densidade de cavernas
+    lakes: 9 + Math.floor(R() * 10),                           // lagos de superfície
+    islands: 8 + Math.floor(R() * 6),                          // ilhas flutuantes
+  };
+  return { lo, hi, kind, order: land, widths, land0, land1, spawnX, style, key: land.map(b => BIO_NAMES[b]).join('-') };
+}
+// Faixas de bioma de um layout no mesmo formato de biomeRunsOf: [{b, x0, x1}] (oceano, 4 biomas, oceano)
+function layoutRuns(L) { return L.kind.map((b, i) => ({ b, x0: Math.max(0, L.lo[i]), x1: Math.min(WW, L.hi[i]) - 1 })); }
+// Parecença entre dois mapas de bioma (0..1): fração das colunas em que o bioma é o mesmo
+function runsSimilarity(A, B, w = WW) {
+  const col = r => { const c = new Uint8Array(w); for (const q of r) c.fill(q.b, q.x0, q.x1 + 1); return c; };
+  const a = col(A), b = col(B); let same = 0; for (let x = 0; x < w; x++) if (a[x] === b[x]) same++;
+  return same / w;
+}
+// Sorteia a semente de um mundo NOVO. Garantias: (1) nunca uma semente já usada (nem de mundo excluído); (2) enquanto houver ordem de
+// biomas ainda não usada pelos mundos existentes (as primeiras 24), usa uma inédita; (3) entre 32 candidatos válidos fica com o de mapa
+// de biomas MENOS parecido com o de todos os mundos que já existem. rand32() devolve um inteiro de 32 bits.
+//   existing: [{ key, runs }]  (key = ordem dos biomas, runs = faixas de bioma como em biomeRunsOf)
+function chooseSeed(rand32, usedSeeds, existing) {
+  const keys = new Set(existing.map(e => e.key)), needNewOrder = keys.size < 24;
+  let best = null, valid = 0;
+  for (let tries = 1; tries <= 6000 && (valid < 32 || !best); tries++) {
+    const seed = rand32() >>> 0;
+    if (!seed || usedSeeds.has(seed)) continue;
+    const L = makeLayout(seed);
+    if (needNewOrder && keys.has(L.key)) continue;
+    valid++;
+    const mine = layoutRuns(L); let worst = 0;
+    for (const e of existing) if (e.runs) { const s = runsSimilarity(mine, e.runs); if (s > worst) worst = s; }
+    if (!best || worst < best.worst) best = { seed, worst, key: L.key, tries };
+  }
+  if (!best) {   // inalcançável na prática (6000 sorteios sem semente utilizável): garante uma semente livre sem travar, mesmo com rand32 quebrado
+    let seed = 0; for (let i = 0; i < 1000 && (!seed || usedSeeds.has(seed)); i++) seed = rand32() >>> 0;
+    while (!seed || usedSeeds.has(seed)) seed = (seed + 0x9e3779b1) >>> 0;
+    best = { seed, worst: 1, key: makeLayout(seed).key, tries: 7000 };
+  }
+  return best;
+}
 
 function lootForDepth(y, rr) {
   const out = [];
@@ -29,6 +96,7 @@ const rri = (rr, a, b) => Math.floor(a + rr() * (b - a + 1));
 function* genWorld(wd, seedNum) {
   const W = wd.w, H = wd.h, t = wd.t, wl = wd.wl;
   const R = mulberry32(seedNum), rr = (a, b) => a + R() * (b - a), ri = (a, b) => Math.floor(a + R() * (b - a + 1));
+  const L = makeLayout(seedNum), SPX = L.spawnX; wd.layout = L;
   const pH = new Perlin(seedNum ^ 0x1111), pA = new Perlin(seedNum ^ 0x2222), pB = new Perlin(seedNum ^ 0x3333),
     pC = new Perlin(seedNum ^ 0x4444), pD = new Perlin(seedNum ^ 0x5555), pE = new Perlin(seedNum ^ 0x6666);
   const surf = wd.surf, bio = wd.bio;
@@ -39,34 +107,34 @@ function* genWorld(wd, seedNum) {
   yield [0.01, 'Moldando biomas e relevo...'];
   const lakeWater = new Int16Array(W).fill(-1);
   const jit = x => pE.n2(x * 0.02, 3.1) * 14;
-  const rawH = [
-    u => lerp(124, 172, sstep(125, 45, u)),
-    u => 121 + pH.n2(u * .016, 5.2) * 5 + pH.n2(u * .05, 9.1) * 2,
-    u => 117 + pH.fbm(u * .0075, .3, 3) * 36 + pH.n2(u * .045, 1.1) * 3.5,
-    u => 116 + pH.fbm(u * .01, 8.8, 3) * 38 + pH.n2(u * .06, 2.2) * 4,
-    u => 112 + pH.fbm(u * .008, 4.4, 3) * 42 + pH.n2(u * .05, 6.6) * 3,
-    u => lerp(124, 172, sstep(1280, 1360, u)),
-  ];
+  const LS = L.style;
+  const landH = [null,
+    u => 121 + (pH.n2(u * .016, 5.2) * 5 + pH.n2(u * .05, 9.1) * 2) * LS.dune,                 // 1 deserto: dunas (altura sorteada)
+    u => 117 + pH.fbm(u * .0075, .3, 3) * 36 * LS.hillF + pH.n2(u * .045, 1.1) * 3.5,             // 2 floresta
+    u => 116 + pH.fbm(u * .01, 8.8, 3) * 38 * LS.hillJ + pH.n2(u * .06, 2.2) * 4,                 // 3 selva
+    u => 112 + pH.fbm(u * .008, 4.4, 3) * 42 * LS.hillS + pH.n2(u * .05, 6.6) * 3];               // 4 neve
+  // relevo de cada faixa conforme o bioma sorteado para ela (faixa 0 e a última são os oceanos das bordas)
+  const rawH = L.kind.map((k, i) => k ? landH[k] : i === 0 ? (u => lerp(124, 172, sstep(L.land0, L.land0 - 80, u))) : (u => lerp(124, 172, sstep(L.land1, L.land1 + 80, u))));
   for (let x = 0; x < W; x++) {
     const u = x + jit(x);
     let ws = 0, hs = 0;
     for (let i = 0; i < 6; i++) {
-      const lo = BIO_LO[i], hi = BIO_HI[i];
+      const lo = L.lo[i], hi = L.hi[i];
       const w1 = (i === 0 ? 1 : sstep(lo - 28, lo + 28, u)) * (i === 5 ? 1 : 1 - sstep(hi - 28, hi + 28, u));
       if (w1 > 0.001) { ws += w1; hs += w1 * rawH[i](u); }
     }
     let h = hs / ws;
-    const f = 1 - sstep(0, 40, Math.abs(x - SPAWN_X));
+    const f = 1 - sstep(0, 40, Math.abs(x - SPX));
     h = lerp(h, 117 + pH.n2(x * .1, 0) * 1.2, f);
     surf[x] = clamp(Math.round(h), 78, 176);
-    let b = 0; for (let i = 0; i < 6; i++) if (u >= BIO_LO[i] && u < BIO_HI[i]) b = BIO_OF_RANGE[i];
+    let b = 0; for (let i = 0; i < 6; i++) if (u >= L.lo[i] && u < L.hi[i]) b = L.kind[i];
     bio[x] = b;
   }
   // lagos
   const lakes = [];
-  for (let n = 0, tries = 0; n < 16 && tries < 200; tries++) {
+  for (let n = 0, tries = 0; n < L.style.lakes && tries < 260; tries++) {
     const cx = ri(150, W - 150); const b = bio[cx];
-    if (b === 0 || Math.abs(cx - SPAWN_X) < 45 || lakes.some(l => Math.abs(l.cx - cx) < 60)) continue;
+    if (b === 0 || Math.abs(cx - SPX) < 45 || lakes.some(l => Math.abs(l.cx - cx) < 60)) continue;
     const r = ri(12, 26), D = ri(5, 10);
     const yw = Math.max(surf[cx - r - 2], surf[cx + r + 2]) + 1;
     if (yw > SEA + 14) continue;
@@ -81,7 +149,7 @@ function* genWorld(wd, seedNum) {
   // ---------- 2. preenchimento do terreno ----------
   const bioU = (x, y) => {
     const u = x + pE.n2(x * .02, y * .015 + 3.1) * 16; let b = 0;
-    for (let i = 0; i < 6; i++) if (u >= BIO_LO[i] && u < BIO_HI[i]) b = BIO_OF_RANGE[i];
+    for (let i = 0; i < 6; i++) if (u >= L.lo[i] && u < L.hi[i]) b = L.kind[i];
     return b;
   };
   for (let x = 0; x < W; x++) {
@@ -127,16 +195,16 @@ function* genWorld(wd, seedNum) {
       if (inLake && deepWater(x, y)) continue;
       const df = clamp((y - s) / (Y_HELL - s), 0, 1);
       const a = pA.n2(x * .014, y * .032), b = pB.n2(x * .014 + 31.7, y * .032 + 11.3);
-      const w1 = .026 + .018 * df;
+      const w1 = (.026 + .018 * df) * L.style.cave;
       let carve = Math.abs(a) < w1 || Math.abs(b) < w1 * .85;
-      if (!carve) { const c = pC.fbm(x * .0065, y * .0105, 3); carve = c > .38 - .08 * df; }
+      if (!carve) { const c = pC.fbm(x * .0065, y * .0105, 3); carve = c > .38 - .08 * df - (L.style.cave - 1) * .15; }
       if (carve) t[I(x, y)] = 0;
     }
     if (x % 70 === 0) yield [0.22 + 0.2 * x / W, 'Escavando cavernas...'];
   }
   // poços de entrada a partir da superfície
   for (let n = 0; n < 34; n++) {
-    let x = ri(170, W - 170), y = surf[x] + 2; if (Math.abs(x - SPAWN_X) < 18) { n--; continue; }
+    let x = ri(170, W - 170), y = surf[x] + 2; if (Math.abs(x - SPX) < 18) { n--; continue; }
     const len = ri(24, 70); let dx = rr(-.5, .5);
     for (let k = 0; k < len; k++) { carveCircle(wd, x, y, rr(1.4, 2.6)); x += dx + rr(-.5, .5); y += 1; if (R() < .1) dx = rr(-.7, .7); if (y > Y_HELL - 10) break; }
   }
@@ -212,7 +280,7 @@ function* genWorld(wd, seedNum) {
   // ---------- 7. água, lagos e lava ----------
   const isAirT = (x, y) => t[I(x, y)] === 0;
   for (let x = 1; x < W - 1; x++) {
-    if ((x < 150 || x > 1255)) for (let y = SEA; y < surf[x]; y++) { wd.lq[I(x, y)] = 255; wd.lt[I(x, y)] = LIQ_WATER; }
+    if ((x < L.land0 + 25 || x > L.land1 - 25)) for (let y = SEA; y < surf[x]; y++) { wd.lq[I(x, y)] = 255; wd.lt[I(x, y)] = LIQ_WATER; }
     if (lakeWater[x] >= 0) for (let y = lakeWater[x]; y < surf[x]; y++) if (t[I(x, y)] === 0) { wd.lq[I(x, y)] = 255; wd.lt[I(x, y)] = LIQ_WATER; }
   }
   const fillPool = (sx, sy, maxRows, type) => {
@@ -259,7 +327,7 @@ function* genWorld(wd, seedNum) {
   yield [0.76, 'Construindo ruínas e tesouros...'];
 
   // ---------- 9. ilhas do céu ----------
-  const NI = 11;
+  const NI = L.style.islands;
   for (let n = 0; n < NI; n++) {
     const cx = Math.round(90 + n * (W - 180) / (NI - 1) + ri(-30, 30)), cy = ri(30, 68), rx = ri(13, 25), ry = ri(5, 9);
     const hasHouse = rx > 17, meteor = R() < .62;
@@ -281,7 +349,7 @@ function* genWorld(wd, seedNum) {
   }
   // crateras de meteorito na superfície
   for (let n = 0, tries = 0; n < 6 && tries < 80; tries++) {
-    const x = ri(170, W - 170); if (bio[x] === 0 || Math.abs(x - SPAWN_X) < 35 || lakeWater[x] >= 0 || surf[x] > SEA - 2) continue; n++;
+    const x = ri(170, W - 170); if (bio[x] === 0 || Math.abs(x - SPX) < 35 || lakeWater[x] >= 0 || surf[x] > SEA - 2) continue; n++;
     const y = surf[x]; carveCircle(wd, x, y + 1, 4.6);
     for (let yy = y + 2; yy <= y + 8; yy++) for (let xx = x - 4; xx <= x + 4; xx++) if ((xx - x) ** 2 + (yy - y - 5) ** 2 <= 9.5 && SOLID[t[I(xx, yy)]] && R() < .88) t[I(xx, yy)] = T.meteorite;
     wd.craters = (wd.craters || []).concat([[x, y]]);
@@ -298,7 +366,7 @@ function* genWorld(wd, seedNum) {
     if (top === T.grass && R() < .5) t[I(x, s - 1)] = R() < .14 ? T.flower : T.tallgrass;
     if (top === T.jgrass && R() < .09) { t[I(x, s - 1)] = T.thornbush; }
     else if (top === T.jgrass && R() < .3) t[I(x, s - 1)] = T.tallgrass;
-    if (x < nextTree || Math.abs(x - SPAWN_X) < 4) continue;
+    if (x < nextTree || Math.abs(x - SPX) < 4) continue;
     if (top === T.grass && b === 2) {
       nextTree = x + ri(3, 8);
       if (R() < .85) {
@@ -322,7 +390,7 @@ function* genWorld(wd, seedNum) {
       t[I(x, ty + 1)] = T.trunk;
     } else if (top === T.sand) {
       if (b === 1 && R() < .22) { nextTree = x + ri(5, 12); const h = ri(2, 5); for (let k = 1; k <= h; k++) t[I(x, s - k)] = T.cactus; }
-      else if ((b === 0 || x < 170 || x > 1230) && R() < .3 && wd.lq[I(x, s - 1)] === 0 && s <= SEA) {
+      else if ((b === 0 || x < L.land0 + 45 || x > L.land1 - 50) && R() < .3 && wd.lq[I(x, s - 1)] === 0 && s <= SEA) {
         nextTree = x + ri(4, 9); const h = ri(6, 11); for (let k = 1; k <= h; k++) t[I(x, s - k)] = T.trunk;
         const ty = s - h - 1; for (let xx = -3; xx <= 3; xx++) { if (xx) setIfAir(x + xx, ty + (Math.abs(xx) > 1 ? 1 : 0), T.leafpalm); } setIfAir(x, ty, T.leafpalm); setIfAir(x, ty - 1, T.leafpalm);
         setIfAir(x - 2, ty - 1, T.leafpalm); setIfAir(x + 2, ty - 1, T.leafpalm);
@@ -344,7 +412,7 @@ function* genWorld(wd, seedNum) {
   for (let x = 0; x < W; x++) for (let y = 0; y < H - 1; y++) { // rede de segurança: líquido sem apoio acorda
     const i = I(x, y); if (wd.lq[i] && !SOLID[t[i + W]] && wd.lq[i + W] < 255) wd.liqAct.add(i);
   }
-  wd.spawn.x = SPAWN_X * TS + 2; wd.spawn.y = (surf[SPAWN_X] - 3) * TS;
+  wd.spawn.x = SPX * TS + 2; wd.spawn.y = (surf[SPX] - 3) * TS;
   yield [1, 'Mundo pronto!'];
 }
 

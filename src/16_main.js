@@ -24,7 +24,7 @@ window.addEventListener('keydown', e => {
   Snd.init();
   if (G.state === 'play' && GAMEKEYS.has(e.code)) e.preventDefault();
   if (KEYS[e.code] && e.repeat) return; KEYS[e.code] = true;
-  if (G.state !== 'play') { if (e.code === 'Escape') showHelp(false); return; }
+  if (G.state !== 'play') { if (e.code === 'Escape') { if (!$('help').classList.contains('hidden')) showHelp(false); else openWorlds(false); } return; }
   if (e.code === 'Escape') { if (!$('help').classList.contains('hidden')) showHelp(false); else if (G.ui.open) closePanels(); else if (G.paused) setPause(false); else setPause(true); return; }
   if (G.paused) return;
   const P = G.P;
@@ -45,19 +45,21 @@ window.addEventListener('mousemove', e => { G.mouse.sx = e.clientX; G.mouse.sy =
 window.addEventListener('contextmenu', e => e.preventDefault());
 window.addEventListener('wheel', e => { if (G.state !== 'play' || G.paused || G.ui.open) return; const P = G.P; P.sel = (P.sel + (e.deltaY > 0 ? 1 : 9)) % 10; G.invChanged = true; e.preventDefault(); }, { passive: false });
 window.addEventListener('resize', resize);
-function setPause(p) { G.paused = p; $('pause').classList.toggle('hidden', !p); G.mouse.down = [false, false, false]; if (p) closePanels(true); setBlocking(); G.ui.blocking = G.ui.blocking || p; }
+function setPause(p) { G.paused = p; $('pause-world').textContent = G.worldName || ''; $('pause').classList.toggle('hidden', !p); G.mouse.down = [false, false, false]; if (p) closePanels(true); setBlocking(); G.ui.blocking = G.ui.blocking || p; }
 
 // ---------- geração assíncrona + início ----------
 function resetGameState(mode) {
   G.mode = mode; G.enemies = []; G.projs = []; G.drops = []; G.parts = []; G.texts = []; G.boss = null; G.flags = { slime: false, eye: false, guardian: false, colossus: false }; G.stage = 0; G.time = .1; G.day = 1; G.t = 0;
-  G.freeze = 0; G.dark = 0; G.flash = null; G.hitStop = 0; G.kills = 0; G.opts = { god: false, noSpawn: false, showDps: false, freeCraft: false }; G.dpsLog = []; G.held = null; G.chestSlots = null; G.chestPos = null; G.paused = false; G.zoomAdj = 0; G.npcs = []; G.rooms = []; G.npcScanT = 3; G.npcSpawnT = 8; G.autoSaveT = 150;
+  G.freeze = 0; G.dark = 0; G.flash = null; G.hitStop = 0; G.kills = 0; G.opts = { god: false, noSpawn: false, showDps: false, freeCraft: false }; G.dpsLog = []; G.held = null; G.chestSlots = null; G.chestPos = null; G.paused = false; G.zoomAdj = 0; G.npcs = []; G.rooms = []; G.npcScanT = 3; G.npcSpawnT = 8; G.autoSaveT = 60;
 }
 function startGame(opts) {
   opts = opts || {}; Snd.init();
-  const seedStr = opts.seed !== undefined ? String(opts.seed) : ($('seed').value || '').trim(); const seed = seedStr ? (/^\d+$/.test(seedStr) ? +seedStr : strSeed(seedStr)) : ((Math.random() * 1e9) >>> 0);
+  // não há campo de semente: a semente vem de Worlds.allocate (sorteada e inédita). Chamadas diretas (testes) podem passar opts.seed.
+  const seed = (opts.seed !== undefined ? opts.seed : rand32()) >>> 0;
   G.seed = seed; resetGameState(opts.mode || 'adventure');
-  $('menu').classList.add('hidden'); $('loading').classList.remove('hidden'); $('hud').classList.add('hidden'); $('pause').classList.add('hidden'); G.state = 'loading';
-  $('load-tip').textContent = pick(TIPS); $('load-fill').style.width = '0%';
+  G.worldId = opts.save === false ? null : (opts.id || Worlds.newId()); G.worldName = opts.name || worldNameFromSeed(seed); G.worldCreated = Date.now();   // save:false = mundo descartável (testes)
+  $('toasts').innerHTML = ''; $('menu').classList.add('hidden'); $('worlds').classList.add('hidden'); $('loading').classList.remove('hidden'); $('hud').classList.add('hidden'); $('pause').classList.add('hidden'); G.state = 'loading';
+  $('load-title').textContent = 'Gerando "' + G.worldName + '"...'; $('load-tip').textContent = pick(TIPS); $('load-fill').style.width = '0%';
   const wd = new World(WW, WH, seed); G.world = wd; const gen = genWorld(wd, seed);
   const finish = () => finishLoad();
   if (opts.sync) { for (const r of gen) { } finish(); return; }
@@ -83,8 +85,9 @@ function finishLoad(sv) {
   G.cam.init = false; for (let i = 0; i < 6; i++) { _revT.t = 0; revealMap(P); } wd.liqAct.clear();
   if (G.mode === 'creative' && !sv) { const d = ED.dummy; spawnEnemy('dummy', wd.spawn.x + 130, wd.spawn.y + 26 - d.h); G.opts.showDps = true; }
   G.state = 'play'; G.ui.blocking = false; applyZoom(); $('loading').classList.add('hidden'); $('hud').classList.remove('hidden'); initUIOnce();
-  if (sv) toast('Jogo carregado. Bem-vindo de volta!', '#86efac', 4); else toast(G.mode === 'creative' ? 'Modo Criativo: B abre o Arsenal com todas as espadas. Há um Boneco de Treino ao lado.' : 'Bem-vindo! Corte árvores com a picareta (botão esquerdo) e pressione E para criar.', '#fde68a', 6);
+  if (sv) toast('"' + G.worldName + '" carregado. Bem-vindo de volta!', '#86efac', 4); else toast(G.mode === 'creative' ? 'Modo Criativo: B abre o Arsenal com todas as espadas. Há um Boneco de Treino ao lado.' : 'Bem-vindo! Corte árvores com a picareta (botão esquerdo) e pressione E para criar.', '#fde68a', 6);
   if (!sv) toast('Pressione E: inventário/criação · B: catálogo de espadas · M: mapa', '#cbd5f5', 6);
+  if (!sv && G.worldId) { toast('Mundo "' + G.worldName + '" criado. Ele é salvo automaticamente.', '#86efac', 5); Worlds.init().then(() => Worlds.save({ silent: true, thumb: true })); }
   view.focus();
 }
 let _uiInit = false; function initUIOnce() { if (!_uiInit) { _uiInit = true; } G.invChanged = true; refreshInvUI(); }
@@ -103,7 +106,7 @@ function step(dt) {
   updatePlayer(dt); updateNpcs(dt); updateEnemies(dt); updateProjs(dt); updateDrops(dt); updateParts(dt); updateTexts(dt);
   _liqT -= dt; if (_liqT <= 0) { _liqT = .05; wd.stepLiquids(2200); } _fallT -= dt; if (_fallT <= 0) { _fallT = .08; wd.stepFalling(160); }
   spawnTick(dt);
-  G.autoSaveT -= dt; if (G.autoSaveT <= 0) { G.autoSaveT = 180; if (hasSave() || G.mode) saveGame(true); }
+  G.autoSaveT -= dt; if (G.autoSaveT <= 0) { G.autoSaveT = 60; Worlds.save({ silent: true }); }   // autosave a cada minuto
   // câmera
   const c = G.cam, vw = c.w / c.zoom, vh = c.h / c.zoom, m = G.mouse;
   const tx = pcx(P) - vw / 2 + (m.sx * DPR / c.zoom - vw / 2) * .1, ty = pcy(P) - vh / 2 - 8 + (m.sy * DPR / c.zoom - vh / 2) * .1;
@@ -234,13 +237,11 @@ function frame(now) {
 }
 function initGame() {
   initUI(); resize(); G.state = 'title'; initSky(11);
-  $('btn-adv').onclick = () => startGame({ mode: 'adventure' }); $('btn-cre').onclick = () => startGame({ mode: 'creative' }); $('btn-help').onclick = () => showHelp(true); $('btn-load').onclick = () => loadGame(); $('btn-load').classList.toggle('hidden', !hasSave());
+  $('btn-help').onclick = () => showHelp(true); initWorldsUI();   // botões do título, mundos salvos e autosave (15e_worlds.js)
   $('p-resume').onclick = () => setPause(false); $('p-help').onclick = () => showHelp(true);
   $('p-sound').onclick = () => { Snd.mute(!Snd.muted); $('p-sound').textContent = 'Som: ' + (Snd.muted ? 'desligado' : 'ligado'); };
-  $('p-save').onclick = () => { saveGame(); };
-  $('p-menu').onclick = () => { saveGame(true); setPause(false); closePanels(true); G.state = 'title'; $('hud').classList.add('hidden'); $('menu').classList.remove('hidden'); G.world = null; G.P = null; $('btn-load').classList.toggle('hidden', !hasSave()); };
   requestAnimationFrame(frame);
 }
 initGame();
 // ganchos para testes automatizados
-window.__G = G; window.__start = startGame; window.__step = step; window.__render = render; window.__IT = IT; window.__SW = SWORDS; window.__padUpdate = padUpdate; window.__PAD = PAD;
+window.__G = G; window.__Worlds = Worlds; window.__chooseSeed = chooseSeed; window.__start = startGame; window.__step = step; window.__render = render; window.__IT = IT; window.__SW = SWORDS; window.__padUpdate = padUpdate; window.__PAD = PAD;

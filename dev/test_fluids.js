@@ -1,6 +1,6 @@
 'use strict';
 // Líquidos (água + lava = obsidiana), areia que cai e plantas sem apoio, numa arena isolada no céu.
-const { launch, INDEX_URL, run, waitPlay, collectErrors } = require('./lib');
+const { launch, INDEX_URL, run, waitPlay, startWorld, collectErrors } = require('./lib');
 
 const JS = () => {
   const wd = G.world, W = wd.w, out = {};
@@ -42,8 +42,7 @@ run(async () => {
   const pg = await b.newPage({ viewport: { width: 960, height: 540 } });
   const errs = collectErrors(pg);
   await pg.goto(INDEX_URL);
-  await pg.fill('#seed', '5'); await pg.click('#btn-cre');
-  await waitPlay(pg);
+  await startWorld(pg, 5, 'btn-cre');
   console.log(JSON.stringify(await pg.evaluate(JS))); console.log('erros', errs.slice(0, 3));
   await b.close();
 });
