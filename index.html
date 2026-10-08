@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>120 Espadas — Sandbox 2D Platformer</title>
+<title>Espadas Do Destino— Sandbox 2D Platformer</title>
 <style>
 :root{--bg:#0a0f1e;--panel:rgba(12,18,38,.92);--line:rgba(255,255,255,.14);--acc:#fbbf24;--txt:#e8ecf8;--mut:#93a0c0;--t1:#10b981;--t2:#0284c7;--t3:#7c3aed;--t4:#d97706;--t5:#dc2626;--t6:#4f46e5}
 *{box-sizing:border-box;-webkit-user-select:none;user-select:none}
@@ -153,7 +153,7 @@ button{font:inherit;cursor:pointer}
     <div id="dbg" class="hidden"></div>
     <div id="item-name"></div>
     <div id="hotbar"></div>
-    <div id="deadmsg" class="hidden"><div>VOCÊ MORREU</div><small id="dead-sub"></small></div>
+    <div id="deadmsg" class="hidden"><div>VOCÊ FOI MOGADO</div><small id="dead-sub"></small></div>
   </div>
 
   <div id="panel-inv" class="panel hidden">
@@ -184,7 +184,7 @@ button{font:inherit;cursor:pointer}
 
   <div id="menu" class="screen">
     <canvas id="menu-bg"></canvas>
-    <div id="logo">120 ESPADAS<small>SANDBOX 2D PLATFORMER</small></div>
+    <div id="logo">ESPADAS DO DESTINO<small>SANDBOX 2D PLATFORMER</small></div>
     <div id="tiers-strip"></div>
     <button class="menu-btn hidden" id="btn-load">Continuar Jogo<small>Carregar o mundo salvo</small></button>
     <button class="menu-btn" id="btn-adv">Nova Aventura<small>Mine, crie, derrote chefes e forje as 120 espadas</small></button>
@@ -215,11 +215,7 @@ button{font:inherit;cursor:pointer}
   <div id="help" class="screen hidden"><div class="box" id="help-box"></div></div>
 </div>
 <script>
-/* ===== 00_util.js ===== */
 'use strict';
-/* ============================================================
-   120 ESPADAS — Sandbox 2D  |  00_util: matemática, RNG, ruído
-   ============================================================ */
 const TAU = Math.PI * 2, PI = Math.PI;
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -297,13 +293,8 @@ function escHtml(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', 
 const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e4 ? (n / 1e3).toFixed(1) + 'k' : String(Math.round(n));
 
 ;
-/* ===== 01_data.js ===== */
-/* ============================================================
-   01_data: tiers, tiles (16x16), paredes, itens, receitas
-   ============================================================ */
-const TS = 16;                       // GDD: Tiles 16x16px
-const STACK_MAX = 999;               // GDD: stacks até 999
-
+const TS = 16;                     
+const STACK_MAX = 999;              
 // ---- TIERS DE RARIDADE (cores e multiplicadores exatos do GDD) ----
 const TIERS = {
   0: { n: 'Comum', col: '#e5e7eb', mult: [1, 1], mech: '' },
@@ -554,10 +545,6 @@ const STATION_SAT = {
 const STATION_NAME = { bench: 'Bancada', furnace: 'Fornalha', anvil: 'Bigorna', advanvil: 'Bigorna Avançada', forge: 'Forja Celeste' };
 
 ;
-/* ===== 02_world.js ===== */
-/* ============================================================
-   02_world: matriz de blocos, chunks, fluidos, gravidade
-   ============================================================ */
 const WW = 1400, WH = 480, CHUNK = 32, SEA = 126;
 const Y_SKY = 92, Y_DEEP = 300, Y_HELL = 405;
 const SKY_SCAN_Y = 78;   // exposição ao céu é medida só abaixo da faixa das ilhas flutuantes
@@ -762,10 +749,6 @@ function carveCircle(wd, cx, cy, r, tile = 0) {
 
 ;
 /* ===== 03_worldgen.js ===== */
-/* ============================================================
-   03_worldgen: geração procedural (assíncrona, em fatias/chunks)
-   Cada "yield" devolve [progresso 0..1, mensagem] para o loader.
-   ============================================================ */
 const SPAWN_X = 575;
 const BIO_LO = [-9999, 125, 370, 790, 1020, 1280], BIO_HI = [125, 370, 790, 1020, 1280, 9999];
 const BIO_OF_RANGE = [0, 1, 2, 3, 4, 0]; // oceano, deserto, floresta, selva, neve, oceano
@@ -1135,13 +1118,6 @@ function spawnHardmodeOres(wd) {
 
 ;
 /* ===== 04_light.js ===== */
-/* ============================================================
-   04_light: iluminação dinâmica por propagação de opacidade
-   (GDD: "Iluminação Dinâmica: algoritmo de propagação de
-   opacidade por tile"). Luz RGB, 2 iterações de 4 varreduras.
-   O decaimento usa a opacidade da célula de ORIGEM: superfícies
-   expostas ficam bem iluminadas e a rocha atenua a luz.
-   ============================================================ */
 class Lighting {
   constructor() { this.w = 0; this.h = 0; this.x0 = 0; this.y0 = 0; this.dyn = []; }
   _alloc(w, h) {
@@ -1244,10 +1220,6 @@ const isNightFrac = f => f >= .64 || f < .03;
 
 ;
 /* ===== 05_gfx.js ===== */
-/* ============================================================
-   05_gfx: sprites 16x16 gerados proceduralmente (pixel-art)
-   Atlas de texturas + buffer RGBA por sprite.
-   ============================================================ */
 const _B = new Uint8ClampedArray(16 * 16 * 4);
 const _IMG = (typeof ImageData !== 'undefined') ? new ImageData(_B, 16, 16) : null;
 const WHITE = [255, 255, 255], BLACK = [0, 0, 0];
