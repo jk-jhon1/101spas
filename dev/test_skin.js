@@ -1,5 +1,5 @@
 'use strict';
-// Aparência da interface (azul / escura, botão em Pausa → Interface, salva no aparelho) e copas das árvores
+// Interface azul única (o botão "Interface" do menu de Pausa e a aparência escura foram removidos) e copas das árvores
 // (05c_canopy.js: silhueta por vizinhança, contorno, tronco coberto, lote de desenho). Uso: node dev/test_skin.js
 const { launch, INDEX_URL, run, startWorld, collectErrors } = require('./lib');
 let total = 0, fails = 0;
@@ -10,50 +10,35 @@ run(async () => {
   const ctx = await b.newContext({ viewport: { width: 1280, height: 720 } });
   const pg = await ctx.newPage(); const errs = collectErrors(pg);
   const st = () => pg.evaluate(() => ({
-    blue: document.getElementById('skin-blue').media, dark: document.getElementById('skin-dark').media,
-    btn: document.getElementById('p-skin').textContent, ls: (() => { try { return localStorage.getItem('espadas120_skin'); } catch (e) { return 'ERR'; } })(),
-    mode: UISKIN.mode, clock: document.getElementById('clock').textContent,
-    slot: (() => { const c = getComputedStyle(document.querySelector('#hotbar .slot:nth-child(2)')); return c.backgroundImage + '|' + c.backgroundColor; })(),   /* fundo do 2º espaço (a borda segue a cor do tier do item nas duas) */ panel: getComputedStyle(document.querySelector('#pause .box')).backgroundColor,
+    btn: !!document.getElementById('p-skin'), sheets: document.querySelectorAll('style').length,
+    ids: !!document.getElementById('skin-blue') || !!document.getElementById('skin-dark'),
+    fns: [typeof UISKIN, typeof skinApply, typeof initSkin].join('|'),
+    clock: document.getElementById('clock').textContent,
+    slot: (() => { const c = getComputedStyle(document.querySelector('#hotbar .slot:nth-child(2)')); return c.backgroundImage + '|' + c.backgroundColor; })(),
+    panel: getComputedStyle(document.querySelector('#pause .box')).backgroundColor,
+    pauseBtns: [...document.querySelectorAll('#pause .menu-btn')].map(x => x.textContent)
   }));
 
-  // ---------- 1) padrão: azul ----------
+  // ---------- 1) uma interface só (azul), sem botão para trocar ----------
   await pg.goto(INDEX_URL); await pg.waitForTimeout(500);
+  await pg.evaluate(() => { try { localStorage.setItem('espadas120_skin', 'dark'); } catch (e) { } });   // escolha antiga de quem tinha trocado para a escura
+  await pg.reload(); await pg.waitForTimeout(500);
   let s = await st();
-  ok(s.blue === 'all' && s.dark === 'not all' && s.mode === 'blue', 'padrão: folha azul ligada, escura desligada  -> ' + JSON.stringify(s));
-  ok(/azul/.test(s.btn), 'rótulo do botão: azul  -> ' + s.btn);
-  const blueSlot = s.slot, bluePanel = s.panel;
+  ok(!s.btn && !s.pauseBtns.some(t => /Interface/.test(t)), 'o menu de pausa não tem mais o botão "Interface"  -> ' + JSON.stringify(s.pauseBtns));
+  ok(s.pauseBtns.length === 6, 'o menu de pausa tem os 6 botões que sobraram  -> ' + JSON.stringify(s.pauseBtns));
+  ok(s.sheets === 1 && !s.ids, 'uma única folha de estilo, sem as folhas "skin-blue" e "skin-dark"  -> ' + JSON.stringify([s.sheets, s.ids]));
+  ok(s.fns === 'undefined|undefined|undefined', 'o código de troca de aparência não existe mais  -> ' + s.fns);
+  ok(s.panel === 'rgba(26, 36, 104, 0.96)' && s.slot === 'linear-gradient(rgb(59, 76, 166), rgb(34, 47, 134))|rgba(0, 0, 0, 0)', 'painéis e barra de itens azuis, mesmo com a escolha antiga "escura" guardada no aparelho  -> ' + JSON.stringify([s.panel, s.slot]));
   await startWorld(pg, 21, 'btn-cre'); await pg.waitForTimeout(500);
   await pg.evaluate(() => { G.opts.noSpawn = true; G.enemies.length = 0; });
   await pg.waitForTimeout(300);
   s = await st();
-  const blueSlotGame = s.slot;
-  ok(/^\d+:\d\d (AM|PM) · Dia \d+ · /.test(s.clock), 'relógio azul: 12 h com AM/PM  -> ' + s.clock);
-
-  // ---------- 2) botão da pausa troca para a escura ----------
+  ok(/^\d+:\d\d (AM|PM) · Dia \d+ · /.test(s.clock), 'relógio de 12 h com AM/PM  -> ' + s.clock);
   await pg.keyboard.press('Escape'); await pg.waitForTimeout(200);
-  ok(await pg.evaluate(() => document.getElementById('p-skin').getBoundingClientRect().height > 20), 'botão "Interface" aparece no menu de pausa');
-  await pg.click('#p-skin'); await pg.waitForTimeout(200);
-  s = await st();
-  ok(s.blue === 'not all' && s.dark === 'all' && s.mode === 'dark' && s.ls === 'dark', 'clique: escura ligada e salva  -> ' + JSON.stringify(s));
-  ok(/escura/.test(s.btn), 'rótulo do botão: escura  -> ' + s.btn);
-  ok(s.slot !== blueSlotGame && s.panel !== bluePanel, 'as cores dos painéis e da barra de itens mudam de verdade  -> ' + [blueSlotGame, s.slot, bluePanel, s.panel].join(' | '));
-  await pg.click('#p-resume'); await pg.waitForTimeout(500);
-  s = await st();
-  ok(/^Dia \d+ · \d\d:\d\d · /.test(s.clock), 'relógio escuro: Dia + 24 h  -> ' + s.clock);
-
-  // ---------- 3) a escolha vale depois de recarregar ----------
-  await pg.reload(); await pg.waitForTimeout(500);
-  s = await st();
-  ok(s.blue === 'not all' && s.dark === 'all' && s.mode === 'dark', 'depois de recarregar continua escura  -> ' + JSON.stringify(s));
-  // volta ao azul
-  await startWorld(pg, 22, 'btn-cre'); await pg.waitForTimeout(400);
-  await pg.keyboard.press('Escape'); await pg.waitForTimeout(200);
-  await pg.click('#p-skin'); await pg.waitForTimeout(200);
-  s = await st();
-  ok(s.blue === 'all' && s.dark === 'not all' && s.ls === 'blue' && s.slot === blueSlotGame && s.panel === bluePanel, 'clique de volta: azul de novo  -> ' + JSON.stringify([s, blueSlotGame, bluePanel]));
+  ok(await pg.evaluate(() => document.getElementById('p-save').getBoundingClientRect().height > 20), 'o menu de pausa abre e mostra "Salvar mundo"');
   await pg.click('#p-resume'); await pg.waitForTimeout(300);
 
-  // ---------- 4) copas das árvores ----------
+  // ---------- 2) copas das árvores ----------
   const r = await pg.evaluate(() => {
     G.opts.noSpawn = true; G.enemies.length = 0; G.opts.god = true;
     const wd = G.world, W = wd.w, H = wd.h, out = {};
@@ -107,21 +92,19 @@ run(async () => {
   ok(r.cut && r.cut.hole.opacos < 256 && r.cut.hole.contorno > 0, 'a folha que sumiu vira um buraco com contorno (feedback ao quebrar)  -> ' + JSON.stringify(r.cut && r.cut.hole));
   ok(r.lote.blocos > 30 && r.lote.sprites > 0 && r.lote.ms < 1500, 'lote com cache frio: ' + r.lote.blocos + ' blocos em ' + r.lote.ms + ' ms (limite 1500 ms)');
 
-  // ---------- 5) o retângulo "DPS · Total" não existe mais (com o Boneco de Treino na tela, nas duas aparências) ----------
+  // ---------- 3) o retângulo "DPS · Total" não existe mais (com o Boneco de Treino na tela) ----------
   const dp = await pg.evaluate(() => {
     const out = {}; G.enemies.length = 0; G.opts.noSpawn = true; G.paused = false; closePanels(true);
     const P = G.P, d = ED.dummy, dm = spawnEnemy('dummy', P.x + 40, P.y + P.h - d.h); G.dpsLog.length = 0;
     dealRaw(dm, 40, '#fff'); refreshHUD(); __render();
-    out.elBlue = !!document.getElementById('dps'); out.textoBlue = /DPS|Total:/.test(document.body.innerText);
+    out.el = !!document.getElementById('dps'); out.texto = /DPS|Total:/.test(document.body.innerText);
     out.log1 = G.dpsLog.length; G.t += 11; dealRaw(dm, 10, '#fff'); out.log2 = G.dpsLog.length;   // o registro de dano (usado pelos testes) se poda sozinho
     out.dummyVive = !dm.dead;
-    skinApply('dark'); refreshHUD(); out.elDark = !!document.getElementById('dps'); out.textoDark = /DPS|Total:/.test(document.body.innerText); skinApply('blue');
     let ars = ''; openPanel('arsenal'); for (const [k] of ARS_TABS) { G.ui.arsTab = k; renderArsenal(); ars += ' ' + $('ars-body').textContent; } closePanels(true);
     out.arsDps = /DPS/i.test(ars); out.arsOpcoes = /Invencível/.test(ars) && /Criação grátis/.test(ars) && /Sem spawn/.test(ars); out.dica = /não morre e mostra o dano/.test(ars);
     return out;
   });
-  ok(!dp.elBlue && !dp.textoBlue, 'azul: sem o retângulo "DPS (5s) · Total" mesmo com o Boneco de Treino na tela  -> ' + JSON.stringify([dp.elBlue, dp.textoBlue]));
-  ok(!dp.elDark && !dp.textoDark, 'escura: sem o retângulo "DPS (5s) · Total"  -> ' + JSON.stringify([dp.elDark, dp.textoDark]));
+  ok(!dp.el && !dp.texto, 'sem o retângulo "DPS (5s) · Total" mesmo com o Boneco de Treino na tela  -> ' + JSON.stringify([dp.el, dp.texto]));
   ok(dp.log1 === 1 && dp.log2 === 1 && dp.dummyVive, 'registro de dano do teste: guarda o golpe e descarta o que passou de 10 s (sem crescer para sempre)  -> ' + JSON.stringify([dp.log1, dp.log2, dp.dummyVive]));
   ok(!dp.arsDps && dp.arsOpcoes && dp.dica, 'Arsenal: sem o botão "Mostrar DPS"; as outras opções de teste e a dica do boneco continuam  -> ' + JSON.stringify([dp.arsDps, dp.arsOpcoes, dp.dica]));
 

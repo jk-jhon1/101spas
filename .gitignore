@@ -1,11 +1,5 @@
-# gerado por build.js (descartável)
-dev/bundle.js
 # capturas de tela temporárias dos testes
 dev/*.png
 # dependências (npm install)
 node_modules/
-# pacote de hospedagem avulso (cópia do index.html)
-120-espadas-web.zip
-# texto bruto extraído do PDF do GDD (não publicar)
-docs/gdd_texto_extraido_do_pdf.txt
 .DS_Store

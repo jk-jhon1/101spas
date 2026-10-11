@@ -151,8 +151,8 @@ function refreshHUD() {
   for (const k in P.buffs) bf += `<span class="buff">${NM[k] || k} ${Math.ceil(P.buffs[k].t)}s</span>`; if (P.potionCd > 0) bf += `<span class="buff">Poção ${Math.ceil(P.potionCd)}s</span>`;
   if (bf !== G._bf) { $('buffs').innerHTML = bf; G._bf = bf; }
   const hh = ((G.time * 24 + 6) % 24), hr = Math.floor(hh), mn = Math.floor((hh - hr) * 60);
-  const hora = UISKIN.mode === 'blue' ? (hr % 12 || 12) + ':' + String(mn).padStart(2, '0') + ' ' + (hr < 12 ? 'AM' : 'PM') : String(hr).padStart(2, '0') + ':' + String(mn).padStart(2, '0');   /* azul: relógio de 12 h como no Terraria */
-  $('clock').textContent = (UISKIN.mode === 'blue' ? hora + ' · Dia ' + G.day : 'Dia ' + G.day + ' · ' + hora) + ' · ' + layerName(P) + (G.mode === 'creative' ? ' · Criativo' : '') + (G.stage >= 2 ? ' · Hardmode' : '');
+  const hora = (hr % 12 || 12) + ':' + String(mn).padStart(2, '0') + ' ' + (hr < 12 ? 'AM' : 'PM');   /* relógio de 12 h como no Terraria */
+  $('clock').textContent = hora + ' · Dia ' + G.day + ' · ' + layerName(P) + (G.mode === 'creative' ? ' · Criativo' : '') + (G.stage >= 2 ? ' · Hardmode' : '');
   const b = G.boss; $('bossbar').classList.toggle('hidden', !b || b.dead); if (b && !b.dead) { $('boss-name').textContent = b.name; $('boss-fill').style.width = (clamp(b.hp / b.hpMax, 0, 1) * 100) + '%'; }
   const itn = $('item-name'); const s = P.inv[P.sel]; const nm = s ? IT[s.id].n : ''; if (nm !== G._itn) { G._itn = nm; itn.textContent = nm; itn.style.color = s ? tierCol(s.id) : '#fff'; itn.style.opacity = nm ? 1 : 0; clearTimeout(G._itT); G._itT = setTimeout(() => itn.style.opacity = 0, 1800); }
   $('dead' + 'msg').classList.toggle('hidden', !P.dead); if (P.dead) $('dead-sub').textContent = 'Renascendo em ' + Math.max(0, Math.ceil(P.respawnT)) + 's...';

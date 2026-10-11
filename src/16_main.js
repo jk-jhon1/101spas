@@ -259,7 +259,7 @@ function frame(now) {
   G.mouse.pressed = [false, false, false];
 }
 function initGame() {
-  initUI(); resize(); G.state = 'title'; initSky(11); initTouch(); initSkin();
+  initUI(); resize(); G.state = 'title'; initSky(11); initTouch();
   $('btn-help').onclick = () => showHelp(true); initWorldsUI();   // botões do título, mundos salvos e autosave (15e_worlds.js)
   $('p-resume').onclick = () => setPause(false); $('p-help').onclick = () => showHelp(true);
   $('p-sound').onclick = () => { Snd.mute(!Snd.muted); $('p-sound').textContent = 'Som: ' + (Snd.muted ? 'desligado' : 'ligado'); };

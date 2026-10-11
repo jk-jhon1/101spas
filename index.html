@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Espadas Do Destino — Sandbox 2D Platformer</title>
-<style id="css-base">
+<style>
 :root{--bg:#0a0f1e;--panel:rgba(12,18,38,.92);--line:rgba(255,255,255,.14);--acc:#fbbf24;--txt:#e8ecf8;--mut:#93a0c0;--t1:#10b981;--t2:#0284c7;--t3:#7c3aed;--t4:#d97706;--t5:#dc2626;--t6:#4f46e5}
 *{box-sizing:border-box;-webkit-user-select:none;user-select:none}
 html,body{margin:0;height:100%;overflow:hidden;background:#05070f;color:var(--txt);font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif}
@@ -162,9 +162,6 @@ button{font:inherit;cursor:pointer}
 #savebadge.flash{animation:sbin .25s ease-out}@keyframes sbin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media (max-width:760px){.wcard{flex-wrap:wrap}.wthumb{width:120px;height:41px}.wact{width:100%;flex-direction:row}.wplay.menu-btn{flex:1}}
 
-
-</style>
-<style id="skin-blue">
 /* ============================================================
    SKIN PIXEL-ART (estilo Terraria mobile): painéis azuis com borda chanfrada,
    barra de itens vertical, vida em corações, relógio em AM/PM e controles de toque.
@@ -278,78 +275,6 @@ body.touch-on #boss-name{font-size:13px}
 }
 
 </style>
-<style id="skin-dark" media="not all">
-
-/* ============================================================
-   AJUSTES QUE ACOMPANHAM OS SPRITES EM PIXEL-ART
-   A aparência dos painéis, botões, abas, balões e da barra de itens é a ORIGINAL (escura).
-   Aqui ficam só: ícones ampliados sem borrar, vida em corações e controles de toque.
-   ============================================================ */
-#view{touch-action:none}
-.ic{image-rendering:pixelated}
-.slot .ic{width:32px;height:32px}
-.rec .ic.big{width:32px;height:32px}
-.rec .ing .ic{width:16px;height:16px;image-rendering:auto}
-.ars-grid .slot .ic{width:32px;height:32px}
-#cursor-item .ic{width:32px;height:32px}
-.shop-row .ic{width:32px;height:32px}
-/* vida em corações de pixel, à esquerda do minimapa */
-#hp-wrap{left:auto;right:208px;top:12px;min-width:0;text-align:right}
-#hp-label{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;line-height:15px;text-shadow:0 1px 2px #000}
-#hp-txt{position:static;display:block;inset:auto;line-height:15px;text-align:right}
-#hearts{display:block;margin-left:auto;image-rendering:pixelated}
-#hp-bar{display:none;height:8px;width:100%;min-width:120px;margin-top:3px;border-radius:4px}
-#hp-fill{display:none}
-#stat-row{justify-content:flex-end;margin-top:5px;max-width:330px;margin-left:auto}
-#buffs{justify-content:flex-end;max-width:330px;margin-left:auto}
-#bossbar{top:auto;bottom:100px;width:min(600px,72vw)}
-/* ---------- controles de toque (só aparecem em telas de toque) ---------- */
-#touch{position:absolute;inset:0;pointer-events:none;z-index:20;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-#touch.hidden{display:none}
-#touch *{touch-action:none;-webkit-tap-highlight-color:transparent}
-#tj-base{position:absolute;left:30px;bottom:34px;width:140px;height:140px;border-radius:50%;pointer-events:auto;background:radial-gradient(circle,rgba(8,12,26,.35) 0 55%,rgba(255,255,255,.14) 56% 100%);border:2px solid rgba(255,255,255,.35);box-shadow:0 2px 10px rgba(0,0,0,.5)}
-#tj-knob{position:absolute;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.92),rgba(170,182,214,.88) 60%,rgba(110,124,170,.88));border:2px solid rgba(255,255,255,.7);box-shadow:0 2px 8px rgba(0,0,0,.5);pointer-events:none}
-.tb{pointer-events:auto;font:700 18px "Trebuchet MS","Segoe UI",system-ui,sans-serif;color:#fff;width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(8,12,26,.72);box-shadow:0 2px 10px rgba(0,0,0,.5);padding:0;text-shadow:0 1px 2px #000;display:flex;align-items:center;justify-content:center}
-.tb.on{background:var(--acc);border-color:var(--acc);color:#1b1305;text-shadow:none}
-#tb-top{position:absolute;top:150px;right:10px;width:204px;display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;gap:6px;pointer-events:none}
-#tb-top .tb{width:44px;height:44px;font-size:18px}
-.tb.huge{position:absolute;right:34px;bottom:44px;width:118px;height:118px;font-size:54px;border-width:3px}
-.tb.big{position:absolute;right:166px;bottom:34px;width:70px;height:70px;font-size:26px}
-.tb.mid{position:absolute;right:178px;bottom:116px;width:52px;height:52px;font-size:22px}
-#tb-close{display:none;position:absolute;right:8px;top:8px;width:46px;height:46px;font-size:22px;background:#b91c1c;border-color:rgba(255,255,255,.7);z-index:3}
-#touch.ui-open #tb-close{display:flex}
-#touch.ui-open #tj-base,#touch.ui-open #tb-atk,#touch.ui-open #tb-jump,#touch.ui-open #tb-use,#touch.ui-open #tb-top{display:none}
-body.touch-on #hp-wrap{right:204px}
-body.touch-on #savebadge{right:auto;left:18px;bottom:184px;margin:0}
-body.touch-on #bossbar{left:12px;transform:none;top:8px;bottom:auto;width:min(330px,38vw)}
-body.touch-on #boss-name{font-size:13px}
-html,body{overscroll-behavior:none}
-#pause .box{width:min(400px,92vw);min-width:0}
-/* celulares na horizontal: barra de itens e botões menores */
-@media (max-height:480px){
-  #hotbar{gap:3px;bottom:8px}
-  .slot{width:36px;height:36px}.slot .ic{width:28px;height:28px;image-rendering:auto}
-  #item-name{bottom:64px}
-  #tj-base{left:18px;bottom:16px;width:108px;height:108px}#tj-knob{width:48px;height:48px;margin:-24px 0 0 -24px}
-  .tb.huge{right:22px;bottom:20px;width:92px;height:92px;font-size:44px}.tb.big{right:128px;bottom:16px;width:56px;height:56px}
-  #tb-top{top:130px;width:172px;gap:5px}#tb-top .tb{width:36px;height:36px;font-size:15px}
-  .tb.mid{right:140px;bottom:84px;width:44px;height:44px;font-size:19px}
-  #tb-close{width:40px;height:40px;right:6px;top:6px}
-  #mini{width:150px;height:92px}#hp-wrap{right:178px}body.touch-on #hp-wrap{right:178px}
-  body.touch-on #savebadge{bottom:134px}
-  .screen{justify-content:safe center;overflow-y:auto;padding:6px 0;gap:3px}
-  #menu-bg{position:fixed}
-  #logo{font-size:min(6.4vw,46px);letter-spacing:2px}#logo small{font-size:.28em;letter-spacing:5px;margin-top:2px}
-  .menu-btn{padding:6px 14px;margin:2px;font-size:14px}.menu-btn small{display:none}
-}
-@media (max-height:480px) and (max-width:780px){
-  #hotbar{left:140px;transform:none;gap:2px}
-  #hotbar .slot{width:30px;height:30px}#hotbar .slot .ic{width:24px;height:24px}
-  #item-name{left:140px;transform:none}
-}
-
-</style>
-<script>try{if(localStorage.getItem('espadas120_skin')==='dark'){document.getElementById('skin-blue').media='not all';document.getElementById('skin-dark').media='all';}}catch(e){}</script>
 </head>
 <body>
 <div id="app">
@@ -461,7 +386,6 @@ html,body{overscroll-behavior:none}
       <button class="menu-btn" id="p-help" style="font-size:15px">Controles e Guia</button>
       <button class="menu-btn" id="p-sound" style="font-size:15px">Som: ligado</button>
       <button class="menu-btn" id="p-touch" style="font-size:15px">Controles de toque: automático</button>
-      <button class="menu-btn" id="p-skin" style="font-size:15px">Interface: azul (Terraria)</button>
       <button class="menu-btn" id="p-save" style="font-size:15px">Salvar mundo</button>
       <button class="menu-btn" id="p-menu" style="font-size:15px">Salvar e voltar ao menu</button>
     </div>
@@ -7336,8 +7260,8 @@ function refreshHUD() {
   for (const k in P.buffs) bf += `<span class="buff">${NM[k] || k} ${Math.ceil(P.buffs[k].t)}s</span>`; if (P.potionCd > 0) bf += `<span class="buff">Poção ${Math.ceil(P.potionCd)}s</span>`;
   if (bf !== G._bf) { $('buffs').innerHTML = bf; G._bf = bf; }
   const hh = ((G.time * 24 + 6) % 24), hr = Math.floor(hh), mn = Math.floor((hh - hr) * 60);
-  const hora = UISKIN.mode === 'blue' ? (hr % 12 || 12) + ':' + String(mn).padStart(2, '0') + ' ' + (hr < 12 ? 'AM' : 'PM') : String(hr).padStart(2, '0') + ':' + String(mn).padStart(2, '0');   /* azul: relógio de 12 h como no Terraria */
-  $('clock').textContent = (UISKIN.mode === 'blue' ? hora + ' · Dia ' + G.day : 'Dia ' + G.day + ' · ' + hora) + ' · ' + layerName(P) + (G.mode === 'creative' ? ' · Criativo' : '') + (G.stage >= 2 ? ' · Hardmode' : '');
+  const hora = (hr % 12 || 12) + ':' + String(mn).padStart(2, '0') + ' ' + (hr < 12 ? 'AM' : 'PM');   /* relógio de 12 h como no Terraria */
+  $('clock').textContent = hora + ' · Dia ' + G.day + ' · ' + layerName(P) + (G.mode === 'creative' ? ' · Criativo' : '') + (G.stage >= 2 ? ' · Hardmode' : '');
   const b = G.boss; $('bossbar').classList.toggle('hidden', !b || b.dead); if (b && !b.dead) { $('boss-name').textContent = b.name; $('boss-fill').style.width = (clamp(b.hp / b.hpMax, 0, 1) * 100) + '%'; }
   const itn = $('item-name'); const s = P.inv[P.sel]; const nm = s ? IT[s.id].n : ''; if (nm !== G._itn) { G._itn = nm; itn.textContent = nm; itn.style.color = s ? tierCol(s.id) : '#fff'; itn.style.opacity = nm ? 1 : 0; clearTimeout(G._itT); G._itT = setTimeout(() => itn.style.opacity = 0, 1800); }
   $('dead' + 'msg').classList.toggle('hidden', !P.dead); if (P.dead) $('dead-sub').textContent = 'Renascendo em ' + Math.max(0, Math.ceil(P.respawnT)) + 's...';
@@ -8624,29 +8548,6 @@ function touchUpdate(dt) {
 }
 
 ;
-/* ===== 15h_skin.js ===== */
-/* ============================================================
-   15h_skin: aparência da interface
-   "azul" = painéis, abas, botões e barra de itens no estilo do Terraria mobile (padrão);
-   "escura" = o visual escuro original. Só liga/desliga uma folha de estilo (<style id="skin-blue|skin-dark">),
-   a escolha fica no aparelho (localStorage) e o botão está no menu de pausa.
-   ============================================================ */
-const UISKIN = { mode: 'blue' };
-function skinApply(mode) {
-  UISKIN.mode = mode === 'dark' ? 'dark' : 'blue';
-  const b = document.getElementById('skin-blue'), d = document.getElementById('skin-dark');
-  if (b) b.media = UISKIN.mode === 'blue' ? 'all' : 'not all';
-  if (d) d.media = UISKIN.mode === 'dark' ? 'all' : 'not all';
-  const btn = document.getElementById('p-skin'); if (btn) btn.textContent = 'Interface: ' + (UISKIN.mode === 'blue' ? 'azul (Terraria)' : 'escura');
-}
-function initSkin() {
-  let m = 'blue'; try { const v = localStorage.getItem('espadas120_skin'); if (v === 'dark' || v === 'blue') m = v; } catch (e) { }
-  skinApply(m);
-  const btn = document.getElementById('p-skin');
-  if (btn) btn.onclick = () => { skinApply(UISKIN.mode === 'blue' ? 'dark' : 'blue'); try { localStorage.setItem('espadas120_skin', UISKIN.mode); } catch (e) { } };
-}
-
-;
 /* ===== 16_main.js ===== */
 /* ============================================================
    16_main: inicialização, loop, renderização, input, câmera
@@ -8909,7 +8810,7 @@ function frame(now) {
   G.mouse.pressed = [false, false, false];
 }
 function initGame() {
-  initUI(); resize(); G.state = 'title'; initSky(11); initTouch(); initSkin();
+  initUI(); resize(); G.state = 'title'; initSky(11); initTouch();
   $('btn-help').onclick = () => showHelp(true); initWorldsUI();   // botões do título, mundos salvos e autosave (15e_worlds.js)
   $('p-resume').onclick = () => setPause(false); $('p-help').onclick = () => showHelp(true);
   $('p-sound').onclick = () => { Snd.mute(!Snd.muted); $('p-sound').textContent = 'Som: ' + (Snd.muted ? 'desligado' : 'ligado'); };

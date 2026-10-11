@@ -1,5 +1,5 @@
 'use strict';
-// Gamepad simulado (Gamepad API), injetado antes do jogo carregar. Usado por test_gamepad.js e shots_gamepad.js.
+// Gamepad simulado (Gamepad API), injetado antes do jogo carregar. Usado por test_gamepad.js (e pelas capturas em work/shots).
 //   MOCK    : cria window.__pad e navigator.getGamepads(); __setPad({botão: true}, [eixos]) aperta botões / move os analógicos
 //   BLOCKED : simula a API bloqueada (SecurityError), como em iframes de origem cruzada
 const MOCK = (() => {
