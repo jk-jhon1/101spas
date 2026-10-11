@@ -4,7 +4,7 @@
 const _ecCache = new Map();
 const STATUS_TINT = { freeze: [[140, 200, 255], .45], timestop: [[230, 210, 130], .4], burn: [[255, 120, 40], .25], poison: [[140, 220, 60], .25], curse: [[150, 60, 200], .3], rot: [[190, 60, 200], .3], shock: [[255, 240, 120], .3], panic: [[255, 130, 200], .22], corrode: [[160, 230, 60], .28], mark: [[240, 120, 240], .22] };
 function ec(e, hex) {
-  let c = _ecCache.get(hex); if (!c) { c = hex2rgb(hex); _ecCache.set(hex, c); }
+  let c = _ecCache.get(hex); if (!c) { c = hex[0] === 'r' ? (hex.match(/[\d.]+/g) || [0, 0, 0]).slice(0, 3).map(Number) : hex2rgb(hex); _ecCache.set(hex, c); }   // aceita "#rrggbb" e "rgb(r,g,b)" (shade() devolve rgb)
   if (e.flash > 0) return rgbs(c[0] + (255 - c[0]) * .85, c[1] + (255 - c[1]) * .85, c[2] + (255 - c[2]) * .85);
   for (const k in e.st) { const t = STATUS_TINT[k]; if (t) return rgbs(c[0] + (t[0][0] - c[0]) * t[1], c[1] + (t[0][1] - c[1]) * t[1], c[2] + (t[0][2] - c[2]) * t[1]); }
   if (e.elemCol) { const t = hex2rgb(e.elemCol); return rgbs(c[0] + (t[0] - c[0]) * .35, c[1] + (t[1] - c[1]) * .35, c[2] + (t[2] - c[2]) * .35); }
@@ -12,12 +12,15 @@ function ec(e, hex) {
 }
 const DRAW = {};
 function drawEnemy(g, e) {
-  const fx = Math.round(e.x + e.w / 2), fy = Math.round(e.y + e.h), fn = DRAW[e.d.draw || e.kind]; if (!fn) return;
-  g.save(); g.translate(fx, fy);
-  const sc = e.scale || 1; if (sc !== 1 && !e.boss) g.scale(sc, sc);
-  const R = (x, y, w, h, col) => { g.fillStyle = ec(e, col); g.fillRect(x, y, w, h); };
-  if (e.st.compress && !e.boss) g.scale(1, 1);
-  fn(g, e, R); g.restore();
+  const bd = (e.boss || e.bxm) && BOSSDRAW[e.d.draw || e.kind], fx = Math.round(e.x + e.w / 2), fy = Math.round(e.y + e.h), fn = DRAW[e.d.draw || e.kind]; if (!fn && !bd) return;
+  const sc = e.scale || 1, big = e.boss || sc > 1.3;
+  const hw = Math.ceil(big ? e.w * 1.3 * sc + 44 : (e.w + 34) * sc), up = Math.ceil(big ? e.h * 1.7 + 50 : (e.h + 26) * sc), dn = Math.ceil(big ? e.h * .6 + 36 : 16 * sc);
+  if (bd) bd(g, e, fx, fy);   /* chefes: sprites pintados quadro a quadro (05e_bossart.js), sem passar pelo contorno automático */
+  else drawPixelized(g, fx, fy, hw, up, dn, sg => {   // sprite vetorial -> pixel-art (alfa binário + contorno)
+    const R = (x, y, w, h, col) => { sg.fillStyle = ec(e, col); sg.fillRect(x, y, w, h); };
+    if (sc !== 1 && !e.boss) sg.scale(sc, sc);
+    fn(sg, e, R);
+  }, { alpha: e.ghostBody ? .72 : e.kind === 'slime' ? .94 : 1, ring: (e.kind === 'slime' || e.boss || e.w > 24 || e.h > 34) ? 2 : 1 });
   // indicadores de status
   const top = e.y - 6;
   if (e.st.stun) { for (let i = 0; i < 3; i++) { const a = G.t * 6 + i * 2.1; g.fillStyle = '#fde047'; g.fillRect(ecx(e) + Math.cos(a) * 9 - 1.5, top + Math.sin(a) * 2.5 - 1.5, 3, 3); } }
@@ -32,7 +35,8 @@ function drawEnemy(g, e) {
   }
 }
 function drawEnemyGlow(g, e) {
-  if (e.glowc) drawGlow(g, ecx(e), ecy(e), Math.max(e.w, e.h) * 1.4, e.glowc, .35 + .1 * Math.sin(G.t * 6 + e.x));
+  if (e._bl && e._bl.length) { const L = e._bl; for (let i = 0; i < L.length; i += 7) { g.globalAlpha = L[i + 6]; bossBlit(g, L[i], L[i + 1], L[i + 2], L[i + 3], L[i + 4], L[i + 5], null); } g.globalAlpha = 1; }   /* só os pixels que brilham: somam luz mesmo no escuro */
+  if (e.glowc) drawGlow(g, ecx(e), ecy(e), Math.max(e.w, e.h) * (e._bl ? 1.7 : 1.4), e.glowc, (.35 + .1 * Math.sin(G.t * 6 + e.x)) * (e._bl ? .38 : 1));
   if (e.elemCol && !e.glowc) drawGlow(g, ecx(e), ecy(e), Math.max(e.w, e.h) * 1.2, e.elemCol, .25);
   if (e.st.burn) drawGlow(g, ecx(e), ecy(e), Math.max(e.w, e.h), '#ff7a1a', .3);
   if (e.k === 'boss_eye' && e.ai.state === 'wind') drawGlow(g, ecx(e), ecy(e), 80, '#ef4444', .5);
@@ -47,32 +51,23 @@ DRAW.slime = (g, e, R) => {
   g.fillStyle = ec(e, e.col2); g.beginPath(); g.ellipse(-w * .18, -h * .66, w * .13, h * .13, -.5, 0, TAU); g.fill();
   g.fillStyle = '#10212c'; g.fillRect(f * w * .08 - 3, -h * .5, 2, 3); g.fillRect(f * w * .08 + 3, -h * .5, 2, 3);
 };
-DRAW.kslime = (g, e, R) => {
-  const a = e.ai, sq = clamp((a.squash || 0) + (e.onGround ? 0 : clamp(-e.vy / 1800, -.2, .3)), -.35, .35), w = e.w * (1 - sq * .5), h = e.h * (1 + sq);
-  g.fillStyle = ec(e, '#3b82f6'); g.globalAlpha = .9; g.beginPath(); g.moveTo(-w / 2, 0); g.bezierCurveTo(-w * .62, -h * 1.2, w * .62, -h * 1.2, w / 2, 0); g.closePath(); g.fill(); g.globalAlpha = 1;
-  const gr = g.createLinearGradient(0, -h, 0, 0); gr.addColorStop(0, 'rgba(255,255,255,.35)'); gr.addColorStop(1, 'rgba(0,0,0,.25)'); g.fillStyle = gr; g.beginPath(); g.moveTo(-w / 2, 0); g.bezierCurveTo(-w * .62, -h * 1.2, w * .62, -h * 1.2, w / 2, 0); g.closePath(); g.fill();
-  g.fillStyle = 'rgba(30,64,175,.55)'; g.beginPath(); g.ellipse(0, -h * .35, w * .25, h * .18, 0, 0, TAU); g.fill();
-  g.fillStyle = '#f4c430'; g.beginPath(); g.moveTo(-14, -h * .98); g.lineTo(-18, -h * 1.22); g.lineTo(-8, -h * 1.05); g.lineTo(0, -h * 1.3); g.lineTo(8, -h * 1.05); g.lineTo(18, -h * 1.22); g.lineTo(14, -h * .98); g.closePath(); g.fill(); g.strokeStyle = '#7a5a08'; g.lineWidth = 1.2; g.stroke();
-  g.fillStyle = '#ef4444'; g.fillRect(-1.5, -h * 1.12, 3, 3); g.fillStyle = '#fff'; g.fillRect(-w * .22, -h * .62, 8, 10); g.fillRect(w * .1, -h * .62, 8, 10); g.fillStyle = '#10212c'; g.fillRect(-w * .22 + 3, -h * .55, 4, 6); g.fillRect(w * .1 + 3, -h * .55, 4, 6);
-};
 // --- humanoides ---
 DRAW.humanoid = (g, e, R) => {
   const f = e.face, ph = e.age * (Math.abs(e.vx) > 5 ? 9 : 0), sw = Math.sin(ph), isM = e.k === 'zombie_desert';
   g.scale(f, 1);
-  const legs = (a, c) => { g.save(); g.translate(0, -9); g.rotate(a); R(-1.5, 0, 3, 9, c); g.restore(); };
-  legs(-sw * .7, shade(e.col2, -.2)); legs(sw * .7, e.col2);
-  R(-4, -18, 8, 9, isM ? '#e8dcb0' : '#5a6aa0'); R(-4, -11, 8, 2, e.col2);
-  if (isM) { R(-4, -15, 8, 1, '#b8a870'); R(-4, -12, 8, 1, '#b8a870'); }
-  R(-4, -26, 8, 8, e.col); R(-4, -27, 8, 2, isM ? '#e8dcb0' : e.col2); R(1, -23, 2, 2, '#ef4444');
-  g.save(); g.translate(0, -17); g.rotate(-.15 + sw * .1); R(0, -1.3, 9, 2.6, e.col); R(5, -1.3, 4, 2.6, e.col2); g.restore();
-  g.save(); g.translate(0, -17); g.rotate(.1 - sw * .1); R(0, -1.3, 8, 2.6, shade(e.col, -.2)); g.restore();
+  const o = { f: 1, skin: e.col, hair: isM ? '#e8dcb0' : e.col2, shirt: isM ? '#e8dcb0' : '#5a6aa0', pants: e.col2, boots: mix(hex2rgb(e.col2), [0, 0, 0], .45), eye: '#c81e1e', white: '#e9ecc4', hairStyle: isM ? 'bald' : 'short', tint: c => ec(e, c), bob: 0, air: false };
+  humanLegs(g, o, sw);
+  g.save(); g.translate(0, -17); g.rotate(.1 - sw * .1); humanArm(g, o, 8, true); g.restore();
+  humanUpper(g, o);
+  if (isM) { R(-4, -15, 8, 1, '#b8a870'); R(-4, -12, 8, 1, '#b8a870'); R(-5, -26, 10, 1, '#b8a870'); R(-5, -23, 10, 1, '#e8dcb0'); }
+  g.save(); g.translate(0, -17); g.rotate(-.15 + sw * .1); humanArm(g, o, 9, false); g.restore();
 };
 DRAW.skeleton = (g, e, R) => {
   const f = e.face, ph = e.age * (Math.abs(e.vx) > 5 ? 9 : 0), sw = Math.sin(ph), bone = e.col, dk = e.col2; g.scale(f, 1);
   const legs = (a, c) => { g.save(); g.translate(0, -9); g.rotate(a); R(-1, 0, 2, 9, c); R(-1.5, 8, 3, 1, c); g.restore(); };
   legs(-sw * .7, dk); legs(sw * .7, bone);
   R(-1, -18, 2, 9, bone); for (let i = 0; i < 4; i++) R(-4, -18 + i * 2.4, 8, 1.3, i % 2 ? dk : bone);
-  R(-4, -26, 8, 8, bone); R(-4, -19, 8, 1, dk); R(-3, -23, 2, 3, '#1a1a22'); R(1, -23, 2, 3, '#1a1a22'); R(-2, -20, 4, 1, '#1a1a22');
+  pixArt(g, -5, -28, SKULL_HEAD, { S: ec(e, bone), T: ec(e, dk), K: '#15151d' });
   g.save(); g.translate(0, -17); g.rotate(e.bow ? -.1 : .4 - sw * .3); R(0, -1, 8, 2, bone);
   if (e.bow) { g.strokeStyle = '#8a5c2c'; g.lineWidth = 1.5; g.beginPath(); g.arc(9, 0, 8, -1.2, 1.2); g.stroke(); g.strokeStyle = '#ddd'; g.lineWidth = .8; g.beginPath(); g.moveTo(9 + Math.cos(-1.2) * 8, Math.sin(-1.2) * 8); g.lineTo(9 + Math.cos(1.2) * 8, Math.sin(1.2) * 8); g.stroke(); }
   g.restore(); g.save(); g.translate(0, -17); g.rotate(.2 + sw * .3); R(0, -1, 7, 2, dk); g.restore();
@@ -161,27 +156,81 @@ DRAW.dummy = (g, e, R) => {
   g.fillStyle = '#d33'; g.beginPath(); g.arc(0, -22, 5, 0, TAU); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(0, -22, 3, 0, TAU); g.fill(); g.fillStyle = '#d33'; g.beginPath(); g.arc(0, -22, 1.2, 0, TAU); g.fill();
 };
 // --- chefes ---
-DRAW.beye = (g, e, R) => {
-  const P = G.P, cy = -e.h / 2, r = e.w / 2, ang = e.rot || 0, ph2 = e.hp / e.hpMax < .5;
-  if (ph2) { g.fillStyle = ec(e, '#a01818'); g.beginPath(); g.ellipse(0, cy, r * 1.05, r, 0, 0, TAU); g.fill(); g.fillStyle = '#300'; g.beginPath(); g.ellipse(Math.cos(ang) * r * .2, cy + Math.sin(ang) * r * .2 + 6, r * .7, r * .35, ang, 0, TAU); g.fill(); g.fillStyle = '#fff'; for (let i = 0; i < 7; i++) { g.beginPath(); g.moveTo(-r * .5 + i * r * .17, cy + 4); g.lineTo(-r * .5 + i * r * .17 + 4, cy + 16); g.lineTo(-r * .5 + i * r * .17 + 8, cy + 4); g.fill(); } }
-  g.fillStyle = ec(e, '#f4f1ea'); g.beginPath(); g.arc(0, cy - (ph2 ? 6 : 0), r * (ph2 ? .62 : 1), 0, TAU); g.fill(); g.strokeStyle = 'rgba(170,30,30,.6)'; g.lineWidth = 1.5; for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + .2; g.beginPath(); g.moveTo(Math.cos(a) * r * .95, cy + Math.sin(a) * r * .95); g.quadraticCurveTo(Math.cos(a + .2) * r * .7, cy + Math.sin(a + .2) * r * .7, Math.cos(a) * r * .45, cy + Math.sin(a) * r * .45); g.stroke(); }
-  const rr = r * (ph2 ? .62 : 1), oy = cy - (ph2 ? 6 : 0); g.fillStyle = ec(e, '#d62839'); g.beginPath(); g.arc(Math.cos(ang) * rr * .3, oy + Math.sin(ang) * rr * .3, rr * .5, 0, TAU); g.fill(); g.fillStyle = '#100'; g.beginPath(); g.arc(Math.cos(ang) * rr * .36, oy + Math.sin(ang) * rr * .36, rr * .25, 0, TAU); g.fill(); g.fillStyle = '#fff'; g.fillRect(Math.cos(ang) * rr * .3 - 4, oy + Math.sin(ang) * rr * .3 - 6, 4, 4);
+// Cada chefe é uma pilha de sprites pintados em 05e_bossart.js (corpo em cache por quadro de animação) mais as peças que se
+// mexem (lanterna, íris, anéis e orbes). Cada camada também guarda os pixels que brilham (e._bl) para o passe aditivo.
+let _bossScr = null;
+function bossBlit(g, img, ax, ay, cx, cy, flip, tint) {   // (cx,cy) do sprite cai em (ax,ay) do mundo; flip espelha em torno desse ponto
+  const w = img.width, h = img.height; let src = img;
+  if (tint) {
+    if (!_bossScr) _bossScr = document.createElement('canvas');
+    if (_bossScr.width < w || _bossScr.height < h) { _bossScr.width = Math.max(_bossScr.width, w); _bossScr.height = Math.max(_bossScr.height, h); }
+    const k = _bossScr.getContext('2d'); k.globalCompositeOperation = 'source-over'; k.clearRect(0, 0, w, h); k.drawImage(img, 0, 0);
+    k.globalCompositeOperation = 'source-atop'; k.fillStyle = 'rgba(' + tint[0] + ',' + tint[1] + ',' + tint[2] + ',' + tint[3] + ')'; k.fillRect(0, 0, w, h); k.globalCompositeOperation = 'source-over'; src = _bossScr;
+  }
+  if (flip) { g.save(); g.translate(ax, ay); g.scale(-1, 1); g.drawImage(src, 0, 0, w, h, -cx, -cy, w, h); g.restore(); }
+  else g.drawImage(src, 0, 0, w, h, ax - cx, ay - cy, w, h);
+}
+function bossTint(e) {   // clarão branco ao apanhar, ou a cor do status ativo
+  if (e.flash > 0) return [255, 255, 255, .85];
+  for (const k in e.st) { const t = STATUS_TINT[k]; if (t) return [t[0][0], t[0][1], t[0][2], t[1]]; }
+  return null;
+}
+function bossLayer(g, e, spr, ax, ay, cx, cy, flip, tint, emA) {
+  bossBlit(g, spr.c, ax, ay, cx, cy, flip, tint);
+  if (spr.em) e._bl.push(spr.em, ax, ay, cx, cy, flip, emA === undefined ? .55 : emA);
+}
+function bossBegin(e) { if (!e._bl) e._bl = []; e._bl.length = 0; return bossTint(e); }
+function bossShadow(g, e, cx, hw) {   // sombra achatada no chão sob os chefes voadores: some com a altura (até 16 blocos)
+  const wd = G.world, tx = Math.floor(cx / TS); let ty = Math.floor((e.y + e.h) / TS), k = 0;
+  while (k < 16 && !SOLID[wd.get(tx, ty)]) { ty++; k++; }
+  if (k >= 16) return;
+  const gy = ty * TS, t = (gy - (e.y + e.h)) / (16 * TS), w = Math.round(hw * (1 - t * .55)); if (w < 4) return;
+  g.fillStyle = 'rgba(8,12,34,' + (.4 * (1 - t * .8)).toFixed(2) + ')';
+  g.fillRect(cx - Math.round(w * .72), gy, Math.round(w * 1.44), 1); g.fillRect(cx - w, gy + 1, w * 2, 1); g.fillRect(cx - Math.round(w * .72), gy + 2, Math.round(w * 1.44), 1);
+}
+const BOSSDRAW = {};
+BOSSDRAW.kslime = (g, e, fx, fy) => {
+  const a = e.ai, sq = clamp((a.squash || 0) + (e.onGround ? 0 : clamp(-e.vy / 1800, -.2, .3)), -.35, .35), lv = Math.round(sq * 20), tint = bossBegin(e);
+  if (e.onGround) { const sw = Math.round(78 * (1 - lv / 20 * .5)); g.fillStyle = 'rgba(8,12,34,.34)'; g.fillRect(fx - (sw >> 1), fy - 1, sw, 2); g.fillRect(fx - ((sw - 12) >> 1), fy + 1, sw - 12, 1); }   // sombra achatada no chão
+  bossLayer(g, e, bossSpr('sl', lv, 0), fx, fy - 3, SL.CX, SL.CY, false, tint);
+  bossWarm('sl');
 };
-DRAW.bguard = (g, e, R) => {
-  const f = e.face, cy = -e.h / 2, fl = Math.sin(e.age * 6); g.scale(f, 1);
-  for (const s of [-1, 1]) { g.fillStyle = ec(e, '#4a0d0d'); g.beginPath(); g.moveTo(s * 6, cy - 6); g.lineTo(s * 46, cy - 30 - fl * 8); g.lineTo(s * 40, cy + 6); g.lineTo(s * 28, cy + 2); g.lineTo(s * 20, cy + 16); g.lineTo(s * 8, cy + 8); g.closePath(); g.fill(); g.strokeStyle = '#fb923c'; g.lineWidth = 1.4; g.stroke(); }
-  g.fillStyle = ec(e, '#7f1d1d'); g.beginPath(); g.moveTo(-16, cy + 10); g.lineTo(-18, cy - 14); g.lineTo(0, cy - 22); g.lineTo(18, cy - 14); g.lineTo(16, cy + 10); g.lineTo(8, cy + 32); g.lineTo(-8, cy + 32); g.closePath(); g.fill();
-  g.fillStyle = ec(e, '#b91c1c'); g.fillRect(-12, cy - 8, 24, 8); g.fillStyle = '#fb923c'; g.fillRect(-9, cy - 4, 18, 3);
-  g.fillStyle = ec(e, '#5a0a0a'); g.beginPath(); g.moveTo(-16, cy - 20); g.lineTo(-24, cy - 40); g.lineTo(-8, cy - 24); g.closePath(); g.fill(); g.beginPath(); g.moveTo(16, cy - 20); g.lineTo(24, cy - 40); g.lineTo(8, cy - 24); g.closePath(); g.fill();
-  g.fillStyle = '#fde047'; g.fillRect(-10, cy - 17, 6, 5); g.fillRect(4, cy - 17, 6, 5); g.fillStyle = '#7c1d1d'; g.fillRect(-6, cy - 7, 12, 3);
-  for (let i = 0; i < 5; i++) { g.fillStyle = 'rgba(251,146,60,' + (.6 - i * .1) + ')'; g.beginPath(); g.arc(-16 + i * 8 + Math.sin(e.age * 8 + i) * 2, cy + 32 + fl * 2 + (i % 2) * 4, 4 - i * .3, 0, TAU); g.fill(); }
+BOSSDRAW.beye = (g, e) => {
+  const ph2 = e.hp / e.hpMax < .5 ? 1 : 0, fr = Math.floor(e.age * 5) & 3, cx = Math.round(e.x + e.w / 2), cy = Math.round(e.y + e.h / 2), tint = bossBegin(e);
+  bossShadow(g, e, cx, 26);
+  const es = bossSpr('ey', ph2, fr); bossLayer(g, e, es, cx, cy, EY.CX, EY.CY, false, tint);
+  const ir = ph2 ? 9 : 13, iris = bossPart('iris' + ir, () => eyeIris(ir)), ang = e.rot || 0, off = es.er * .3;   // a íris acompanha o jogador
+  bossLayer(g, e, iris, cx + (es.ex - EY.CX) + Math.round(Math.cos(ang) * off), cy + (es.ey - EY.CY) + Math.round(Math.sin(ang) * off), iris.w >> 1, iris.h >> 1, false, tint, .5);
+  bossWarm('ey');
 };
-DRAW.bcolossus = (g, e, R) => {
-  const cy = -e.h / 2, r = e.w / 2, t = e.age, ph = e.hp / e.hpMax;
-  g.fillStyle = ec(e, '#1e1b4b'); g.beginPath(); g.arc(0, cy, r * .7, 0, TAU); g.fill();
-  g.save(); g.translate(0, cy); g.rotate(e.rot || 0); g.strokeStyle = ec(e, '#fbbf24'); g.lineWidth = 4; for (let i = 0; i < 3; i++) { g.beginPath(); g.ellipse(0, 0, r, r * (.3 + i * .22), i * 1.05, 0, TAU); g.stroke(); }
-  for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + t; g.fillStyle = ec(e, '#fde68a'); g.beginPath(); g.arc(Math.cos(a) * r * 1.05, Math.sin(a) * r * 1.05, 4.5, 0, TAU); g.fill(); } g.restore();
-  g.fillStyle = ec(e, '#fde68a'); g.beginPath(); g.arc(0, cy, r * .42, 0, TAU); g.fill(); const P = G.P, ang = Math.atan2(pcy(P) - ecy(e), pcx(P) - ecx(e));
-  g.fillStyle = ec(e, '#4f46e5'); g.beginPath(); g.arc(Math.cos(ang) * 8, cy + Math.sin(ang) * 8, r * .22, 0, TAU); g.fill(); g.fillStyle = '#05040f'; g.beginPath(); g.arc(Math.cos(ang) * 10, cy + Math.sin(ang) * 10, r * .1, 0, TAU); g.fill();
-  if (ph < .33) { g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = 1.4; for (let i = 0; i < 5; i++) { const a = i * 1.3 + t * 2; g.beginPath(); g.moveTo(Math.cos(a) * r * .5, cy + Math.sin(a) * r * .5); g.lineTo(Math.cos(a) * r * .9, cy + Math.sin(a) * r * .9); g.stroke(); } }
+BOSSDRAW.bguard = (g, e) => {
+  const ph2 = e.hp / e.hpMax < .5 ? 1 : 0, fr = Math.floor(e.age * 6) & 3, cx = Math.round(e.x + e.w / 2), cy = Math.round(e.y + e.h / 2), tint = bossBegin(e), f = e.face < 0 ? -1 : 1;
+  bossShadow(g, e, cx, 24);
+  bossLayer(g, e, bossSpr('gd', fr, ph2), cx, cy, GD.CX, GD.CY, f < 0, tint);
+  // lanterna: pêndulo preso à mão (balança sozinha e inclina com a velocidade); a corrente é desenhada pixel a pixel
+  const hx = cx + f * Math.round(GD.HX * GD.K), hy = cy + Math.round(GD.HY * GD.K) + 2, sw = Math.sin(e.age * 2.3) * .4 + clamp(-e.vx * f * .0011, -.55, .55), L = 14;
+  const lx = Math.round(hx + Math.sin(sw) * L), ly = Math.round(hy + Math.cos(sw) * L), n = Math.max(Math.abs(lx - hx), Math.abs(ly - hy), 1);
+  for (let i = 0; i <= n; i++) { g.fillStyle = i & 1 ? '#3a2c2e' : '#150f12'; g.fillRect(Math.round(hx + (lx - hx) * i / n), Math.round(hy + (ly - hy) * i / n), 1, 1); }
+  bossLayer(g, e, bossPart('lantern', guardLantern), lx, ly, 7, 0, false, tint, .7);
+  bossWarm('gd');
+};
+BOSSDRAW.bcolossus = (g, e) => {
+  const hp = e.hp / e.hpMax, ph = hp < .33 ? 3 : hp < .66 ? 2 : 1, fr = Math.floor(e.age * 4) & 3, cx = Math.round(e.x + e.w / 2), cy = Math.round(e.y + e.h / 2), tint = bossBegin(e), rot = e.rot || 0, R = 47;
+  // anéis dourados em órbita: a metade de trás vai antes do corpo, a da frente depois (pontos de 2 px, sem suavização)
+  const ring = (front) => {
+    g.fillStyle = front ? 'rgba(255,214,102,.95)' : 'rgba(176,128,32,.8)';
+    for (let i = 0; i < 3; i++) {
+      const th = i * 1.05 + rot, ct = Math.cos(th), st = Math.sin(th), rb = R * (.3 + i * .22);
+      for (let j = 0; j < 150; j++) { const t = j / 150 * TAU, s = Math.sin(t); if ((s > 0) !== front) continue; const px = R * Math.cos(t), py = rb * s; g.fillRect(Math.round(cx + px * ct - py * st) - 1, Math.round(cy + px * st + py * ct) - 1, 2, 2); }
+    }
+  };
+  bossShadow(g, e, cx, 44);
+  ring(false);
+  bossLayer(g, e, bossSpr('co', ph, fr), cx, cy, CO.CX, CO.CY, false, tint);
+  const P = G.P, ang = Math.atan2(pcy(P) - cy, pcx(P) - cx);   // íris dourada segue o jogador dentro da órbita
+  bossLayer(g, e, bossPart('coiris', colossusIris), cx + Math.round(Math.cos(ang) * 5.5), cy - 6 + Math.round(Math.sin(ang) * 3.5), 7, 7, false, tint, .35);
+  ring(true);
+  const orb = bossPart('orb4', () => bossOrb(4));
+  for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + e.age + rot; bossLayer(g, e, orb, cx + Math.round(Math.cos(a) * (R + 1)), cy + Math.round(Math.sin(a) * (R + 1)), orb.w >> 1, orb.h >> 1, false, tint, .6); }
+  bossWarm('co');
 };

@@ -75,11 +75,12 @@ function updateStatuses(e, dt) {
 // dano bruto (DoT etc.) sem defesa nem i-frame
 function dealRaw(e, v, col, small) {
   if (e.dead || e.invulnerable) return;
+  const bxh = e.bxh; if (bxh && bxh.hurt) { v = bxh.hurt(e.ai.x, e, v, { src: 'dot' }); if (!(v > 0)) return; v = Math.max(1, Math.round(v)); }   /* dano contínuo também passa pela mecânica do chefe novo */
   e.hp -= v; e.hurtT = .08; if (G.opts.showDps || e.isDummy) dpsPush(v, e);
   addText(ecx(e), e.y - 2, String(v), col, small ? 10 : 13, .7);
   if (e.hp <= 0) killEnemy(e, { src: 'dot', fx: false });
 }
-function dpsPush(v, e) { G.dpsLog.push([G.t, v]); }
+function dpsPush(v, e) { const L = G.dpsLog; L.push([G.t, v]); while (L.length && G.t - L[0][0] > 10) L.shift(); }   /* registro de dano dos últimos 10 s (usado pelos testes; não aparece mais na tela) */
 
 // ---- pipeline de dano no inimigo ----
 function hitEnemy(e, h) {
@@ -101,8 +102,9 @@ function hitEnemy(e, h) {
   let tm = 1; if (e.st.corrode) tm *= 1.25; if (e.st.curse) tm *= 1.2; if (e.st.compress) tm *= 1.2; if (e.st.mark) tm *= 1.15; if (e.dmgTakenMult) tm *= e.dmgTakenMult;
   let dmg = base * (crit ? 1 + cm : 1) * res * tm * rnd(.95, 1.05);
   if (h.pctMax) dmg += (e.isDummy ? 3000 : e.hpMax) * h.pctMax * (e.boss ? .25 : 1);
+  const bxh = e.bxh; if (bxh && bxh.hurt) { dmg = bxh.hurt(e.ai.x, e, dmg, h); if (!(dmg > 0)) { addText(ecx(e), e.y - 4, 'Imune', '#94a3b8', 12, .6); sfx('hit'); return { dmg: 0, crit: false, e, killed: false }; } }   /* chefes novos: mecânica própria de dano */
   dmg = Math.max(1, Math.round(dmg));
-  e.hp -= dmg; e.hurtT = .12; e.flash = .1; e.lastHit = G.t;
+  e.hp -= dmg; e.hurtT = .12; e.flash = .1; e.lastHit = G.t; if (bxh && bxh.after) bxh.after(e.ai.x, e, dmg, h);
   if (e.isDummy) { e.hp = e.hpMax; } if (G.opts.showDps || e.isDummy) dpsPush(dmg, e);
   // números
   const ecol = h.elem ? ({ fire: '#fb923c', ice: '#7dd3fc', lightning: '#fde047', poison: '#a3e635', shadow: '#c084fc', light: '#fef08a', blood: '#f87171' }[h.elem] || '#fff') : '#fff';
@@ -129,7 +131,9 @@ function hitEnemy(e, h) {
   return res_;
 }
 function killEnemy(e, h) {
-  if (e.dead) return; e.dead = true; e.hp = 0;
+  if (e.dead) return;
+  if (e.bxh && e.bxh.lethal && e.bxh.lethal(e.ai.x, e, h)) return;   /* ressurgir etc. */
+  e.dead = true; e.hp = 0; if (e.onDie) e.onDie(e, h);
   const P = G.P;
   burst(ecx(e), ecy(e), 14, { col: e.blood || '#c0392b', spd: 150, g: 500, life: .6, size: 3 }); sfx('kill');
   if (!e.harmless) {
@@ -155,7 +159,7 @@ function hurtPlayer(dmg, fromX, kb, o) {
   return true;
 }
 function healPlayer(n, silent) {
-  const P = G.P; if (!P || P.dead || n <= 0) return; const before = P.hp; P.hp = Math.min(P.maxHp, P.hp + n);
+  const P = G.P; if (!P || P.dead || n <= 0 || P.buffs.curse) return; const before = P.hp; P.hp = Math.min(P.maxHp, P.hp + n);
   if (!silent && P.hp > before) { addText(P.x + P.w / 2, P.y - 6, '+' + Math.round(P.hp - before), '#4ade80', 13); }
 }
 function addBuff(name, dur, data) { const P = G.P, b = P.buffs[name]; if (b) { b.t = Math.max(b.t, dur); Object.assign(b, data || {}); } else P.buffs[name] = Object.assign({ t: dur }, data || {}); }

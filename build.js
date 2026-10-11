@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// Concatena src/*.js + style.css + template.html em um único arquivo autocontido (index.html).
+// Concatena src/*.js + style.css (+ skin_blue.css e skin_dark.css, as duas aparências da interface) + template.html em um único arquivo autocontido (index.html).
 //   node build.js          (ou: npm run build)
 const fs = require('fs');
 const path = require('path');
@@ -16,10 +16,12 @@ const replaceAll = (s, from, to) => s.split(from).join(to);
 
 const files = fs.readdirSync(src).filter((f) => /^\d+.*\.js$/.test(f)).sort();
 const js = files.map((f) => `/* ===== ${f} ===== */\n` + read(f)).join('\n;\n');
-const css = read('style.css');
+const css = read('style.css'), skinDark = read('skin_dark.css'), skinBlue = read('skin_blue.css');
 const tpl = read('template.html');
 
 let html = replaceAll(tpl, '/*__STYLE__*/', css);
+html = replaceAll(html, '/*__SKIN_DARK__*/', skinDark);
+html = replaceAll(html, '/*__SKIN_BLUE__*/', skinBlue);
 html = replaceAll(html, '/*__SCRIPT__*/', replaceAll(js, '</script>', '<\\/script>'));
 
 const out = path.join(root, 'index.html');

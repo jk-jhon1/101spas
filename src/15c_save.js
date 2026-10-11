@@ -1,7 +1,7 @@
 /* ============================================================
    15c_save: biblioteca de mundos (vários mundos salvos), salvamento automático e migração do save antigo
    - Armazenamento: IndexedDB, banco "espadas120" com 3 lojas:
-       worlds  metadados leves de cada mundo (nome, semente, modo, progresso, miniatura…) — é o que a tela "Meus Mundos" lista
+       worlds  metadados leves de cada mundo (nome, semente, modo, progresso, miniatura, aparelho de origem…) — é o que a tela "Meus Mundos" lista
        data    o mundo em si (blocos comprimidos em RLE + jogador, inventário, baús, NPCs…)
        seeds   TODAS as sementes já sorteadas: uma semente nunca é reutilizada, nem depois de o mundo ser excluído
    - Sem IndexedDB (iframe com sandbox, alguns modos privados) os mundos ficam só em memória, durante a sessão, com aviso na tela.
@@ -172,6 +172,10 @@ const Worlds = {
       playSec: Math.round(G.t || 0), day: G.day, stage: G.stage, bosses: Object.values(G.flags).filter(Boolean).length,
       layoutKey: wd.layoutKey(), runs: old && old.runs ? old.runs : wd.biomeRuns(), thumb: old ? old.thumb : null, bytes: snap.bytes, legacy: old ? !!old.legacy : false,
     };
+    // de onde o mundo veio: criado neste aparelho (código aleatório, não o IP) ou importado de um arquivo (ver 15f_transfer.js)
+    const dv = typeof Device !== 'undefined' ? Device.init() : null;
+    meta.dev = (old && old.dev) || (dv ? dv.id : ''); meta.devLabel = (old && old.devLabel) || (dv ? dv.label : '');
+    if (old && old.imported) { meta.imported = true; meta.importedAt = old.importedAt; meta.importedFrom = old.importedFrom; }
     if (opts.thumb || !meta.thumb || (++this._n % 10) === 0) { try { meta.thumb = renderThumb(wd); } catch (e) { console.warn('miniatura falhou', e); } }
     const job = this.q.then(async () => {
       await this.init();
@@ -181,7 +185,8 @@ const Worlds = {
         return false;
       }
       this._warned = false;
-      if (!opts.silent) toast('Mundo salvo (' + Math.round(meta.bytes / 1024) + ' KB).', '#86efac'); else if (typeof showSaveBadge === 'function') showSaveBadge();
+      if (!opts.silent) toast('Mundo salvo neste aparelho (' + Math.round(meta.bytes / 1024) + ' KB).', '#86efac'); else if (typeof showSaveBadge === 'function') showSaveBadge();
+      if (typeof Protect !== 'undefined') Protect.autoAsk();   // 1ª vez neste aparelho: pede ao navegador para não apagar os mapas (não espera a resposta)
       return true;
     }).catch(e => {
       console.warn('salvamento falhou', e);

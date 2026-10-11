@@ -184,7 +184,7 @@ function useHeldItem(P, dt, pressed) {
 function useConsumable(P, s, it) {
   const creative = G.mode === 'creative';
   const consume = () => { if (creative) return; s.n--; if (s.n <= 0) P.inv[P.sel] = null; invDirty(); };
-  if (it.use === 'heal') { if (P.potionCd > 0) { toast('Poção em recarga (' + Math.ceil(P.potionCd) + 's)', '#fbbf24'); return; } if (P.hp >= P.maxHp) return; healPlayer(it.heal); P.potionCd = creative ? 2 : 30; sfx('heal'); burst(P.x + P.w / 2, P.y + P.h / 2, 14, { col: ['#4ade80', '#bbf7d0'], spd: 90, g: -60, glow: true, life: .6 }); consume(); }
+  if (it.use === 'heal') { if (P.buffs.curse) { toast('Maldição: você não consegue se curar!', '#c084fc'); return; } if (P.potionCd > 0) { toast('Poção em recarga (' + Math.ceil(P.potionCd) + 's)', '#fbbf24'); return; } if (P.hp >= P.maxHp) return; healPlayer(it.heal); P.potionCd = creative ? 2 : 30; sfx('heal'); burst(P.x + P.w / 2, P.y + P.h / 2, 14, { col: ['#4ade80', '#bbf7d0'], spd: 90, g: -60, glow: true, life: .6 }); consume(); }
   else if (it.use === 'life') { if (P.crystals >= 15) { toast('Vida máxima já no limite.', '#fbbf24'); return; } P.crystals++; recalcStats(); P.hp = P.maxHp; sfx('heal'); toast('Vida máxima aumentada! (' + P.maxHp + ')', '#f472b6'); consume(); }
   else if (it.use.startsWith('boss_')) { if (summonBoss(it.use.slice(5))) consume(); }
 }
@@ -196,14 +196,15 @@ function updatePlayer(dt) {
   const k = KEYS, mouse = G.mouse, ui = G.ui && G.ui.blocking;
   // timers
   P.inv_ = Math.max(0, P.inv_ - dt); P.flash = Math.max(0, P.flash - dt); P.kbT = Math.max(0, P.kbT - dt); P.potionCd = Math.max(0, P.potionCd - dt); P.armT = Math.max(0, (P.armT || 0) - dt);
-  for (const n in P.buffs) { const b = P.buffs[n]; b.t -= dt; if (b.t <= 0) { delete P.buffs[n]; continue; } if (n === 'regen') { b.acc = (b.acc || 0) + (b.hps || 1) * dt; if (b.acc >= 1) { healPlayer(1, true); b.acc -= 1; } } }
+  for (const n in P.buffs) { const b = P.buffs[n]; b.t -= dt; if (b.t <= 0) { delete P.buffs[n]; continue; } if (n === 'bleed') { b.acc = (b.acc || 0) + dt; if (b.acc >= .5) { b.acc -= .5; hurtPlayer(Math.round((b.dmg || 4) * (b.stacks || 1)), undefined, 0, { pierce: true, inv: .1 }); } } if (n === 'regen') { b.acc = (b.acc || 0) + (b.hps || 1) * dt; if (b.acc >= 1) { healPlayer(1, true); b.acc -= 1; } } }
   // ambiente
   const liq = liqOf(P); P.inWater = liq.water > .3 || liq.lava > .3; P.inLava = liq.lava > .25;
   const wasWater = P._wasWater; if (P.inWater && !wasWater) { sfx('splash'); burst(P.x + P.w / 2, P.y + P.h, 12, { col: ['#60a5fa', '#bfdbfe'], spd: 120, g: 400, life: .5, ang: -PI / 2, spread: 2 }); } P._wasWater = P.inWater;
   if (P.inLava) { P.lavaT -= dt; if (P.lavaT <= 0) { P.lavaT = .5; hurtPlayer(22 + Math.round(G.stage * 6), undefined, 0, { pierce: true, inv: .3 }); } }
   // entrada horizontal
-  const dir = (k.KeyD || k.ArrowRight || k.PadRight ? 1 : 0) - (k.KeyA || k.ArrowLeft || k.PadLeft ? 1 : 0);
-  const sb = P.buffs.speed ? P.buffs.speed.mult : 1;
+  let dir = (k.KeyD || k.ArrowRight || k.PadRight ? 1 : 0) - (k.KeyA || k.ArrowLeft || k.PadLeft ? 1 : 0);
+  if (P.buffs.confuse) dir = -dir; if (P.buffs.stun) dir = 0;   /* debuffs dos chefes */
+  const sb = (P.buffs.speed ? P.buffs.speed.mult : 1) * (P.buffs.slow ? P.buffs.slow.mult : 1);
   let maxV = 150 * (1 + P.stats.spd) * sb * (P.inWater ? (P.inLava ? .45 : .7) : 1);
   if (ui) { /* UI aberta: sem movimento por mouse, teclado continua */ }
   if (P.kbT <= 0) {
@@ -218,11 +219,13 @@ function updatePlayer(dt) {
     if (jumpKey) P.vy = approach(P.vy, -170, 1200 * dt); else P.vy = approach(P.vy, 70, 400 * dt);
     if (P.inLava) P.vy = Math.min(P.vy, 60);
   } else {
-    if (P.jbuf > 0 && P.coyote > 0) { P.vy = -470; P.jbuf = 0; P.coyote = 0; sfx('jump'); }
+    if (P.jbuf > 0 && P.coyote > 0 && !P.buffs.stun) { P.vy = -470; P.jbuf = 0; P.coyote = 0; sfx('jump'); }
     if (!jumpKey && P.vy < -180) P.vy *= Math.pow(.0008, dt);
     let g = P.vy < 0 ? GRAV : GRAV * 1.12, maxFall = MAXFALL;
     if (P.slowfall) { g *= 1 - P.slowfall * .8; maxFall *= 1 - P.slowfall; }
+    if (P.buffs.floaty) { g *= .32; maxFall *= .4; }
     P.vy = Math.min(P.vy + g * dt, maxFall);
+    if (P.buffs.gravflip) { P.vy -= g * dt * 1.85; P.vy = Math.max(P.vy, -240); if (P.y < 3 * TS) { P.y = 3 * TS; P.vy = Math.max(0, P.vy); } }
   }
   P.slowfall = 0;
   // queda
@@ -246,7 +249,7 @@ function updatePlayer(dt) {
   if (P.cb.sw) fxCall(P.cb.sw, 'tick', P, dt);
   // usar item
   const lmb = mouse.down[0] && !ui;
-  if (lmb) useHeldItem(P, dt, mouse.pressed[0]); else { P.mine.p = Math.max(0, P.mine.p - dt * 2); }
+  if (lmb && !P.buffs.silence && !P.buffs.stun) useHeldItem(P, dt, mouse.pressed[0]); else { P.mine.p = Math.max(0, P.mine.p - dt * 2); }
   if (mouse.pressed[2] && !ui) interact(P);
   updateSwings(P, dt);
   // revelar mapa
@@ -288,25 +291,22 @@ const SKIN = '#f2c28b', HAIR = '#5b3a24';
 function drawPlayer(g, P, ghostAlpha) {
   const alpha = (ghostAlpha !== undefined ? ghostAlpha : 1) * (P.buffs.invis ? .28 : 1) * ((P.inv_ > 0 && ((P.inv_ * 18) | 0) % 2) ? .5 : 1);
   if (alpha <= 0.02) return;
-  const f = P.face, bx = Math.round(P.x + P.w / 2), by = Math.round(P.y + P.h);
+  const bx = Math.round(P.x + P.w / 2), by = Math.round(P.y + P.h);
+  drawPixelized(g, bx, by, 60, 66, 14, sg => drawPlayerBody(sg, P), { alpha, ring: 1, hi: .2, lo: .22 });
+}
+function drawPlayerBody(g, P) {
+  const f = P.face;
   const arm = P.equip.armor ? IT[P.equip.armor.id].color : null;
-  const shirt = arm ? shade(arm, -.1) : '#3b82f6', pants = arm ? shade(arm, -.35) : '#334155', boots = arm ? shade(arm, -.55) : '#4a3426', trim = arm ? shade(arm, .35) : '#60a5fa';
-  g.save(); g.translate(bx, by); g.globalAlpha = alpha; if (ghostAlpha !== undefined) { g.filter = 'none'; }
+  const ac = arm ? hex2rgb(arm) : null, ho = { f, skin: SKIN, hair: HAIR, shirt: ac ? mix(ac, [0, 0, 0], .1) : '#3b82f6', pants: ac ? mix(ac, [0, 0, 0], .35) : '#43567f', boots: ac ? mix(ac, [0, 0, 0], .55) : '#4a3426', trim: ac ? mix(ac, [255, 255, 255], .35) : '#60a5fa', helm: arm };
   const walking = Math.abs(P.vx) > 12 && P.onGround, ph = P.anim.walk, sw = walking ? Math.sin(ph) : 0, air = !P.onGround && !P.inWater;
   const bob = walking ? -Math.abs(Math.sin(ph)) * 1.2 : 0;
   const rect = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
-  // perna de trás / frente
-  const legs = (a, back) => { g.save(); g.translate(back ? -1.5 : 1.5, -9 + bob); g.rotate(air ? (back ? -.5 : .35) : a); rect(-1.5, 0, 3, 9, back ? shade(pants, -.2) : pants); rect(-1.5, 7, 3, 2, back ? shade(boots, -.2) : boots); g.restore(); };
-  legs(-sw * .8 * f, true); legs(sw * .8 * f, false);
+  ho.bob = bob; ho.air = air; humanLegs(g, ho, sw);   // pernas em pixel-art
   // braço de trás
   const sh = { x: 0, y: -17 + bob };
-  const armBack = () => { g.save(); g.translate(sh.x, sh.y); g.rotate((air ? -.6 : -sw * .7) * f + (f > 0 ? 1.45 : PI - 1.45) - (f > 0 ? 0 : 0)); rect(0, -1.3, 7, 2.6, shade(SKIN, -.15)); rect(0, -1.3, 3, 2.6, shade(shirt, -.25)); g.restore(); };
+  const armBack = () => { g.save(); g.translate(sh.x, sh.y); g.rotate((air ? -.6 : -sw * .7) * f + (f > 0 ? 1.45 : PI - 1.45)); humanArm(g, ho, 7, true); g.restore(); };
   armBack();
-  // tronco
-  rect(-4, -18 + bob, 8, 9, shirt); rect(-4, -18 + bob, 8, 2, trim); rect(-4, -11 + bob, 8, 2, shade(pants, .1)); rect(-1, -16 + bob, 2, 5, shade(shirt, -.15));
-  // cabeça
-  rect(-4, -26 + bob, 8, 8, SKIN); rect(-4, -27 + bob, 8, 3, HAIR); rect(f > 0 ? -5 : 3, -27 + bob, 2, 7, HAIR); rect(f > 0 ? 1 : -3, -23 + bob, 2, 2, '#fff'); rect(f > 0 ? 2 : -3, -23 + bob, 1, 2, '#1a1a2e');
-  if (arm) { rect(-4, -27 + bob, 8, 2, shade(arm, .1)); rect(-4, -28 + bob, 8, 1, shade(arm, .4)); }
+  humanUpper(g, ho);   // tronco + cabeça em pixel-art
   // braço da frente + item
   const cb = P.cb, main = cb.main && cb.main.t >= 0 && cb.main.t < cb.main.dur + .02 ? cb.main : null, it = heldItem();
   let armAng, itemAng = null, hand;
@@ -314,13 +314,12 @@ function drawPlayer(g, P, ghostAlpha) {
   else if (P.armT > 0 && it && (IT[it.id].type === 'pick' || IT[it.id].type === 'block' || IT[it.id].type === 'wall')) {
     const wob = IT[it.id].type === 'pick' ? Math.sin(G.t * 16) * .8 : 0; armAng = P.atkAim - .5 + wob + (IT[it.id].type === 'pick' ? .5 : .5); itemAng = armAng; hand = { x: sh.x + Math.cos(armAng) * ARM, y: sh.y + Math.sin(armAng) * ARM };
   } else { armAng = (f > 0 ? 1.15 : PI - 1.15) + (air ? (f > 0 ? -.7 : .7) : sw * .6 * f); hand = { x: sh.x + Math.cos(armAng) * ARM, y: sh.y + Math.sin(armAng) * ARM }; itemAng = (f > 0 ? -.95 : PI + .95); if (air) itemAng = (f > 0 ? -1.2 : PI + 1.2); }
-  g.save(); g.translate(sh.x, sh.y); g.rotate(armAng); rect(0, -1.3, ARM, 2.6, SKIN); rect(0, -1.3, 3, 2.6, shirt); g.restore();
+  g.save(); g.translate(sh.x, sh.y); g.rotate(armAng); humanArm(g, ho, ARM, false); g.restore();
   if (it) {
     const t = IT[it.id];
     if (t.type === 'sword') { const spr = getSwordSprite(t.sw); g.save(); g.translate(hand.x, hand.y); g.rotate(itemAng); if (Math.cos(itemAng) < 0) g.scale(1, -1); g.imageSmoothingEnabled = false; g.drawImage(spr.c, -spr.ox, -spr.oy); g.restore(); }
-    else if (t.type === 'pick' || ((t.type === 'block' || t.type === 'wall') && P.armT > 0)) { const c = iconCanvas(it.id); g.save(); g.translate(hand.x, hand.y); g.rotate(itemAng + (t.type === 'pick' ? .8 : 0)); g.imageSmoothingEnabled = true; const sz = t.type === 'pick' ? 20 : 11; g.drawImage(c, -sz / 2, -sz * .85, sz, sz); g.restore(); }
+    else if (t.type === 'pick' || ((t.type === 'block' || t.type === 'wall') && P.armT > 0)) { const c = iconCanvas(it.id); g.save(); g.translate(hand.x, hand.y); g.rotate(itemAng + (t.type === 'pick' ? .8 : 0)); g.imageSmoothingEnabled = false; const sz = t.type === 'pick' ? 20 : 11; g.drawImage(c, -sz / 2, -sz * .85, sz, sz); g.restore(); }
   }
-  g.restore();
 }
 function drawGhostSwing(g, P, inst) { // clone sombrio (Aço Noturno)
   if (inst.t < 0 || inst.t > inst.dur + .05) return;

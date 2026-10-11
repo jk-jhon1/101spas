@@ -3,12 +3,12 @@ const fs = require('fs'), vm = require('vm');
 const order = fs.readdirSync(__dirname + '/../src').filter(f => /^\d+.*\.js$/.test(f)).sort();
 const use = order.filter(f => !/^(1[4-9]|2\d)_/.test(f) && !/gamepad/.test(f));  // UI/main/controle (precisam de DOM) ficam de fora
 let code = use.map(f => fs.readFileSync(__dirname + '/../src/' + f, 'utf8')).join('\n;\n');
-code += `\n;globalThis.__api = { SWORDS, IT, RECIPES, TD, T, TIERS, FX, G, STATION_NAME };`;
+code += `\n;globalThis.__api = { SWORDS, IT, RECIPES, TD, T, TIERS, FX, G, STATION_NAME, BXLIST, BX_ACTS, BXART, ED, BX_BIO, BX_LAY };`;
 const ctx = { console, Math, Date, Uint8Array, Int16Array, Float32Array, Uint8ClampedArray, Set, Map, Array, Object, String, Number, JSON, performance: { now: () => Date.now() },
   document: { createElement: () => ({ getContext: () => ({}), width: 0, height: 0 }) }, window: {}, ImageData: function () {} };
 ctx.globalThis = ctx; vm.createContext(ctx);
 try { vm.runInContext(code, ctx); } catch (e) { console.error('LOAD ERROR:', e.stack.split('\n').slice(0, 6).join('\n')); process.exit(1); }
-const { SWORDS, IT, RECIPES, TIERS, STATION_NAME } = ctx.__api;
+const { SWORDS, IT, RECIPES, TIERS, STATION_NAME, BXLIST, BX_ACTS, BXART, ED, BX_BIO, BX_LAY } = ctx.__api;
 let errs = 0; const err = m => { console.log('  ✗', m); errs++; };
 console.log('files:', use.join(' '));
 console.log('swords:', SWORDS.length);
@@ -48,4 +48,27 @@ for (let t = 1; t <= 6; t++) {
   md += '\n';
 }
 fs.writeFileSync(__dirname + '/../docs/catalogo_120_espadas.md', md);
+// ---- 50 chefes novos: dados completos + docs/chefes_novos.md ----
+console.log('chefes novos:', BXLIST.length);
+if (BXLIST.length !== 50) err('esperado 50 chefes novos, há ' + BXLIST.length);
+const bsw = new Set(), bnm = new Set();
+for (const d of BXLIST) {
+  const ed = ED['bx_' + d.id], miss = ['n', 'act', 'w', 'h', 'hp', 'dmg', 'coin', 'sword', 'rec', 'mech', 'moves', 'acc'].filter(k => d[k] === undefined || d[k] === null);
+  if (miss.length) err('chefe ' + d.id + ' sem ' + miss.join(',')); if (!ed || !ed.boss) err('chefe sem entrada em ED: ' + d.id);
+  if (!BXART[d.id]) err('chefe sem arte: ' + d.id); if (!IT[d.sword]) err('espada inexistente em ' + d.id + ': ' + d.sword); if (!IT['sg_' + d.id]) err('sem sigilo de invocação: ' + d.id);
+  if (!d.kit && !d.pick) err('chefe sem repertório (kit/pick): ' + d.id); for (const k of [].concat(...(d.kit || []))) if (!d.moves[k]) err('golpe inexistente ' + k + ' em ' + d.id);
+  if (bsw.has(d.sword)) err('espada repetida: ' + d.sword); bsw.add(d.sword); if (bnm.has(d.n)) err('nome repetido: ' + d.n); bnm.add(d.n);
+}
+let bm = '# Chefes novos — 50 (Atos I a IV)\n\n> Gerado automaticamente a partir dos dados do jogo (`src/13d..13g_bx_*.js`). Cada chefe tem **visual próprio** (pintado em `src/05g..05j_bxart*.js`, mesmo estilo dos 4 chefes anteriores: corpo escuro, brilho de uma cor, halo) e **uma mecânica única**.\n> **Como invocar:** no Criativo, Arsenal → *Inimigos & Chefes*; no modo Aventura, crie o **Sigilo** do chefe (receita abaixo) e use-o (a condição, quando houver, é o local/hora). **Espada:** cada chefe larga uma espada garantida (continua podendo ser forjada).\n\n';
+const AN = BX_ACTS;
+for (let a = 1; a <= 4; a++) {
+  bm += '## ' + AN[a].n + ' (' + BXLIST.filter(d => d.act === a).length + ')\n\nEstação do Sigilo: **' + STATION_NAME[AN[a].st] + '** · estágio do mundo mínimo: ' + AN[a].stage + '\n\n| # | Chefe | Vida | Dano | Mecânica única | Sigilo (receita) | Condição | Espada |\n|---|---|---|---|---|---|---|---|\n';
+  for (const d of BXLIST.filter(x => x.act === a)) {
+    const rc = RECIPES.find(r => r.out === 'sg_' + d.id), ing = rc ? Object.keys(rc.ing).map(k => rc.ing[k] + '× ' + (IT[k] ? IT[k].n : k)).join(', ') : '';
+    const c = d.cond || {}, ct = [c.night && 'à noite', c.day && 'de dia', c.layer && ('em ' + BX_LAY[c.layer]), c.biome && ('bioma ' + BX_BIO[c.biome])].filter(Boolean).join(', ') || '—';
+    bm += '| ' + String(d.i + 1).padStart(2, '0') + ' | **' + d.n + '** | ' + d.hp + ' | ' + d.dmg + ' | ' + d.mech.replace(/\|/g, '/') + ' | ' + ing + ' | ' + ct + ' | ' + String(d.sword).replace('s', '') + ' ' + (IT[d.sword] ? IT[d.sword].n : '') + ' |\n';
+  }
+  bm += '\n';
+}
+fs.writeFileSync(__dirname + '/../docs/chefes_novos.md', bm);
 console.log(errs ? ('ERROS: ' + errs) : 'CATÁLOGO OK');

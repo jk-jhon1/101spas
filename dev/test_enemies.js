@@ -28,7 +28,7 @@ const JS = () => {
     } catch (er) { entry.err = String(er && er.stack || er).split('\n').slice(0, 3).join(' | '); }
     res.push(entry);
   };
-  for (const key of Object.keys(ED)) { if (key === 'dummy') continue; run(key, 0, null, (key === 'shark' || key === 'piranha') ? 'water' : (key === 'imp' || key === 'hellbat' || key === 'slime_lava') ? 'hell' : 'surface'); }
+  for (const key of Object.keys(ED)) { if (key === 'dummy' || ED[key].bx || key === 'bx_min') continue;   /* os 50 chefes novos e seus lacaios têm o próprio teste: dev/test_bx.js */ run(key, 0, null, (key === 'shark' || key === 'piranha') ? 'water' : (key === 'imp' || key === 'hellbat' || key === 'slime_lava') ? 'hell' : 'surface'); }
   for (const el of Object.keys(ELEMS)) run('zombie', 2, el); for (const el of ['fire', 'ice', 'time']) run('slime_blue', 2, el); run('eye', 2, 'lightning'); run('skeleton', 3, 'blood');
   G.stage = 0;
   return res;

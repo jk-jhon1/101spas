@@ -76,6 +76,13 @@ function drawIconSpec(g, spec, it) {
       else { const pts = []; for (let i = 0; i < 10; i++) { const a = -PI / 2 + i / 10 * TAU, r = i % 2 ? 5 : 13; pts.push([16 + Math.cos(a) * r, 16 + Math.sin(a) * r]); } poly(g, pts, '#fbbf24'); circ(g, 16, 16, 3, '#4f46e5', '#1e1b4b'); }
       break;
     }
+    case 'sigil': {   // pedra de invocação dos chefes novos: disco escuro com runa luminosa (única por chefe)
+      const n = spec[2] || 0; glowDot(g, 16, 16, 15, col, .5); circ(g, 16, 16, 12, '#14121c', dk, 1.4); circ(g, 16, 16, 9.5, '#262035', null);
+      const k = 4 + n % 3, pts = []; for (let i = 0; i < k; i++) { const a = hash2(n, i, 3) * TAU, r = 3 + hash2(n, i, 4) * 6; pts.push([16 + Math.cos(a) * r, 16 + Math.sin(a) * r]); }
+      g.strokeStyle = lt; g.lineWidth = 1.7; g.lineCap = 'round'; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < k; i++) g.lineTo(pts[i][0], pts[i][1]); if (n % 2) g.closePath(); g.stroke();
+      g.fillStyle = '#fff'; for (const p of pts.slice(0, 2)) g.fillRect(Math.round(p[0]) - 1, Math.round(p[1]) - 1, 2, 2);
+      g.strokeStyle = col; g.lineWidth = 1.2; g.beginPath(); g.arc(16, 16, 12, 0, TAU); g.stroke(); break;
+    }
     case 'pick': {
       g.save(); g.translate(16, 16); g.rotate(.78); g.fillStyle = '#7a4e2a'; g.fillRect(-1.6, -9, 3.2, 21); g.fillStyle = '#9a6a3a'; g.fillRect(-1.6, -9, 1.2, 21); g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 1; g.strokeRect(-1.6, -9, 3.2, 21);
       g.beginPath(); g.moveTo(-13, -4); g.bezierCurveTo(-7, -13, 7, -13, 13, -4); g.lineTo(11, -2); g.bezierCurveTo(6, -8, -6, -8, -11, -2); g.closePath(); g.fillStyle = md; g.fill(); g.strokeStyle = 'rgba(0,0,0,.7)'; g.lineWidth = 1.4; g.stroke(); g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(-6, -10, 8, 1.5); g.restore(); break;
@@ -196,19 +203,23 @@ function getSwordSprite(sw) {
 function mid(a, b) { return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2]; }
 
 // ---------------- ÍCONES (canvas 48x48 -> data URL) ----------------
-function iconCanvas(id) {
+function iconCanvas(id) {   // ícones 32x32 em pixel-art (alfa binário, sem suavização)
   if (_icoCache[id]) return _icoCache[id];
-  const it = IT[id]; const c = mk(48, 48), g = c.getContext('2d');
+  const it = IT[id]; const c = mk(32, 32), g = c.getContext('2d', { willReadFrequently: true });
   if (!it) { _icoCache[id] = c; return c; }
   if (it.type === 'sword') {
     const sw = it.sw, spr = getSwordSprite(sw), tcol = TIERS[sw.tierLevel].col;
-    glowDot(g, 24, 24, 24, tcol, .28);
-    if (sw.look.glow) glowDot(g, 24, 24, 20, sw.look.glow, .35);
-    g.save(); g.translate(24, 24); g.rotate(-PI / 4);
-    const sc = clamp(40 / (.707 * spr.w + 7), .7, 1.9); g.scale(sc, sc);
-    g.imageSmoothingEnabled = false; g.drawImage(spr.c, -spr.w / 2, -spr.h / 2); g.restore();
+    glowDot(g, 16, 16, 16, tcol, .22);
+    if (sw.look.glow) glowDot(g, 16, 16, 13, sw.look.glow, .3);
+    const t = mk(32, 32), tg = t.getContext('2d', { willReadFrequently: true });
+    tg.translate(16, 16); tg.rotate(-PI / 4);
+    const sc = clamp(27 / (.707 * spr.w + 2), .5, 1.4); tg.scale(sc, sc);
+    tg.imageSmoothingEnabled = false; tg.drawImage(spr.c, -spr.w / 2, -spr.h / 2);
+    pixelizeCanvas(t, { th: 110, outline: false, shade: false });
+    g.drawImage(t, 0, 0);
   } else {
-    g.scale(1.5, 1.5); drawIconSpec(g, it.ic || ['x'], it);
+    drawIconSpec(g, it.ic || ['x'], it);
+    pixelizeCanvas(c, { th: 140, outline: false, shade: false });
   }
   _icoCache[id] = c; return c;
 }

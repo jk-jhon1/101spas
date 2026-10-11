@@ -85,6 +85,7 @@ function rollDrops(e, h) {
   if (!e.harmless && Math.random() < .35) dropItem('torch', rndi(1, 3), x, y - 4);
 }
 function bossLoot(e) {
+  if (e.d.bx) return bxLoot(e);
   const x = ecx(e), y = ecy(e), k = e.k;
   const rain = (id, n) => { for (let i = 0; i < n; i += Math.max(1, Math.ceil(n / 8))) dropItem(id, Math.min(Math.ceil(n / 8) || 1, n - i), x + rnd(-30, 30), y + rnd(-20, 10), rnd(-120, 120), rnd(-300, -150)); };
   if (k === 'boss_slime') { rain('coin', rndi(70, 110)); rain('gel', rndi(40, 60)); dropItem('life_crystal', 1, x, y); dropItem(pick(['s003', 's009', 's011', 's015', 's017', 's010']), 1, x, y); dropItem('acc_boots', 1, x + 10, y); dropItem('potion1', 4, x - 10, y); }
@@ -101,6 +102,7 @@ function bossDefeated(e) {
     G.flags.guardian = true; G.stage = Math.max(G.stage, 2);
     spawnHardmodeOres(G.world); toast('O Guardião do Abismo caiu... O HARDMODE começou! Novos minérios surgiram nas profundezas e os inimigos ficaram muito mais fortes.', '#fb923c', 9); sfx('thunder');
   }
+  else if (e.d.bx) bxDefeated(e);
   else if (k === 'boss_colossus') { G.flags.colossus = true; G.stage = Math.max(G.stage, 3); toast('VITÓRIA! O Colosso Estelar foi derrotado e você obteve o Núcleo Mítico! As espadas do Tier 6 agora podem ser forjadas.', '#fbbf24', 10); }
 }
 
@@ -243,7 +245,7 @@ function updateEnemy(e, dt) {
   // movimento
   const was = e.hitX;
   if (e.swim || e.noclip) { e.x += e.vx * dt; e.y += e.vy * dt; e.onGround = false; e.hitX = 0; }
-  else { bodyMove(e, dt, { stepUp: e.kind === 'walker' || e.kind === 'archer', bounce: e.fly ? .35 : 0 }); }
+  else { bodyMove(e, dt, { stepUp: e.kind === 'walker' || e.kind === 'archer' || !!e.stepUp, bounce: e.fly ? .35 : 0 }); }
   if (e.slam && (e.hitX || e.hitY && Math.abs(e.vy) > 5) && e.slam.t > 0) { dealRaw(e, e.slam.dmg, e.slam.col, false); burst(ecx(e), ecy(e), 8, { col: ['#d4d4d8', '#fff'], spd: 100, life: .3 }); e.slam = null; sfx('hit'); }
   if (e.slam) { e.slam.t -= dt; if (e.slam.t <= 0) e.slam = null; }
   if (e.y > wd.h * TS) { e.dead = true; return; }

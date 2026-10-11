@@ -8,9 +8,9 @@
    ============================================================ */
 const NPC_DEF = {
   guide: { n: 'Guia', shirt: '#2f9a3a', hair: '#7a4a22', pants: '#4a3a2a', cond: () => true, desc: 'Conhece todas as receitas e dá dicas conforme seu progresso.' },
-  trader: { n: 'Mercador', shirt: '#7c3aed', hair: '#2a2a2a', pants: '#2a2a44', hat: '#a78bfa', cond: () => invCount('coin') >= 20 || G.day >= 2, desc: 'Compra seus materiais e vende itens úteis.' },
-  nurse: { n: 'Enfermeira', shirt: '#f8fafc', hair: '#f5c16c', pants: '#e2e8f0', cross: true, cond: () => G.flags.slime || (G.P && G.P.crystals > 0) || G.day >= 3, desc: 'Cura seus ferimentos em troca de moedas.' },
-  smith: { n: 'Armeiro', shirt: '#8a5c2c', hair: '#555', pants: '#3a2a1a', apron: true, cond: () => G.flags.eye, desc: 'Vende fornalhas, bigornas, picaretas e equipamentos.' },
+  trader: { n: 'Mercador', beard: '#d6d6d6', shirt: '#7c3aed', hair: '#2a2a2a', pants: '#2a2a44', hat: '#a78bfa', cond: () => invCount('coin') >= 20 || G.day >= 2, desc: 'Compra seus materiais e vende itens úteis.' },
+  nurse: { n: 'Enfermeira', hairStyle: 'long', shirt: '#f8fafc', hair: '#f5c16c', pants: '#e2e8f0', cross: true, cond: () => G.flags.slime || (G.P && G.P.crystals > 0) || G.day >= 3, desc: 'Cura seus ferimentos em troca de moedas.' },
+  smith: { n: 'Armeiro', hairStyle: 'bald', beard: '#6b4a2a', shirt: '#8a5c2c', hair: '#555', pants: '#3a2a1a', apron: true, cond: () => G.flags.eye, desc: 'Vende fornalhas, bigornas, picaretas e equipamentos.' },
 };
 const NPC_ORDER = ['guide', 'trader', 'nurse', 'smith'];
 G.rooms = []; G.npcs = []; G.npcScanT = 3; G.npcSpawnT = 8;
@@ -97,12 +97,11 @@ function nearestNpcAt(wx, wy) { for (const n of G.npcs) if (wx > n.x - 8 && wx <
 function drawNpcs(g) {
   for (const n of G.npcs) {
     const d = n.d, f = n.face, bx = Math.round(n.x + 6), by = Math.round(n.y + 26), walking = Math.abs(n.vx) > 8, sw = walking ? Math.sin(n.age * 9) : 0;
-    g.save(); g.translate(bx, by); const rect = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
-    const leg = (a, c) => { g.save(); g.translate(0, -9); g.rotate(a); rect(-1.5, 0, 3, 9, c); rect(-1.5, 7, 3, 2, '#3a2a20'); g.restore(); }; leg(-sw * .7, shade(d.pants, -.2)); leg(sw * .7, d.pants);
-    rect(-4, -18, 8, 9, d.shirt); rect(-4, -11, 8, 2, shade(d.pants, .1)); if (d.apron) rect(-3, -16, 6, 8, '#2a2118'); if (d.cross) { rect(-1, -16, 2, 6, '#ef4444'); rect(-3, -14, 6, 2, '#ef4444'); }
-    rect(-4, -26, 8, 8, SKIN); rect(-4, -27, 8, 3, d.hair); rect(f > 0 ? -5 : 3, -27, 2, 6, d.hair); rect(f > 0 ? 1 : -3, -23, 2, 2, '#fff'); rect(f > 0 ? 2 : -3, -23, 1, 2, '#1a1a2e');
-    if (d.hat) { rect(-6, -28, 12, 2, d.hat); rect(-3, -33, 6, 5, d.hat); }
-    g.save(); g.translate(0, -17); g.rotate((f > 0 ? 1.4 : PI - 1.4) + sw * .5 * f); rect(0, -1.3, 7, 2.6, SKIN); rect(0, -1.3, 3, 2.6, d.shirt); g.restore(); g.restore();
+    drawPixelized(g, bx, by, 26, 48, 10, g => {   // pixel-art: cabeça de frente, 2 olhos, roupas por profissão
+      const o = { f, skin: SKIN, hair: d.hair, shirt: d.shirt, pants: d.pants, boots: '#3a2a20', hairStyle: d.hairStyle, beard: d.beard, apron: d.apron, cross: d.cross, hat: d.hat ? 'wizard' : d.cross ? 'nurse' : null, hatCol: d.hat, bob: 0, air: false };
+      const A = (back, a) => { g.save(); g.translate(back ? -3 : 3, -17); g.rotate((f > 0 ? 1.4 : PI - 1.4) + a * f); humanArm(g, o, 7, back); g.restore(); };
+      humanLegs(g, o, sw); A(true, -sw * .5); humanUpper(g, o); A(false, sw * .5);
+    }, { ring: 1, hi: .2, lo: .22 });
     const P = G.P; if (!P.dead && Math.hypot(pcx(P) - bx, pcy(P) - (by - 13)) < 110) { g.font = '700 10px "Trebuchet MS",sans-serif'; g.textAlign = 'center'; g.lineWidth = 3; g.strokeStyle = 'rgba(0,0,0,.8)'; g.strokeText(d.n, bx, by - 38); g.fillStyle = '#86efac'; g.fillText(d.n, bx, by - 38); }
   }
 }

@@ -121,7 +121,7 @@ run(async () => {
   check('mapas de biomas de quaisquer dois mundos coincidem em menos de 65% das colunas', worst < .65, (worst * 100).toFixed(1) + '%');
   check('os 6 mundos estão na biblioteca, 3 de cada modo', (await pg.evaluate('Worlds.list.length')) === 6 && made.filter((m) => m.mode === 'creative').length === 3);
   check('"Continuar" aponta para o último mundo jogado', (await pg.evaluate("document.getElementById('btn-load-sub').textContent")).includes(made[5].name), await pg.evaluate("document.getElementById('btn-load-sub').textContent"));
-  check('"Meus Mundos" informa a quantidade', (await pg.evaluate("document.getElementById('btn-worlds-sub').textContent")) === '6 mundos salvos');
+  check('"Meus Mundos" informa a quantidade', (await pg.evaluate("document.getElementById('btn-worlds-sub').textContent")) === '6 mundos salvos neste aparelho');
 
   console.log('\n== tela Meus Mundos ==');
   await pg.click('#btn-worlds'); await pg.waitForTimeout(300);

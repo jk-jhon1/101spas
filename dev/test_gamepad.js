@@ -226,12 +226,12 @@ run(async () => {
 
   console.log('== mundos salvos (controle) ==');
   const toTitleByPad = async () => {   // Start (pausa) -> ↓ até "Salvar e voltar ao menu" -> A
-    await tap(9); for (let k = 0; k < 4; k++) await tap(13);
+    await tap(9); for (let k = 0; k < 8 && (await ev(focusId)) !== 'p-menu'; k++) await tap(13);   // desce até o último botão (o menu de pausa ganhou "Controles de toque")
     const f = await ev(focusId); await tap(0);
     await pg.waitForFunction('G.state === "title"', null, { timeout: 15000 }); await pg.waitForTimeout(400);
     return f;
   };
-  check('menu de pausa: ↓ x4 chega em "Salvar e voltar ao menu"', (await toTitleByPad()) === 'p-menu');
+  check('menu de pausa: ↓ até chegar em "Salvar e voltar ao menu"', (await toTitleByPad()) === 'p-menu');
   check('o mundo foi salvo e "Continuar" aparece no título', (await ev('Worlds.list.length')) === 1 && !(await ev("document.getElementById('btn-load').classList.contains('hidden')")));
   check('foco inicial no título é o "Continuar"', (await ev(focusId)) === 'btn-load', await ev(focusId));
   await tap(13); await tap(13); await tap(13);

@@ -1,0 +1,68 @@
+
+/* ============================================================
+   AJUSTES QUE ACOMPANHAM OS SPRITES EM PIXEL-ART
+   A aparência dos painéis, botões, abas, balões e da barra de itens é a ORIGINAL (escura).
+   Aqui ficam só: ícones ampliados sem borrar, vida em corações e controles de toque.
+   ============================================================ */
+#view{touch-action:none}
+.ic{image-rendering:pixelated}
+.slot .ic{width:32px;height:32px}
+.rec .ic.big{width:32px;height:32px}
+.rec .ing .ic{width:16px;height:16px;image-rendering:auto}
+.ars-grid .slot .ic{width:32px;height:32px}
+#cursor-item .ic{width:32px;height:32px}
+.shop-row .ic{width:32px;height:32px}
+/* vida em corações de pixel, à esquerda do minimapa */
+#hp-wrap{left:auto;right:208px;top:12px;min-width:0;text-align:right}
+#hp-label{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;line-height:15px;text-shadow:0 1px 2px #000}
+#hp-txt{position:static;display:block;inset:auto;line-height:15px;text-align:right}
+#hearts{display:block;margin-left:auto;image-rendering:pixelated}
+#hp-bar{display:none;height:8px;width:100%;min-width:120px;margin-top:3px;border-radius:4px}
+#hp-fill{display:none}
+#stat-row{justify-content:flex-end;margin-top:5px;max-width:330px;margin-left:auto}
+#buffs{justify-content:flex-end;max-width:330px;margin-left:auto}
+#bossbar{top:auto;bottom:100px;width:min(600px,72vw)}
+/* ---------- controles de toque (só aparecem em telas de toque) ---------- */
+#touch{position:absolute;inset:0;pointer-events:none;z-index:20;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#touch.hidden{display:none}
+#touch *{touch-action:none;-webkit-tap-highlight-color:transparent}
+#tj-base{position:absolute;left:30px;bottom:34px;width:140px;height:140px;border-radius:50%;pointer-events:auto;background:radial-gradient(circle,rgba(8,12,26,.35) 0 55%,rgba(255,255,255,.14) 56% 100%);border:2px solid rgba(255,255,255,.35);box-shadow:0 2px 10px rgba(0,0,0,.5)}
+#tj-knob{position:absolute;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.92),rgba(170,182,214,.88) 60%,rgba(110,124,170,.88));border:2px solid rgba(255,255,255,.7);box-shadow:0 2px 8px rgba(0,0,0,.5);pointer-events:none}
+.tb{pointer-events:auto;font:700 18px "Trebuchet MS","Segoe UI",system-ui,sans-serif;color:#fff;width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(8,12,26,.72);box-shadow:0 2px 10px rgba(0,0,0,.5);padding:0;text-shadow:0 1px 2px #000;display:flex;align-items:center;justify-content:center}
+.tb.on{background:var(--acc);border-color:var(--acc);color:#1b1305;text-shadow:none}
+#tb-top{position:absolute;top:150px;right:10px;width:204px;display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;gap:6px;pointer-events:none}
+#tb-top .tb{width:44px;height:44px;font-size:18px}
+.tb.huge{position:absolute;right:34px;bottom:44px;width:118px;height:118px;font-size:54px;border-width:3px}
+.tb.big{position:absolute;right:166px;bottom:34px;width:70px;height:70px;font-size:26px}
+.tb.mid{position:absolute;right:178px;bottom:116px;width:52px;height:52px;font-size:22px}
+#tb-close{display:none;position:absolute;right:8px;top:8px;width:46px;height:46px;font-size:22px;background:#b91c1c;border-color:rgba(255,255,255,.7);z-index:3}
+#touch.ui-open #tb-close{display:flex}
+#touch.ui-open #tj-base,#touch.ui-open #tb-atk,#touch.ui-open #tb-jump,#touch.ui-open #tb-use,#touch.ui-open #tb-top{display:none}
+body.touch-on #hp-wrap{right:204px}
+body.touch-on #savebadge{right:auto;left:18px;bottom:184px;margin:0}
+body.touch-on #bossbar{left:12px;transform:none;top:8px;bottom:auto;width:min(330px,38vw)}
+body.touch-on #boss-name{font-size:13px}
+html,body{overscroll-behavior:none}
+#pause .box{width:min(400px,92vw);min-width:0}
+/* celulares na horizontal: barra de itens e botões menores */
+@media (max-height:480px){
+  #hotbar{gap:3px;bottom:8px}
+  .slot{width:36px;height:36px}.slot .ic{width:28px;height:28px;image-rendering:auto}
+  #item-name{bottom:64px}
+  #tj-base{left:18px;bottom:16px;width:108px;height:108px}#tj-knob{width:48px;height:48px;margin:-24px 0 0 -24px}
+  .tb.huge{right:22px;bottom:20px;width:92px;height:92px;font-size:44px}.tb.big{right:128px;bottom:16px;width:56px;height:56px}
+  #tb-top{top:130px;width:172px;gap:5px}#tb-top .tb{width:36px;height:36px;font-size:15px}
+  .tb.mid{right:140px;bottom:84px;width:44px;height:44px;font-size:19px}
+  #tb-close{width:40px;height:40px;right:6px;top:6px}
+  #mini{width:150px;height:92px}#hp-wrap{right:178px}body.touch-on #hp-wrap{right:178px}
+  body.touch-on #savebadge{bottom:134px}
+  .screen{justify-content:safe center;overflow-y:auto;padding:6px 0;gap:3px}
+  #menu-bg{position:fixed}
+  #logo{font-size:min(6.4vw,46px);letter-spacing:2px}#logo small{font-size:.28em;letter-spacing:5px;margin-top:2px}
+  .menu-btn{padding:6px 14px;margin:2px;font-size:14px}.menu-btn small{display:none}
+}
+@media (max-height:480px) and (max-width:780px){
+  #hotbar{left:140px;transform:none;gap:2px}
+  #hotbar .slot{width:30px;height:30px}#hotbar .slot .ic{width:24px;height:24px}
+  #item-name{left:140px;transform:none}
+}

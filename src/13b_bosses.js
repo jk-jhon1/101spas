@@ -9,6 +9,7 @@ function freeSpot(w, h, cx, cy) {
   return { x: cx - w / 2, y: cy - h / 2 };
 }
 function summonBoss(kind) {
+  if (typeof kind === 'string' && kind.startsWith('x:')) return summonBossX(kind.slice(2));   /* chefes novos (13c_bossx.js) */
   const P = G.P, creative = G.mode === 'creative', wd = G.world;
   if (G.boss && !G.boss.dead) { toast('Já existe um chefe ativo.', '#fbbf24'); return false; }
   const side = P.face || 1, layer = wd.layerAt(Math.floor(pcx(P) / TS), Math.floor(pcy(P) / TS));
@@ -19,12 +20,14 @@ function summonBoss(kind) {
   else { if (!creative && !G.flags.guardian) { toast('O mundo ainda não está pronto. Derrote o Guardião do Abismo (Hardmode) primeiro.', '#fbbf24'); return false; } key = 'boss_colossus'; msg = 'O Colosso Estelar desce dos céus!'; col = '#fbbf24'; }
   const d = ED[key]; let x, y;
   if (key === 'boss_slime') { const p = freeSpot(d.w, d.h, pcx(P) + side * 150, pcy(P) - 120); x = p.x; y = p.y; } else { x = pcx(P) + side * 280 - d.w / 2; y = pcy(P) - 220 - d.h / 2; }
+  bossWarmAll(BOSSKIND[d.draw]);   /* sprites do chefe prontos antes da luta (sem engasgo durante ela) */
   const e = spawnEnemy(key, x, y); G.boss = e; e.bossT = 0; sfx('boss'); shake(8); toast(msg, col, 5); flash('#000000', .35, .8);
   return true;
 }
 function bossProj(e, o) { return shootAtPlayer(e, Object.assign({ dmg: Math.round(e.dmg * .7) }, o)); }
 function radialShots(e, n, speed, off, o) { for (let i = 0; i < n; i++) { const a = off + i / n * TAU; spawnProj(Object.assign({ friendly: false, x: ecx(e), y: ecy(e), vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, r: 6, dmg: Math.round(e.dmg * .65), kb: 120, life: 4, shape: 'fire', col: '#ff5a1a', col2: '#ffd23a', glow: '#ff7a1a', glowR: 20, pierce: 1, tiles: false, angle: a, light: [.9, .4, .1] }, o || {})); } }
 function bossAI(e, dt, sm) {
+  if (e.kind === 'bx' || e.kind === 'bxm') return bossXAI(e, dt, sm);   /* chefes novos e seus lacaios */
   const P = G.P, a = e.ai, px = pcx(P), py = pcy(P), hp = e.hp / e.hpMax, cx = ecx(e), cy = ecy(e);
   if (P.dead) { e.fleeT = (e.fleeT || 0) + dt; e.vy -= 200 * dt; if (e.fleeT > 3) { e.dead = true; G.boss = null; } if (e.kind === 'bslime') { e.vy += GRAV * dt; } return; }
   e.fleeT = 0;

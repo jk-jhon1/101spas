@@ -138,7 +138,7 @@ function updateDrops(dt) {
 function drawDrops(g) {
   for (const d of G.drops) {
     const bob = Math.sin(G.t * 4 + d.x) * 1.2 * (d.onGround ? 1 : 0);
-    const c = iconCanvas(d.id); g.imageSmoothingEnabled = false;
+    const c = iconCanvas(d.id); g.imageSmoothingEnabled = true;
     g.globalAlpha = d.life < 5 ? (Math.sin(G.t * 20) > 0 ? 1 : .4) : 1;
     g.drawImage(c, d.x - 3, d.y - 6 + bob, 16, 16); g.globalAlpha = 1;
   }

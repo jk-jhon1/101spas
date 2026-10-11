@@ -66,9 +66,9 @@ ORE('titanium', 'Minério de Titânio', 'titanium_ore', 7, 3.0, '#d3dcf0', L(.8,
 ORE('adamantite', 'Minério de Adamantita', 'adamantite_ore', 7, 3.0, '#e8203f', L(1, .2, .3, .32));
 // plantas / decoração
 tile('trunk', { n: 'Tronco', s: 0, t: .5, d: 'wood', c: ['#7a4e2a', '#563519', '#9a6a3a'], x: 'trunk', o: .05, tree: 1 });
-tile('leaf', { n: 'Folhas', s: 0, t: .15, d: null, c: ['#2f9a3a', '#1f7a2e', '#5fd05a'], x: 'leaf', o: .16, tree: 1 });
-tile('leafsnow', { n: 'Pinheiro Nevado', s: 0, t: .15, d: null, c: ['#2b7a55', '#1b5a40', '#e4f2f2'], x: 'leaf', o: .16, tree: 1 });
-tile('leafjungle', { n: 'Folhas da Selva', s: 0, t: .15, d: null, c: ['#1c8a34', '#0f6a26', '#52d060'], x: 'leaf', o: .18, tree: 1 });
+tile('leaf', { n: 'Folhas', s: 0, t: .15, d: null, c: ['#17863a', '#0a6b28', '#48d272'], x: 'leaf', o: .16, tree: 1 });   /* mesmas cores da copa (05c_canopy.js): partículas, mapa e ícone combinam */
+tile('leafsnow', { n: 'Pinheiro Nevado', s: 0, t: .15, d: null, c: ['#287a58', '#18543e', '#e2f0f0'], x: 'leaf', o: .16, tree: 1 });
+tile('leafjungle', { n: 'Folhas da Selva', s: 0, t: .15, d: null, c: ['#1c8a34', '#0f5a1e', '#78dc5a'], x: 'leaf', o: .18, tree: 1 });
 tile('leafpalm', { n: 'Palmeira', s: 0, t: .15, d: null, c: ['#3aae48', '#23823a', '#86e060'], x: 'leaf', o: .1, tree: 1 });
 tile('cactus', { n: 'Cacto', s: 0, t: .4, d: 'cactus', c: ['#3f9d4a', '#27703a', '#6fd070'], x: 'cactus', o: .06, plant: 1, hurt: 9 });
 tile('mushroom', { n: 'Cogumelo Luminoso', s: 0, t: .05, d: 'glow_mushroom', c: ['#2a7de0', '#1a4fa0', '#8be0ff'], x: 'mushroom', o: .04, plant: 1, l: L(.25, .5, 1, .7) });

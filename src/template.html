@@ -2,11 +2,18 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Espadas Do Destino — Sandbox 2D Platformer</title>
-<style>
+<style id="css-base">
 /*__STYLE__*/
 </style>
+<style id="skin-blue">
+/*__SKIN_BLUE__*/
+</style>
+<style id="skin-dark" media="not all">
+/*__SKIN_DARK__*/
+</style>
+<script>try{if(localStorage.getItem('espadas120_skin')==='dark'){document.getElementById('skin-blue').media='not all';document.getElementById('skin-dark').media='all';}}catch(e){}</script>
 </head>
 <body>
 <div id="app">
@@ -14,7 +21,9 @@
 
   <div id="hud" class="hidden">
     <div id="hp-wrap">
-      <div id="hp-bar"><div id="hp-fill"></div><div id="hp-shield"></div><div id="hp-txt"></div></div>
+      <div id="hp-label"><span id="hp-txt"></span></div>
+      <canvas id="hearts" width="10" height="10"></canvas>
+      <div id="hp-bar"><div id="hp-fill"></div><div id="hp-shield"></div></div>
       <div id="stat-row"></div>
       <div id="buffs"></div>
     </div>
@@ -22,11 +31,27 @@
     <div id="bossbar" class="hidden"><div id="boss-name"></div><div id="boss-wrap"><div id="boss-fill"></div></div></div>
     <div id="toasts"></div>
     <div id="savebadge" class="hidden">Mundo salvo</div>
-    <div id="dps" class="hidden"></div>
     <div id="dbg" class="hidden"></div>
     <div id="item-name"></div>
     <div id="hotbar"></div>
     <div id="deadmsg" class="hidden"><div>VOCÊ FOI MOGADO</div><small id="dead-sub"></small></div>
+  </div>
+
+  <div id="touch" class="hidden">
+    <div id="tj-base"><div id="tj-knob"></div></div>
+    <div id="tb-top">
+      <button id="tb-inv" class="tb" title="Inventário">&#127890;</button>
+      <button id="tb-ars" class="tb" title="Arsenal">&#9876;</button>
+      <button id="tb-map" class="tb" title="Mapa">&#128506;</button>
+      <button id="tb-heal" class="tb" title="Cura rápida">&#10084;</button>
+      <button id="tb-zi" class="tb" title="Aproximar">+</button>
+      <button id="tb-zo" class="tb" title="Afastar">&minus;</button>
+      <button id="tb-pause" class="tb" title="Pausar">&#10074;&#10074;</button>
+    </div>
+    <button id="tb-close" class="tb" title="Fechar">&#10005;</button>
+    <button id="tb-use" class="tb mid" title="Interagir (baú, porta, NPC)">&#9995;</button>
+    <button id="tb-jump" class="tb big" title="Pular">&#9650;</button>
+    <button id="tb-atk" class="tb huge" title="Usar item (segure e arraste para mirar)">+</button>
   </div>
 
   <div id="panel-inv" class="panel hidden">
@@ -70,6 +95,16 @@
   <div id="worlds" class="screen hidden">
     <div class="box" id="worlds-box">
       <h2>Meus Mundos <span id="worlds-count"></span></h2>
+      <div id="device-box">
+        <div id="dev-line"><b>Este aparelho:</b> <span id="dev-label"></span> · código <code id="dev-code"></code></div>
+        <div id="dev-prot" class="warn"></div>
+        <div id="dev-btns">
+          <button class="btn hidden" id="btn-protect">Proteger agora</button>
+          <button class="btn" id="btn-import">Importar mapa</button>
+          <input type="file" id="world-import" class="hidden" multiple accept=".json,.espadas,.txt,application/json,text/plain">
+        </div>
+      </div>
+      <div id="worlds-msg" class="hidden"></div>
       <div id="worlds-list"></div>
       <div id="worlds-foot"><span id="worlds-info"></span><button class="menu-btn" id="worlds-back">Voltar</button></div>
     </div>
@@ -89,6 +124,8 @@
       <button class="menu-btn" id="p-resume" style="font-size:15px">Continuar</button>
       <button class="menu-btn" id="p-help" style="font-size:15px">Controles e Guia</button>
       <button class="menu-btn" id="p-sound" style="font-size:15px">Som: ligado</button>
+      <button class="menu-btn" id="p-touch" style="font-size:15px">Controles de toque: automático</button>
+      <button class="menu-btn" id="p-skin" style="font-size:15px">Interface: azul (Terraria)</button>
       <button class="menu-btn" id="p-save" style="font-size:15px">Salvar mundo</button>
       <button class="menu-btn" id="p-menu" style="font-size:15px">Salvar e voltar ao menu</button>
     </div>

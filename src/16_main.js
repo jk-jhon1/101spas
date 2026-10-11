@@ -5,17 +5,26 @@ const view = $('view'), vctx = view.getContext('2d', { alpha: false });
 const sceneC = document.createElement('canvas'), sctx = sceneC.getContext('2d');
 const litC = document.createElement('canvas'), lctx = litC.getContext('2d');
 const lightC = document.createElement('canvas'), lightCtx = lightC.getContext('2d');
-let lightImg = null, DPR = 1, TILEPX = 24, frameN = 0, fpsAcc = 0, fpsN = 0, FPS = 60;
+const skyC = document.createElement('canvas'), skyCtx = skyC.getContext('2d');
+let lightImg = null, DPR = 1, TILEPX = 32, PIXZ = 2, LW = 640, LH = 360, frameN = 0, fpsAcc = 0, fpsN = 0, FPS = 60;   // PIXZ: pixels de tela por pixel do mundo (inteiro); LW/LH: alvo em baixa resolução
 const DAY_LEN = 420;
 G.mouse = { sx: 0, sy: 0, wx: 0, wy: 0, down: [false, false, false], pressed: [false, false, false] };
 G.zoomAdj = 0;
 
 function resize() {
-  DPR = Math.min(window.devicePixelRatio || 1, 2); const w = Math.max(320, Math.floor(innerWidth * DPR)), h = Math.max(240, Math.floor(innerHeight * DPR));
-  view.width = w; view.height = h; sceneC.width = litC.width = w; sceneC.height = litC.height = h; applyZoom();
-  const mb = $('menu-bg'); mb.width = Math.floor(innerWidth / 2); mb.height = Math.floor(innerHeight / 2);
+  /* até 3x: celulares com DPR 3 ficam com pixels nítidos (zoom inteiro) */ DPR = Math.min(window.devicePixelRatio || 1, 3); const w = Math.max(320, Math.floor(innerWidth * DPR)), h = Math.max(240, Math.floor(innerHeight * DPR));
+  view.width = w; view.height = h; applyZoom();
 }
-function applyZoom() { TILEPX = Math.round(clamp(Math.round(view.height / 26) + G.zoomAdj, 14, 96)); G.cam.zoom = TILEPX / TS; G.cam.w = view.width; G.cam.h = view.height; }
+// Pixel-art de verdade: a cena é desenhada em BAIXA resolução (1px do mundo = 1px do canvas) e ampliada
+// por um fator INTEIRO sem suavização -> pixels quadrados e nítidos, sem tremida na câmera.
+function applyZoom() {
+  const base = Math.round(view.height / (TS * 24));
+  PIXZ = clamp(base + G.zoomAdj, 1, 6); G.zoomAdj = PIXZ - base;
+  TILEPX = TS * PIXZ; G.cam.zoom = PIXZ; G.cam.w = view.width; G.cam.h = view.height;
+  LW = Math.ceil(view.width / PIXZ); LH = Math.ceil(view.height / PIXZ);
+  if (sceneC.width !== LW || sceneC.height !== LH) { sceneC.width = litC.width = skyC.width = LW; sceneC.height = litC.height = skyC.height = LH; }
+  const mb = $('menu-bg'); if (mb.width !== LW || mb.height !== LH) { mb.width = LW; mb.height = LH; }
+}
 
 // ---------- input ----------
 const GAMEKEYS = new Set(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'KeyW', 'KeyA', 'KeyS', 'KeyD']);
@@ -33,8 +42,8 @@ window.addEventListener('keydown', e => {
   else if (e.code === 'KeyM') { if (G.ui.open === 'map') closePanels(); else openPanel('map'); }
   else if (e.code === 'F3') { $('dbg').classList.toggle('hidden'); e.preventDefault(); }
   else if (e.code === 'KeyQ' && !P.dead) { for (let i = 0; i < INV_N; i++) { const s = P.inv[i]; if (s && IT[s.id].use === 'heal') { const old = P.sel; P.sel = i; useConsumable(P, s, IT[s.id]); P.sel = old; break; } } }
-  else if (e.code === 'Equal' || e.code === 'NumpadAdd') { G.zoomAdj += 4; applyZoom(); }
-  else if (e.code === 'Minus' || e.code === 'NumpadSubtract') { G.zoomAdj -= 4; applyZoom(); }
+  else if (e.code === 'Equal' || e.code === 'NumpadAdd') { G.zoomAdj += 1; applyZoom(); }
+  else if (e.code === 'Minus' || e.code === 'NumpadSubtract') { G.zoomAdj -= 1; applyZoom(); }
   else if (/^Digit[0-9]$/.test(e.code) && !G.ui.open) { const n = +e.code.slice(5); P.sel = n === 0 ? 9 : n - 1; G.invChanged = true; }
 });
 window.addEventListener('keyup', e => { KEYS[e.code] = false; });
@@ -49,7 +58,7 @@ function setPause(p) { G.paused = p; $('pause-world').textContent = G.worldName 
 
 // ---------- geração assíncrona + início ----------
 function resetGameState(mode) {
-  G.mode = mode; G.enemies = []; G.projs = []; G.drops = []; G.parts = []; G.texts = []; G.boss = null; G.flags = { slime: false, eye: false, guardian: false, colossus: false }; G.stage = 0; G.time = .1; G.day = 1; G.t = 0;
+  G.mode = mode; G.enemies = []; G.projs = []; G.drops = []; G.parts = []; G.texts = []; G.boss = null; G.bxs = null; G.flags = { slime: false, eye: false, guardian: false, colossus: false }; G.stage = 0; G.time = .1; G.day = 1; G.t = 0;
   G.freeze = 0; G.dark = 0; G.flash = null; G.hitStop = 0; G.kills = 0; G.opts = { god: false, noSpawn: false, showDps: false, freeCraft: false }; G.dpsLog = []; G.held = null; G.chestSlots = null; G.chestPos = null; G.paused = false; G.zoomAdj = 0; G.npcs = []; G.rooms = []; G.npcScanT = 3; G.npcSpawnT = 8; G.autoSaveT = 60;
 }
 function startGame(opts) {
@@ -83,7 +92,7 @@ function finishLoad(sv) {
   else { give('s001'); give('pick_copper'); give('torch', 12); give('potion1', 3); }
   G.invChanged = true; recalcStats(); P.hp = sv ? Math.min(sv.P.hp, P.maxHp) : P.maxHp; if (!sv) P.sel = 0;
   G.cam.init = false; for (let i = 0; i < 6; i++) { _revT.t = 0; revealMap(P); } wd.liqAct.clear();
-  if (G.mode === 'creative' && !sv) { const d = ED.dummy; spawnEnemy('dummy', wd.spawn.x + 130, wd.spawn.y + 26 - d.h); G.opts.showDps = true; }
+  if (G.mode === 'creative' && !sv) { const d = ED.dummy; spawnEnemy('dummy', wd.spawn.x + 130, wd.spawn.y + 26 - d.h); }
   G.state = 'play'; G.ui.blocking = false; applyZoom(); $('loading').classList.add('hidden'); $('hud').classList.remove('hidden'); initUIOnce();
   if (sv) toast('"' + G.worldName + '" carregado. Bem-vindo de volta!', '#86efac', 4); else toast(G.mode === 'creative' ? 'Modo Criativo: B abre o Arsenal com todas as espadas. Há um Boneco de Treino ao lado.' : 'Bem-vindo! Corte árvores com a picareta (botão esquerdo) e pressione E para criar.', '#fde68a', 6);
   if (!sv) toast('Pressione E: inventário/criação · B: catálogo de espadas · M: mapa', '#cbd5f5', 6);
@@ -103,7 +112,7 @@ function step(dt) {
   const nowNight = isNightFrac(G.time); if (nowNight !== _lastDusk) { _lastDusk = nowNight; toast(nowNight ? 'A noite caiu... inimigos mais perigosos surgem.' : 'O sol nasceu.', nowNight ? '#a5b4fc' : '#fde68a', 3.5); }
   G.freeze = Math.max(0, G.freeze - dt); G.dark = Math.max(0, G.dark - dt); if (G.flash) { G.flash.t -= dt; if (G.flash.t <= 0) G.flash = null; }
   if (G.light.dyn.length > 4000) G.light.dyn.length = 0;
-  updatePlayer(dt); updateNpcs(dt); updateEnemies(dt); updateProjs(dt); updateDrops(dt); updateParts(dt); updateTexts(dt);
+  updatePlayer(dt); updateNpcs(dt); updateEnemies(dt); bxUpdate(dt); updateProjs(dt); updateDrops(dt); updateParts(dt); updateTexts(dt);
   _liqT -= dt; if (_liqT <= 0) { _liqT = .05; wd.stepLiquids(2200); } _fallT -= dt; if (_fallT <= 0) { _fallT = .08; wd.stepFalling(160); }
   spawnTick(dt);
   G.autoSaveT -= dt; if (G.autoSaveT <= 0) { G.autoSaveT = 60; Worlds.save({ silent: true }); }   // autosave a cada minuto
@@ -118,7 +127,7 @@ function step(dt) {
 
 // ---------- renderização ----------
 function drawWorldTiles(g, tx0, ty0, tx1, ty1, torches) {
-  const wd = G.world, t = wd.t, wl = wd.wl, W = wd.w, H = wd.h;
+  const wd = G.world, t = wd.t, wl = wd.wl, W = wd.w, H = wd.h, cq = [];   /* cq: blocos de copa, desenhados em lote no fim */
   for (let ty = ty0; ty <= ty1; ty++) {
     if (ty < 0 || ty >= H) continue;
     for (let tx = tx0; tx <= tx1; tx++) {
@@ -126,12 +135,20 @@ function drawWorldTiles(g, tx0, ty0, tx1, ty1, torches) {
       const i = tx + ty * W, id = t[i], w = wl[i], v = (tx * 7 + ty * 13) % 3;
       let mask = 15; if (id) mask = tileMask(wd, tx, ty, id);
       if (w && (!id || !SOLID[id] || mask !== 15)) { const s = getWallSprite(w, v); g.drawImage(s.c, s.x, s.y, 16, 16, tx * 16, ty * 16, 16, 16); }
+      const ck = id ? CANOPY_KIND[id] : 0;
+      if (ck) { cq.push(tx, ty, ck); continue; }   /* copas: formato redondo por vizinhança (05c_canopy.js) */
       if (id) {
         const s = getTileSprite(id, mask, v); g.drawImage(s.c, s.x, s.y, 16, 16, tx * 16, ty * 16, 16, 16);
         if (id === T.torch || id === T.furnace || id === T.forge || id === T.lifecrystal) torches.push(tx, ty, id);
-      }
+        if (id === T.trunk && (mask & 1) && (mask & 4)) {   // galhos decorativos nas árvores (longe da base)
+          const hb = hash2(tx, ty, 91);
+          if (hb < .17 && ty + 2 < H && t[i + 2 * W] === T.trunk) { const sd_ = hb < .085 ? 0 : 1, nx = tx + (sd_ ? 1 : -1); if (nx >= 0 && nx < W && t[nx + ty * W] === 0) { const bs = getBranchSprite(sd_, v); g.drawImage(bs.c, bs.x, bs.y, 16, 16, tx * 16 + (sd_ ? 13 : -13), ty * 16, 16, 16); } }
+        }
+        if (id === T.trunk) { const tk = canopyTrunkKind(wd, tx, ty); if (tk) cq.push(tx, ty, tk); }   /* tronco dentro da copa fica coberto pelas folhas */
+      } else { const ak = canopyKindAround(wd, tx, ty); if (ak) cq.push(tx, ty, ak); }   /* cantos e buracos da copa */
     }
   }
+  if (cq.length) drawCanopyBatch(g, wd, cq);
 }
 function drawLiquids(g, tx0, ty0, tx1, ty1) {
   const wd = G.world, lq = wd.lq, lt = wd.lt, W = wd.w, H = wd.h, t = G.t;
@@ -162,37 +179,39 @@ function render() {
   frameN++;
   if (G.state === 'title') { renderMenuBg(); return; }
   if (!G.world || !G.P || G.state === 'loading') return;
-  const w = view.width, h = view.height, c = G.cam, zoom = c.zoom, wd = G.world, P = G.P, T16 = TILEPX;
-  const shx = c.shake ? (Math.random() - .5) * c.shake * 2 * DPR : 0, shy = c.shake ? (Math.random() - .5) * c.shake * 2 * DPR : 0;
-  const ox = Math.round(c.x * zoom + shx), oy = Math.round(c.y * zoom + shy);
-  const tx0 = Math.floor(ox / T16) - 1, ty0 = Math.floor(oy / T16) - 1, tx1 = Math.ceil((ox + w) / T16) + 1, ty1 = Math.ceil((oy + h) / T16) + 1;
-  // 1) céu
+  const w = view.width, h = view.height, c = G.cam, Z = PIXZ, wd = G.world, P = G.P;
+  const shk = c.shake ? c.shake * DPR / Z : 0;
+  const ox = Math.round(c.x + (shk ? (Math.random() - .5) * 2 * shk : 0)), oy = Math.round(c.y + (shk ? (Math.random() - .5) * 2 * shk : 0));
+  const tx0 = Math.floor(ox / 16) - 1, ty0 = Math.floor(oy / 16) - 1, tx1 = Math.ceil((ox + LW) / 16) + 1, ty1 = Math.ceil((oy + LH) / 16) + 1;
+  // 1) céu (baixa resolução, ampliado sem suavização)
+  vctx.setTransform(1, 0, 0, 1, 0, 0); vctx.imageSmoothingEnabled = false;
   const px = Math.floor(pcx(P) / TS), nearSurface = c.y < (wd.surf[clamp(px, 0, wd.w - 1)] + 40) * TS;
-  if (nearSurface) drawSky(vctx, w, h, c.x, c.y, zoom, G.time, wd.biomeName(px), G.t); else { vctx.fillStyle = '#05060a'; vctx.fillRect(0, 0, w, h); }
-  // 2) cena
-  sctx.setTransform(1, 0, 0, 1, 0, 0); sctx.clearRect(0, 0, w, h); sctx.setTransform(zoom, 0, 0, zoom, -ox, -oy); sctx.imageSmoothingEnabled = false;
+  if (nearSurface) { drawSky(skyCtx, LW, LH, ox, oy, 1, G.time, wd.biomeName(px), G.t); vctx.drawImage(skyC, 0, 0, LW, LH, 0, 0, LW * Z, LH * Z); } else { vctx.fillStyle = '#05060a'; vctx.fillRect(0, 0, w, h); }
+  // 2) cena (também em baixa resolução: 1 pixel do mundo = 1 pixel do canvas)
+  sctx.setTransform(1, 0, 0, 1, 0, 0); sctx.clearRect(0, 0, LW, LH); sctx.setTransform(1, 0, 0, 1, -ox, -oy); sctx.imageSmoothingEnabled = false;
   const torches = []; drawWorldTiles(sctx, tx0, ty0, tx1, ty1, torches);
-  const inView = (x, y, r) => x > ox / zoom - r && x < (ox + w) / zoom + r && y > oy / zoom - r && y < (oy + h) / zoom + r;
+  const inView = (x, y, r) => x > ox - r && x < ox + LW + r && y > oy - r && y < oy + LH + r;
   drawDrops(sctx); drawNpcs(sctx);
   for (const e of G.enemies) if (!e.dead && inView(ecx(e), ecy(e), 120)) drawEnemy(sctx, e);
+  bxDraw(sctx);
   for (const inst of P.cb.inst) if (inst.ghost) drawGhostSwing(sctx, P, inst);
   if (!P.dead) drawPlayer(sctx, P);
   for (const p of G.projs) if (!p.dead && inView(p.x, p.y, 80)) drawProj(sctx, p, false);
   drawParts(sctx, false); drawLiquids(sctx, tx0, ty0, tx1, ty1); drawMiningOverlay(sctx);
   // 3) iluminação (multiplicativa, preservando alpha da cena)
-  const sky = skyLight(G.time), lx0 = tx0 - 11, ly0 = ty0 - 11, lw = tx1 - tx0 + 24, lh = ty1 - ty0 + 24;
-  for (const e of G.enemies) { /* luz dos inimigos já adicionada na atualização */ }
-  G.light.compute(wd, lx0, ly0, lw, lh, sky);
-  if (lightC.width !== lw || lightC.height !== lh) { lightC.width = lw; lightC.height = lh; lightImg = lightCtx.createImageData(lw, lh); }
+  const sky = skyLight(G.time), lx0 = tx0 - 11, ly0 = ty0 - 11, lgw = tx1 - tx0 + 24, lgh = ty1 - ty0 + 24;
+  G.light.compute(wd, lx0, ly0, lgw, lgh, sky);
+  if (lightC.width !== lgw || lightC.height !== lgh) { lightC.width = lgw; lightC.height = lgh; lightImg = lightCtx.createImageData(lgw, lgh); }
   G.light.toImage(lightImg, [.03, .03, .04]); lightCtx.putImageData(lightImg, 0, 0);
   lctx.setTransform(1, 0, 0, 1, 0, 0); lctx.globalCompositeOperation = 'copy'; lctx.drawImage(sceneC, 0, 0);
-  lctx.globalCompositeOperation = 'multiply'; lctx.imageSmoothingEnabled = true; lctx.drawImage(lightC, 0, 0, lw, lh, lx0 * T16 - ox, ly0 * T16 - oy, lw * T16, lh * T16);
+  lctx.globalCompositeOperation = 'multiply'; lctx.imageSmoothingEnabled = true; lctx.drawImage(lightC, 0, 0, lgw, lgh, lx0 * 16 - ox, ly0 * 16 - oy, lgw * 16, lgh * 16);
   lctx.globalCompositeOperation = 'destination-in'; lctx.drawImage(sceneC, 0, 0); lctx.globalCompositeOperation = 'source-over';
-  vctx.setTransform(1, 0, 0, 1, 0, 0); vctx.drawImage(litC, 0, 0);
-  // 4) brilhos aditivos
-  vctx.setTransform(zoom, 0, 0, zoom, -ox, -oy); vctx.globalCompositeOperation = 'lighter';
+  vctx.setTransform(1, 0, 0, 1, 0, 0); vctx.imageSmoothingEnabled = false; vctx.drawImage(litC, 0, 0, LW, LH, 0, 0, LW * Z, LH * Z);
+  // 4) brilhos aditivos (resolução da tela)
+  vctx.setTransform(Z, 0, 0, Z, -ox * Z, -oy * Z); vctx.globalCompositeOperation = 'lighter';
   for (let i = 0; i < torches.length; i += 3) { const id = torches[i + 2], fl = .75 + .25 * Math.sin(G.t * 11 + torches[i] * 3.1); if (id === T.torch) drawGlow(vctx, torches[i] * 16 + 8, torches[i + 1] * 16 + 6, 26 * fl, '#ffb347', .45 * fl); else if (id === T.lifecrystal) drawGlow(vctx, torches[i] * 16 + 8, torches[i + 1] * 16 + 8, 24, '#ff4f8a', .35 + .15 * Math.sin(G.t * 3)); else drawGlow(vctx, torches[i] * 16 + 8, torches[i + 1] * 16 + 8, 22, '#ff8a2a', .28 * fl); }
   for (const e of G.enemies) if (!e.dead && inView(ecx(e), ecy(e), 120)) drawEnemyGlow(vctx, e);
+  bxGlow(vctx);
   for (const p of G.projs) if (!p.dead && inView(p.x, p.y, 120)) drawProj(vctx, p, true);
   drawSwingTrail(vctx, P); drawParts(vctx, true);
   if (P.cb.sw && P.cb.sw.look.glow && (P.cb.swingT > 0 || P.cb.sw.tierLevel >= 4)) { const sw = P.cb.sw; drawGlow(vctx, pcx(P) + P.face * 10, P.y + 8, 22 + sw.tierLevel * 3, sw.look.glow, .22 + (P.cb.swingT > 0 ? .25 : 0)); }
@@ -202,6 +221,7 @@ function render() {
   for (const t of G.texts) { const k = clamp(t.life / t.max, 0, 1); vctx.globalAlpha = Math.min(1, k * 2); vctx.font = '800 ' + t.size + 'px "Trebuchet MS",sans-serif'; vctx.lineWidth = 3; vctx.strokeStyle = 'rgba(0,0,0,.85)'; vctx.strokeText(t.txt, t.x, t.y); vctx.fillStyle = t.col; vctx.fillText(t.txt, t.x, t.y); } vctx.globalAlpha = 1;
   vctx.setTransform(1, 0, 0, 1, 0, 0);
   if (G.dark > 0) { vctx.fillStyle = 'rgba(0,0,10,' + (.55 * Math.min(1, G.dark * 2)) + ')'; vctx.fillRect(0, 0, w, h); }
+  bxOverlay(vctx, w, h);
   if (G.freeze > 0) { vctx.fillStyle = 'rgba(255,225,140,' + (.12 + .05 * Math.sin(G.t * 20)) + ')'; vctx.fillRect(0, 0, w, h); const gr = vctx.createRadialGradient(w / 2, h / 2, h * .3, w / 2, h / 2, h * .9); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(60,40,0,.55)'); vctx.fillStyle = gr; vctx.fillRect(0, 0, w, h); }
   if (G.flash) { vctx.fillStyle = G.flash.col; vctx.globalAlpha = G.flash.a * clamp(G.flash.t / G.flash.max, 0, 1); vctx.fillRect(0, 0, w, h); vctx.globalAlpha = 1; }
   if (P.inLava || (P.inv_ > .3 && !P.dead)) { const a = P.inLava ? .22 : .18 * clamp((P.inv_ - .3) * 2, 0, 1); vctx.fillStyle = P.inLava ? 'rgba(255,90,20,' + a + ')' : 'rgba(255,0,0,' + a + ')'; vctx.fillRect(0, 0, w, h); }
@@ -211,13 +231,15 @@ function render() {
 // menu animado
 const _menuSwords = [];
 function renderMenuBg() {
-  const mb = $('menu-bg'), g = mb.getContext('2d'), w = mb.width, h = mb.height, t = performance.now() / 1000;
+  const mb = $('menu-bg'), g = mb.getContext('2d'), w = mb.width, h = mb.height, t = performance.now() / 1000, ms = PIXZ / DPR / 2;   // ms: tamanho do pixel novo / pixel antigo (1.0 em 1280x720)
   if (!SKY.clouds) initSky(7); const frac = .18 + Math.sin(t * .05) * .02;
-  drawSky(g, w, h, t * 30, 1850 + 40, .8, frac, 'forest', t);
+  drawSky(g, w, h, t * 30, 1890, 1, frac, 'forest', t);
   if (!_menuSwords.length) for (let i = 0; i < 26; i++) _menuSwords.push({ id: SWORDS[(i * 5 + 3) % 120].id, x: Math.random(), y: Math.random(), s: .3 + Math.random() * .7, a: Math.random() * TAU, v: (Math.random() - .5) * .6, sp: .01 + Math.random() * .02 });
   g.imageSmoothingEnabled = false;
-  for (const s of _menuSwords) { s.x += s.sp * .016; if (s.x > 1.1) s.x = -.1; const c = iconCanvas(s.id); g.save(); g.globalAlpha = .35 + .35 * s.s; g.translate(s.x * w, (s.y * .8 + .1) * h + Math.sin(t * s.s + s.a) * 8); g.rotate(s.a + t * s.v); const sz = 26 + s.s * 34; g.drawImage(c, -sz / 2, -sz / 2, sz, sz); g.restore(); }
-  g.fillStyle = 'rgba(8,14,10,.9)'; g.beginPath(); g.moveTo(0, h); for (let x = 0; x <= w; x += 8) g.lineTo(x, h * .86 - Math.sin(x * .012 + 1) * 18 - Math.sin(x * .031) * 8); g.lineTo(w, h); g.closePath(); g.fill();
+  for (const s of _menuSwords) { s.x += s.sp * .016; if (s.x > 1.1) s.x = -.1; const c = iconCanvas(s.id); g.save(); g.globalAlpha = .35 + .35 * s.s; g.translate(Math.round(s.x * w), Math.round((s.y * .8 + .1) * h + Math.sin(t * s.s + s.a) * 8 / ms)); g.rotate(s.a + t * s.v); const sz = Math.round((26 + s.s * 34) / ms / 4) * 4; g.drawImage(c, -sz / 2, -sz / 2, sz, sz); g.restore(); }
+  g.fillStyle = 'rgb(10,22,14)';
+  for (let x = 0; x < w; x += 2) { const y = Math.round(h * .86 - (Math.sin(x * ms * .012 + 1) * 18 + Math.sin(x * ms * .031) * 8) / ms); g.fillRect(x, y, 2, h - y); }
+  g.fillStyle = 'rgb(24,52,30)'; for (let x = 0; x < w; x += 2) { const y = Math.round(h * .86 - (Math.sin(x * ms * .012 + 1) * 18 + Math.sin(x * ms * .031) * 8) / ms); g.fillRect(x, y, 2, 1); }
 }
 
 // ---------- loop ----------
@@ -226,6 +248,7 @@ function frame(now) {
   requestAnimationFrame(frame);
   let dt = Math.min(.05, (now - _last) / 1000); _last = now; fpsAcc += dt; fpsN++; if (fpsAcc >= .5) { FPS = Math.round(fpsN / fpsAcc); fpsAcc = 0; fpsN = 0; }
   try { padUpdate(dt); } catch (err) { PAD.err = true; console.error(err); }   // controle (inerte sem gamepad)
+  try { touchUpdate(dt); } catch (err) { console.error(err); }   // controles de toque (inertes sem tela de toque)
   try {
     if (G.state === 'play' && !G.paused) {
       step(dt); refreshHUD(); _miniT -= dt; if (_miniT <= 0) { _miniT = .12; drawMinimap(); }
@@ -236,7 +259,7 @@ function frame(now) {
   G.mouse.pressed = [false, false, false];
 }
 function initGame() {
-  initUI(); resize(); G.state = 'title'; initSky(11);
+  initUI(); resize(); G.state = 'title'; initSky(11); initTouch(); initSkin();
   $('btn-help').onclick = () => showHelp(true); initWorldsUI();   // botões do título, mundos salvos e autosave (15e_worlds.js)
   $('p-resume').onclick = () => setPause(false); $('p-help').onclick = () => showHelp(true);
   $('p-sound').onclick = () => { Snd.mute(!Snd.muted); $('p-sound').textContent = 'Som: ' + (Snd.muted ? 'desligado' : 'ligado'); };

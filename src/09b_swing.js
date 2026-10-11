@@ -6,7 +6,7 @@
    ============================================================ */
 const ARM = 7;
 function atkSpeedMult(P) {
-  let m = 1 + (P.buffs.haste ? P.buffs.haste.amt : 0);
+  let m = 1 + (P.buffs.haste ? P.buffs.haste.amt : 0) - (P.buffs.slowatk ? P.buffs.slowatk.amt : 0);
   const sw = P.cb.sw; if (sw) { const v = fxAll(sw, 'atkMult', P); if (v) m *= v; }
   return m;
 }

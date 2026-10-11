@@ -126,23 +126,36 @@ function refreshInvUI() {
     if (G.ui.craftDirty) { renderCrafting(); G.ui.craftDirty = false; }
   }
 }
+// vida em corações de pixel (20 de vida por coração, 10 por fileira; o último enche de baixo para cima)
+function drawHearts(P) {
+  const cv = $('hearts'); if (!cv) return;
+  const n = Math.max(1, Math.ceil(P.maxHp / 20)), hp = Math.max(0, P.hp), key = n + ':' + Math.ceil(hp);
+  if (cv._k === key) return; cv._k = key;
+  const S = heartSprites(), sc = 2, cw = (S.W + 1) * sc, ch = (S.H + 1) * sc, cols = Math.min(10, n), rows = Math.ceil(n / 10), W = cols * cw, H = rows * ch;
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; cv.style.width = W + 'px'; cv.style.height = H + 'px'; }
+  const g = cv.getContext('2d'); g.clearRect(0, 0, W, H); g.imageSmoothingEnabled = false;
+  for (let i = 0; i < n; i++) {
+    const x = (i % 10) * cw, y = Math.floor(i / 10) * ch, fill = clamp((hp - i * 20) / 20, 0, 1);
+    g.drawImage(S.empty, 0, 0, S.W, S.H, x, y, S.W * sc, S.H * sc);
+    if (fill > 0) { const sh = Math.max(1, Math.ceil(S.H * fill)); g.drawImage(S.full, 0, S.H - sh, S.W, sh, x, y + (S.H - sh) * sc, S.W * sc, sh * sc); }
+  }
+}
 function refreshHUD() {
   const P = G.P; if (!P) return;
   if (G.invChanged) { G.invChanged = false; refreshInvUI(); }
-  const hp = Math.max(0, Math.ceil(P.hp)), f = clamp(P.hp / P.maxHp, 0, 1); $('hp-fill').style.width = (f * 100) + '%'; $('hp-txt').textContent = hp + ' / ' + P.maxHp;
-  const sh = P.buffs.shield; $('hp-shield').style.width = sh ? Math.min(100, sh.hp / P.maxHp * 100) + '%' : '0';
+  const hp = Math.max(0, Math.ceil(P.hp)), f = clamp(P.hp / P.maxHp, 0, 1); $('hp-fill').style.width = (f * 100) + '%'; $('hp-txt').textContent = 'Vida: ' + hp + '/' + P.maxHp; drawHearts(P);
+  const sh = P.buffs.shield; $('hp-shield').style.width = sh ? Math.min(100, sh.hp / P.maxHp * 100) + '%' : '0'; $('hp-bar').style.display = sh ? 'block' : 'none';
   const sw = heldSword(), st = P.stats;
   $('stat-row').innerHTML = `<span>Defesa <b>${st.def}</b></span><span>Dano+ <b>${st.dmg}</b></span><span>Crít <b>${Math.round((st.crit + (sw ? sw.critChance : 0)) * 100)}%</b></span><span>Moedas <b>${invCount('coin')}</b></span>`;
-  let bf = ''; const NM = { regen: 'Regeneração', speed: 'Velocidade', shield: 'Escudo', invuln: 'Invulnerável', invis: 'Invisível', haste: 'Rapidez' };
+  let bf = ''; const NM = { regen: 'Regeneração', speed: 'Velocidade', shield: 'Escudo', invuln: 'Invulnerável', invis: 'Invisível', haste: 'Rapidez', slow: 'Lentidão', confuse: 'Confusão', stun: 'Atordoado', silence: 'Silêncio', gravflip: 'Gravidade invertida', floaty: 'Flutuando', curse: 'Maldição', bleed: 'Sangramento', slowatk: 'Tempo lento' };
   for (const k in P.buffs) bf += `<span class="buff">${NM[k] || k} ${Math.ceil(P.buffs[k].t)}s</span>`; if (P.potionCd > 0) bf += `<span class="buff">Poção ${Math.ceil(P.potionCd)}s</span>`;
   if (bf !== G._bf) { $('buffs').innerHTML = bf; G._bf = bf; }
   const hh = ((G.time * 24 + 6) % 24), hr = Math.floor(hh), mn = Math.floor((hh - hr) * 60);
-  $('clock').textContent = 'Dia ' + G.day + ' · ' + String(hr).padStart(2, '0') + ':' + String(mn).padStart(2, '0') + ' · ' + layerName(P) + (G.mode === 'creative' ? ' · Criativo' : '') + (G.stage >= 2 ? ' · Hardmode' : '');
+  const hora = UISKIN.mode === 'blue' ? (hr % 12 || 12) + ':' + String(mn).padStart(2, '0') + ' ' + (hr < 12 ? 'AM' : 'PM') : String(hr).padStart(2, '0') + ':' + String(mn).padStart(2, '0');   /* azul: relógio de 12 h como no Terraria */
+  $('clock').textContent = (UISKIN.mode === 'blue' ? hora + ' · Dia ' + G.day : 'Dia ' + G.day + ' · ' + hora) + ' · ' + layerName(P) + (G.mode === 'creative' ? ' · Criativo' : '') + (G.stage >= 2 ? ' · Hardmode' : '');
   const b = G.boss; $('bossbar').classList.toggle('hidden', !b || b.dead); if (b && !b.dead) { $('boss-name').textContent = b.name; $('boss-fill').style.width = (clamp(b.hp / b.hpMax, 0, 1) * 100) + '%'; }
   const itn = $('item-name'); const s = P.inv[P.sel]; const nm = s ? IT[s.id].n : ''; if (nm !== G._itn) { G._itn = nm; itn.textContent = nm; itn.style.color = s ? tierCol(s.id) : '#fff'; itn.style.opacity = nm ? 1 : 0; clearTimeout(G._itT); G._itT = setTimeout(() => itn.style.opacity = 0, 1800); }
   $('dead' + 'msg').classList.toggle('hidden', !P.dead); if (P.dead) $('dead-sub').textContent = 'Renascendo em ' + Math.max(0, Math.ceil(P.respawnT)) + 's...';
-  const dps = $('dps'); const show = G.opts.showDps || G.enemies.some(e => e.isDummy); dps.classList.toggle('hidden', !show);
-  if (show) { const now = G.t; G.dpsLog = G.dpsLog.filter(x => now - x[0] < 5); let tot = 0; for (const x of G.dpsLog) tot += x[1]; const win = Math.min(5, Math.max(1, G.dpsLog.length ? now - G.dpsLog[0][0] : 1)); dps.innerHTML = `DPS (5s): <b style="color:#fbbf24">${Math.round(tot / win)}</b> · Total: ${fmt(tot)}`; }
 }
 function layerName(P) { const l = G.world.layerAt(Math.floor(pcx(P) / TS), Math.floor(pcy(P) / TS)); const b = G.world.biomeName(Math.floor(pcx(P) / TS)); const BN = { ocean: 'Oceano', desert: 'Deserto', forest: 'Floresta', jungle: 'Selva', snow: 'Neve' }; return { sky: 'Céu', surface: BN[b], cave: 'Cavernas', deep: 'Cavernas Profundas', hell: 'Inferno' }[l] + ' · prof. ' + Math.max(0, Math.floor((pcy(P) / TS) - 120)); }
 // ---------- crafting ----------
@@ -206,14 +219,14 @@ function renderArsenal() {
   } else if (tab === 'enemies') {
     const row = document.createElement('div'); row.className = 'bar-row'; row.innerHTML = '<span style="font-size:12px;color:var(--mut)">Variante elemental (Hardmode):</span>';
     const sel = document.createElement('select'); sel.style.cssText = 'padding:5px;background:#10162b;color:#fff;border:1px solid var(--line);border-radius:6px'; sel.innerHTML = '<option value="">Nenhuma</option>' + Object.entries(ELEMS).map(([k, v]) => `<option value="${k}" ${G.ui.enemyElem === k ? 'selected' : ''}>${v.n}</option>`).join(''); sel.onchange = () => G.ui.enemyElem = sel.value; row.appendChild(sel); body.appendChild(row);
-    const mk = (keys, boss) => { const wrap = document.createElement('div'); keys.forEach(k => { const d = ED[k], b = document.createElement('div'); b.className = 'enemy-btn'; b.innerHTML = `<b>${d.n}</b> <span style="color:var(--mut)">HP ${d.hp >= 1e8 ? '∞' : d.hp}</span>`; b.onclick = () => { if (boss) { G.boss = null; const ok = summonBoss({ boss_slime: 'slime', boss_eye: 'eye', boss_guardian: 'guardian', boss_colossus: 'colossus' }[k]); if (!ok) return; } else { const P = G.P, sp = freeSpot(d.w, d.h, pcx(P) + P.face * 150, pcy(P) - 10); spawnEnemy(k, sp.x, sp.y, { elem: G.ui.enemyElem || undefined }); } sfx('tick'); }; wrap.appendChild(b); }); return wrap; };
+    const mk = (keys, boss) => { const wrap = document.createElement('div'); keys.forEach(k => { const d = ED[k], b = document.createElement('div'); b.className = 'enemy-btn'; b.innerHTML = `<b>${d.n}</b> <span style="color:var(--mut)">HP ${d.hp >= 1e8 ? '∞' : d.hp}</span>`; b.onclick = () => { if (boss) { G.boss = null; const ok = summonBoss(k.startsWith('bx_') ? 'x:' + k.slice(3) : { boss_slime: 'slime', boss_eye: 'eye', boss_guardian: 'guardian', boss_colossus: 'colossus' }[k]); if (!ok) return; } else { const P = G.P, sp = freeSpot(d.w, d.h, pcx(P) + P.face * 150, pcy(P) - 10); spawnEnemy(k, sp.x, sp.y, { elem: G.ui.enemyElem || undefined }); } sfx('tick'); }; wrap.appendChild(b); }); return wrap; };
     const s1 = document.createElement('div'); s1.className = 'sect'; s1.textContent = 'Alvos de treino'; body.appendChild(s1); body.appendChild(mk(['dummy']));
     const s2 = document.createElement('div'); s2.className = 'sect'; s2.textContent = 'Inimigos'; body.appendChild(s2); body.appendChild(mk(Object.keys(ED).filter(k => !ED[k].boss && !ED[k].isDummy)));
-    const s3 = document.createElement('div'); s3.className = 'sect'; s3.textContent = 'Chefes (sem restrição no criativo)'; body.appendChild(s3); body.appendChild(mk(Object.keys(ED).filter(k => ED[k].boss), true));
+    const s3 = document.createElement('div'); s3.className = 'sect'; s3.textContent = 'Chefes (sem restrição no criativo)'; body.appendChild(s3); body.appendChild(mk(Object.keys(ED).filter(k => ED[k].boss && !ED[k].bx), true)); for (let a = 1; a <= 4; a++) { const sa = document.createElement('div'); sa.className = 'sect'; sa.textContent = 'Chefes novos · ' + BX_ACTS[a].n; body.appendChild(sa); body.appendChild(mk(BXLIST.filter(d => d.act === a).map(d => 'bx_' + d.id), true)); }
   } else if (tab === 'world') {
     const P = G.P, row = (title, btns) => { const s = document.createElement('div'); s.className = 'sect'; s.textContent = title; body.appendChild(s); const r = document.createElement('div'); r.className = 'bar-row'; btns.forEach(([n, f, on]) => { const b = document.createElement('button'); b.className = 'btn' + (on ? ' on' : ''); b.textContent = n; b.onclick = () => { f(b); sfx('tick'); renderArsenal(); }; r.appendChild(b); }); body.appendChild(r); };
     row('Hora do dia', [['Amanhecer', () => G.time = .05], ['Meio-dia', () => G.time = .3], ['Entardecer', () => G.time = .58], ['Meia-noite', () => G.time = .82]]);
-    row('Opções de teste', [['Invencível', () => G.opts.god = !G.opts.god, G.opts.god], ['Sem spawn de inimigos', () => G.opts.noSpawn = !G.opts.noSpawn, G.opts.noSpawn], ['Mostrar DPS', () => G.opts.showDps = !G.opts.showDps, G.opts.showDps], ['Criação grátis', () => G.opts.freeCraft = !G.opts.freeCraft, G.opts.freeCraft]]);
+    row('Opções de teste', [['Invencível', () => G.opts.god = !G.opts.god, G.opts.god], ['Sem spawn de inimigos', () => G.opts.noSpawn = !G.opts.noSpawn, G.opts.noSpawn], ['Criação grátis', () => G.opts.freeCraft = !G.opts.freeCraft, G.opts.freeCraft]]);
     row('Ações', [['Curar tudo', () => { P.hp = P.maxHp; }], ['Remover inimigos', () => { G.enemies.length = 0; G.projs = G.projs.filter(p => p.friendly); G.boss = null; }], ['+500 moedas', () => arsGive('coin', 500)], ['+4 Cristais de Vida', () => { P.crystals = Math.min(15, P.crystals + 4); recalcStats(); P.hp = P.maxHp; }]]);
     row('Progressão do mundo (estágio dos inimigos)', [['Estágio 0 · Início', () => { G.stage = 0; }, G.stage === 0], ['Estágio 1 · Pós-Olho', () => { G.stage = 1; G.flags.eye = true; }, G.stage === 1], ['Estágio 2 · Hardmode', () => { if (!G.world.hardmode) spawnHardmodeOres(G.world); G.stage = 2; G.flags.eye = G.flags.guardian = true; toast('Hardmode ativado: minérios T3/T4 gerados.', '#fb923c'); }, G.stage === 2], ['Estágio 3 · Pós-Colosso', () => { if (!G.world.hardmode) spawnHardmodeOres(G.world); G.stage = 3; G.flags.guardian = true; }, G.stage === 3]]);
     const tp = (x, y) => () => { P.x = x * TS; P.y = (y - 3) * TS; P.vx = P.vy = 0; P.fallStart = 0; closePanels(); }; const sf = x => G.world.surf[x];
@@ -226,7 +239,7 @@ function renderArsenal() {
     tpBtns.push(['Ilha do céu', toIsland], ['Cavernas', () => { const x = 600; for (let y = 200; y < 400; y++) if (!G.world.solid(x, y) && G.world.solid(x, y + 1) && !G.world.solid(x, y - 1) && !G.world.solid(x, y - 2)) { tp(x, y + 3)(); break; } }],
       ['Inferno', () => { const x = 700; for (let y = 425; y < 470; y++) if (!G.world.solid(x, y) && G.world.solid(x, y + 1) && G.world.liqAt(x, y) === 0) { tp(x, y + 3)(); break; } }]);
     row('Teletransporte', tpBtns);
-    const info = document.createElement('div'); info.style.cssText = 'margin-top:12px;font-size:12px;color:var(--mut)'; info.textContent = 'Dica: use o Boneco de Treino (aba Inimigos) com "Mostrar DPS" ligado para comparar as espadas.'; body.appendChild(info);
+    const info = document.createElement('div'); info.style.cssText = 'margin-top:12px;font-size:12px;color:var(--mut)'; info.textContent = 'Dica: use o Boneco de Treino (aba Inimigos) para testar as espadas: ele não morre e mostra o dano de cada golpe.'; body.appendChild(info);
   }
 }
 // ---------- mapa ----------
@@ -268,6 +281,13 @@ function helpHTML() {
 <tr><td><kbd>B</kbd></td><td>Interagir com o baú / porta / NPC mais próximo</td></tr><tr><td><kbd>LB</kbd> <kbd>RB</kbd></td><td>Item anterior / próximo da barra</td></tr><tr><td><kbd>LT</kbd></td><td>Poção de cura rápida</td></tr>
 <tr><td><kbd>Y</kbd> · <kbd>▲</kbd> · <kbd>▼</kbd>/<kbd>Select</kbd></td><td>Inventário e criação · catálogo/arsenal · mapa</td></tr><tr><td><kbd>L3</kbd> <kbd>R3</kbd></td><td>Zoom − / +</td></tr><tr><td><kbd>Start</kbd></td><td>Pausar / fechar painéis</td></tr>
 <tr><td>Nos painéis e menus</td><td>Analógico esq. move o cursor (ou <kbd>▲</kbd><kbd>▼</kbd> nos menus) · <kbd>A</kbd> clica · <kbd>X</kbd> botão direito · <kbd>RB</kbd> Shift+clique · analógico dir. rola a lista · <kbd>B</kbd> fecha</td></tr></table>
+<h2 style="margin-top:16px">Toque (celular/tablet)</h2><table>
+<tr><td>Direcional (esquerda)</td><td>Mover · empurrar para cima = pular</td></tr>
+<tr><td>Botão <b>+</b> grande</td><td>Segurar: atacar · minerar · colocar bloco · usar item. <b>Arraste</b> o dedo a partir dele para mirar (direção e distância)</td></tr>
+<tr><td>▲ · ✋</td><td>Pular · interagir (baú, porta ou NPC mais perto)</td></tr>
+<tr><td>Botões redondos (abaixo do mapa)</td><td>Inventário · arsenal/catálogo · mapa · cura rápida · zoom + / − · pausa</td></tr>
+<tr><td>Tocar no mundo / na barra de itens</td><td>Ataca ou minera o ponto tocado · seleciona o item</td></tr>
+<tr><td>Menu de pausa</td><td><b>Controles de toque</b>: automático (liga sozinho em telas de toque), ligado ou desligado — dá para testar no computador</td></tr></table>
 <h2 style="margin-top:16px">Progressão</h2><ol style="margin:0;padding-left:20px">
 <li><b>Tier 1</b>: corte árvores, mine cobre/ferro e faça Bancada → Fornalha → Bigorna. Espadas básicas.</li>
 <li><b>Tier 2</b>: platina, meteorito (ilhas do céu), Brasita do Inferno, gemas. Derrote o <b>Rei Slime</b> e o <b>Olho Colossal</b> (noite).</li>

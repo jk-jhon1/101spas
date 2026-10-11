@@ -20,29 +20,30 @@ function updateTitleMenu() {
   $('btn-load').classList.toggle('hidden', !has);
   if (has) $('btn-load-sub').textContent = last.name + ' · ' + modeLabel(last.mode) + ' · ' + fmtAgo(last.updated);
   $('btn-worlds-sub').textContent = Worlds.mode === 'memory' ? (has ? L.length + ' na memória: somem ao fechar a página' : 'Salvamento permanente indisponível aqui')
-    : has ? L.length + (L.length === 1 ? ' mundo salvo' : ' mundos salvos') : 'Nenhum mundo salvo ainda';
+    : has ? L.length + (L.length === 1 ? ' mundo salvo' : ' mundos salvos') + ' neste aparelho' : 'Nenhum mundo salvo ainda';
   if ($('worlds') && !$('worlds').classList.contains('hidden')) renderWorlds();
 }
 
 // ---------- tela "Meus Mundos" ----------
 function worldCard(w) {
   const el = document.createElement('div'); el.className = 'wcard'; el.dataset.id = w.id;
-  const prog = w.mode === 'creative' ? '' : ' · estágio ' + (w.stage || 0) + (w.bosses ? ' · ' + w.bosses + '/4 chefes' : '');
+  const prog = w.mode === 'creative' ? '' : ' · estágio ' + (w.stage || 0) + (w.bosses ? ' · ' + w.bosses + '/' + (4 + (typeof BXLIST !== 'undefined' ? BXLIST.length : 0)) + ' chefes' : '');
   el.innerHTML = '<div class="wthumb">' + (w.thumb ? '<img alt="" src="' + w.thumb + '">' : '<span>sem miniatura</span>') + '</div>' +
     '<div class="winfo"><b class="wname" title="' + escHtml(w.name) + '">' + escHtml(w.name) + '</b>' +
     '<span>' + modeLabel(w.mode) + ' · dia ' + (w.day || 1) + prog + '</span>' +
     '<span class="wbio">' + escHtml(layoutLabel(w.layoutKey)) + '</span>' +
-    '<span class="wdate">' + fmtAgo(w.updated) + ' · ' + fmtPlay(w.playSec) + ' jogados · ' + fmtMB(w.bytes || 0) + (w.legacy ? ' · importado do save antigo' : '') + '</span></div>' +
+    '<span class="wdate">' + fmtAgo(w.updated) + ' · ' + fmtPlay(w.playSec) + ' jogados · ' + fmtMB(w.bytes || 0) + (w.legacy ? ' · importado do save antigo' : '') +
+    (w.imported ? ' · importado de ' + escHtml((w.importedFrom && w.importedFrom.label) || 'outro aparelho') + (w.importedFrom && w.importedFrom.id ? ' (' + escHtml(w.importedFrom.id) + ')' : '') : '') + '</span></div>' +
     '<div class="wact"><button class="menu-btn wplay" data-act="play">Jogar</button>' +
-    '<div class="wmini"><button class="btn" data-act="ren">Renomear</button><button class="btn wdel" data-act="del">Excluir</button></div></div>';
+    '<div class="wmini"><button class="btn" data-act="ren">Renomear</button><button class="btn" data-act="exp" title="Baixa este mapa em um arquivo (backup ou para levar a outro aparelho)">Exportar</button><button class="btn wdel" data-act="del">Excluir</button></div></div>';
   return el;
 }
 function renderWorlds() {
   const box = $('worlds-list'), L = Worlds.list; box.innerHTML = '';
   if (!L.length) { const e = document.createElement('div'); e.id = 'worlds-empty'; e.textContent = 'Nenhum mundo ainda. Escolha Nova Aventura ou Modo Criativo: cada mundo é gerado do zero, único, e salvo automaticamente.'; box.appendChild(e); }
   for (const w of L) box.appendChild(worldCard(w));
-  $('worlds-count').textContent = L.length ? '(' + L.length + ')' : '';
-  Worlds.usage().then(u => { $('worlds-info').textContent = (Worlds.mode === 'memory' ? 'Salvamento permanente indisponível neste ambiente — só durante a sessão.' : 'Salvos neste navegador.') + (u && u.quota ? ' Espaço usado: ' + fmtMB(u.used) + ' de ' + fmtMB(u.quota) + '.' : ''); });
+  $('worlds-count').textContent = L.length ? '(' + L.length + ')' : ''; renderDeviceBox();
+  Worlds.usage().then(u => { $('worlds-info').textContent = (Worlds.mode === 'memory' ? 'Salvamento permanente indisponível neste ambiente — só durante a sessão.' : 'Salvos neste aparelho, no navegador.') + (u && u.quota ? ' Espaço usado: ' + fmtMB(u.used) + ' de ' + fmtMB(u.quota) + '.' : ''); });
 }
 function openWorlds(show) {
   const el = $('worlds'); if (!el) return;
@@ -61,10 +62,64 @@ async function worldsClick(ev) {
   const card = b.closest('.wcard'), id = card.dataset.id, act = b.dataset.act;
   if (act === 'play') openWorld(id);
   else if (act === 'ren') startRename(card);
+  else if (act === 'exp') exportWorldUI(id, b);
   else if (act === 'del') {   // duas etapas: o 1º clique arma, o 2º (em até 4 s) exclui
     if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Confirmar exclusão?'; setTimeout(() => { if (b.isConnected) { b.classList.remove('armed'); b.textContent = 'Excluir'; } }, 4000); return; }
     await Worlds.remove(id); updateTitleMenu(); renderWorlds();
   }
+}
+
+// ---------- este aparelho, proteção e arquivos (ver 15f_transfer.js) ----------
+function worldsMsg(lines, kind) {   // mensagem na própria tela: os avisos "toast" só aparecem durante o jogo
+  const el = $('worlds-msg'); if (!el) return;
+  el.innerHTML = ''; (Array.isArray(lines) ? lines : [lines]).slice(0, 8).forEach(t => { const d = document.createElement('div'); d.textContent = t; el.appendChild(d); });
+  el.className = kind || 'ok'; clearTimeout(worldsMsg._t); worldsMsg._t = setTimeout(() => el.classList.add('hidden'), kind === 'err' ? 15000 : 9000);
+}
+function downloadFile(name, text) {
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' })), a = document.createElement('a');
+  a.href = url; a.download = name; a.rel = 'noopener'; a.style.display = 'none'; document.body.appendChild(a); a.click();
+  setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 30000);
+}
+async function renderDeviceBox() {
+  const d = Device.init(), mem = Worlds.mode === 'memory', st = mem ? 'mem' : await Protect.status();
+  $('dev-label').textContent = d.label; $('dev-code').textContent = d.id + (d.persistent && !mem ? '' : ' (temporário)');
+  const box = $('dev-prot'); box.className = st === 'on' ? 'ok' : 'warn';
+  box.textContent = {
+    on: '✔ Proteção permanente ativa: o navegador não apaga seus mapas sozinho.',
+    off: '⚠ Proteção permanente não garantida: se o aparelho ficar sem espaço, o navegador pode apagar os mapas. Use "Proteger agora" e guarde um backup com "Exportar".',
+    na: '⚠ Este navegador não oferece proteção permanente. Guarde um backup com "Exportar".',
+    mem: '⚠ Aqui o navegador não deixa salvar mapas (só durante a sessão). Abra o jogo direto no navegador. Dá para guardar um arquivo com "Exportar".',
+  }[st];
+  $('btn-protect').classList.toggle('hidden', st !== 'off');
+}
+async function exportWorldUI(id, btn) {
+  btn.disabled = true;
+  try {
+    const f = await Worlds.exportFile(id); downloadFile(f.name, f.text);
+    worldsMsg('Arquivo "' + f.name + '" gerado (' + fmtMB(f.text.length) + '). Guarde-o: ele recria este mapa em qualquer aparelho, com "Importar mapa".', 'ok');
+  } catch (e) { worldsMsg('Não foi possível exportar: ' + ((e && e.message) || e), 'err'); }
+  btn.disabled = false;
+}
+function importLine(r, file) {
+  const nm = '"' + (r.name || file) + '"';
+  if (r.action === 'added') return 'Importado: ' + nm + ' (de ' + r.from + ', ' + fmtPlay(r.fileSec) + ' jogados).';
+  if (r.action === 'updated') return 'Atualizado: ' + nm + ' — o arquivo era mais novo e tinha mais jogo (' + fmtPlay(r.fileSec) + ' contra ' + fmtPlay(r.localSec) + ' daqui).';
+  if (r.action === 'skipped' && r.reason === 'same') return nm + ' já está neste aparelho em versão igual ou mais nova. Nada foi alterado.';
+  if (r.action === 'skipped') return nm + ' não foi trocado: o mundo daqui tem mais tempo de jogo (' + fmtPlay(r.localSec) + ') que o arquivo (' + fmtPlay(r.fileSec) + '). Para usar o arquivo mesmo assim, exclua o mundo daqui antes.';
+  return 'Não importei "' + file + '": ' + r.reason + '.';
+}
+async function importFiles(files) {
+  const lines = []; let ok = 0, bad = 0;
+  for (const f of files) {
+    let r;
+    try {
+      if (f.size > WORLD_FILE_MAX) r = { ok: false, action: 'error', reason: 'arquivo grande demais' };
+      else r = await Worlds.importText(await f.text());
+    } catch (e) { r = { ok: false, action: 'error', reason: 'não foi possível ler o arquivo (' + ((e && e.message) || e) + ')' }; }
+    lines.push(importLine(r, f.name)); if (r.action === 'added' || r.action === 'updated') ok++; else if (r.action === 'error') bad++;
+  }
+  updateTitleMenu(); renderWorlds();
+  worldsMsg(lines, bad ? 'err' : ok ? 'ok' : 'warn');
 }
 
 // ---------- criar / abrir / sair ----------
@@ -107,6 +162,12 @@ function initWorldsUI() {
   $('btn-load').onclick = () => { if (Worlds.list[0]) openWorld(Worlds.list[0].id); };
   $('btn-worlds').onclick = () => openWorlds(true); $('worlds-back').onclick = () => openWorlds(false);
   $('worlds-list').addEventListener('click', worldsClick);
+  $('btn-import').onclick = () => $('world-import').click();
+  $('world-import').onchange = async ev => { const fs = [...ev.target.files]; ev.target.value = ''; if (fs.length) await importFiles(fs); };
+  $('btn-protect').onclick = async () => {
+    const ok = await Protect.request(); await renderDeviceBox();
+    worldsMsg(ok ? 'Proteção permanente ativada neste aparelho.' : 'O navegador não concedeu a proteção (ele decide sozinho, em geral depois de você usar o site algumas vezes). Guarde backups com "Exportar".', ok ? 'ok' : 'warn');
+  };
   $('worlds').addEventListener('mousedown', e => { if (e.target.id === 'worlds') openWorlds(false); });
   $('p-save').onclick = () => { saveGame(false); };
   $('p-menu').onclick = () => { quitToMenu(); };
