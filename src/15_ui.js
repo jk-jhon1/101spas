@@ -202,8 +202,8 @@ function openChest(tx, ty) { const wd = G.world, k = wd.idx(tx, ty); let c = wd.
 const ARS_TABS = [['T1', 'Tier 1'], ['T2', 'Tier 2'], ['T3', 'Tier 3'], ['T4', 'Tier 4'], ['T5', 'Tier 5'], ['T6', 'Tier 6'], ['T7', 'Tier 7'], ['T8', 'Tier 8'], ['T9', 'Tier 9'], ['T10', 'Tier 10'], ['ALL', 'Todas'], ['items', 'Itens'], ['enemies', 'Inimigos & Chefes'], ['world', 'Mundo']];
 function arsGive(id, n) { const left = invAdd(id, n || 1); if (left) dropItem(id, left, G.P.x, G.P.y); sfx('pickup'); G.ui.craftDirty = true; }
 function renderArsenal() {
-  const cre = G.mode === 'creative'; $('ars-title').textContent = cre ? 'Arsenal (Modo Criativo)' : 'Catálogo das 200 Espadas';
-  const tabs = $('ars-tabs'); tabs.innerHTML = ''; const avail = cre ? ARS_TABS : ARS_TABS.slice(0, 7);
+  const cre = G.mode === 'creative'; $('ars-title').textContent = cre ? 'Arsenal (Modo Criativo)' : 'Catálogo das 120 Espadas';
+  const tabs = $('ars-tabs'); tabs.innerHTML = ''; const avail = cre ? ARS_TABS : ARS_TABS.filter(([k]) => /^T\d+$/.test(k) || k === 'ALL');   // catálogo da aventura: todos os tiers + Todas
   if (!avail.some(t => t[0] === G.ui.arsTab)) G.ui.arsTab = 'T1';
   avail.forEach(([k, n]) => { const t = document.createElement('div'); t.className = 'tab' + (G.ui.arsTab === k ? ' on' : ''); t.textContent = n; if (/^T\d+$/.test(k)) t.style.borderColor = TIERS[+k.slice(1)].col; t.onclick = () => { G.ui.arsTab = k; renderArsenal(); }; tabs.appendChild(t); });
   const body = $('ars-body'), tab = G.ui.arsTab; body.innerHTML = '';
@@ -212,7 +212,7 @@ function renderArsenal() {
     const swords = SWORDS.filter(s => tab === 'ALL' || s.tierLevel === +tab.slice(1));
     if (/^T\d+$/.test(tab)) { const T_ = TIERS[+tab.slice(1)]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px 12px;border-left:4px solid ' + T_.col + ';background:rgba(255,255,255,.05);border-radius:6px;font-size:13px'; const sws = swords; d.innerHTML = `<b style="color:${T_.col}">${T_.n}</b> · multiplicador de dano ${T_.mult[0]}x–${T_.mult[1]}x · ${sws.length} espadas · dano ${Math.min(...sws.map(s => s.baseDamage))}–${Math.max(...sws.map(s => s.baseDamage))}<br><span style="color:var(--mut)">${T_.mech}</span>` + ((+tab.slice(1)) > 6 ? '<br><span style="color:#fbbf24">★ Tier novo (pós-jogo): 20 espadas inéditas, cada uma com arte pintada pixel a pixel e efeito próprio.</span>' : (+tab.slice(1)) % 2 === 0 ? '<br><span style="color:#fbbf24">★ Este tier estava truncado no PDF — as 20 espadas foram criadas seguindo as regras acima.</span>' : ''); body.appendChild(d); }
     body.appendChild(grid(swords.map(s => s.id), true));
-    const note = document.createElement('div'); note.style.cssText = 'margin-top:10px;font-size:12px;color:var(--mut)'; note.textContent = cre ? 'Clique para pegar 1 espada · ★ = criada/nova. Passe o mouse para ver detalhes e receita.' : 'Passe o mouse sobre uma espada para ver atributos, mecânica e receita. ★ = criada para completar o catálogo.'; body.appendChild(note);
+    const note = document.createElement('div'); note.style.cssText = 'margin-top:10px;font-size:12px;color:var(--mut)'; note.textContent = cre ? 'Clique para pegar 1 espada · ★ = criada (não consta no PDF). Passe o mouse para ver detalhes e receita.' : 'Passe o mouse sobre uma espada para ver atributos, mecânica e receita. ★ = criada para completar o GDD.'; body.appendChild(note);
   } else if (tab === 'items') {
     const groups = [['Blocos', i => i.type === 'block' || i.type === 'wall'], ['Materiais', i => i.type === 'mat'], ['Ferramentas', i => i.type === 'pick'], ['Armaduras', i => i.type === 'armor'], ['Acessórios', i => i.type === 'acc'], ['Consumíveis e Invocações', i => i.type === 'use']];
     for (const [n, f] of groups) { const s = document.createElement('div'); s.className = 'sect'; s.textContent = n; body.appendChild(s); body.appendChild(grid(Object.keys(IT).filter(id => IT[id].type !== 'sword' && f(IT[id])), false)); }
@@ -272,7 +272,7 @@ function helpHTML() {
 <tr><td><kbd>A</kbd> <kbd>D</kbd> / <kbd>←</kbd> <kbd>→</kbd></td><td>Mover</td></tr><tr><td><kbd>Espaço</kbd> <kbd>W</kbd> <kbd>↑</kbd></td><td>Pular · nadar para cima</td></tr>
 <tr><td>Botão esquerdo (segurar)</td><td>Atacar (arco em direção ao cursor) · minerar · colocar bloco · usar item</td></tr><tr><td>Botão direito</td><td>Abrir baú · abrir/fechar porta · falar com NPC</td></tr>
 <tr><td><kbd>1</kbd>–<kbd>0</kbd> / roda do mouse</td><td>Selecionar item da barra</td></tr><tr><td><kbd>E</kbd> / <kbd>Tab</kbd></td><td>Inventário + criação (fique perto de Bancada, Fornalha, Bigorna...)</td></tr>
-<tr><td><kbd>B</kbd></td><td>Arsenal (criativo) · Catálogo das 200 espadas (aventura)</td></tr><tr><td><kbd>M</kbd></td><td>Mapa do mundo</td></tr><tr><td><kbd>Q</kbd></td><td>Poção de cura rápida</td></tr>
+<tr><td><kbd>B</kbd></td><td>Arsenal (criativo) · Catálogo das 120 espadas (aventura)</td></tr><tr><td><kbd>M</kbd></td><td>Mapa do mundo</td></tr><tr><td><kbd>Q</kbd></td><td>Poção de cura rápida</td></tr>
 <tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoom</td></tr><tr><td><kbd>F3</kbd></td><td>Informações de depuração</td></tr><tr><td><kbd>Esc</kbd></td><td>Fechar painéis / pausar · no menu de pausa: <b>Salvar mundo</b> ou <b>Salvar e voltar ao menu</b> (o jogo também salva sozinho a cada minuto; seus mundos ficam em <b>Meus Mundos</b>)</td></tr></table>
 <h2 style="margin-top:16px">Controle (gamepad)</h2><table>
 <tr><td>Analógico esq. / <kbd>◀</kbd> <kbd>▶</kbd></td><td>Mover</td></tr><tr><td><kbd>A</kbd></td><td>Pular · nadar para cima</td></tr>
@@ -292,9 +292,8 @@ function helpHTML() {
 <li><b>Tier 1</b>: corte árvores, mine cobre/ferro e faça Bancada → Fornalha → Bigorna. Espadas básicas.</li>
 <li><b>Tier 2</b>: platina, meteorito (ilhas do céu), Brasita do Inferno, gemas. Derrote o <b>Rei Slime</b> e o <b>Olho Colossal</b> (noite).</li>
 <li><b>Tier 3/4 (Hardmode)</b>: vá ao Inferno, use o <b>Boneco Infernal</b> contra o Guardião do Abismo. Surgem Cobalto, Paládio, Mithril, Orichalcum, Titânio, Adamantita e inimigos elementais que dropam Essências.</li>
-<li><b>Tier 5/6</b>: Fragmentos Celestes → Forja Celeste. Invoque o <b>Colosso Estelar</b> e forje as espadas míticas com o Núcleo Mítico.</li>
-<li><b>Tiers 7–10 (pós-jogo, 121–200)</b>: gaste os Fragmentos Celestes e os Núcleos Míticos na Bigorna Avançada (T7–T8) e na Forja Celeste (T9–T10). Cada uma das 80 espadas novas tem <b>arte pintada pixel a pixel</b> e um efeito próprio (ecos, domínios, marcas que detonam, fendas, singularidades, big bang).</li></ol>
-<p style="color:var(--mut);margin-top:10px">As cores de raridade seguem o GDD: <b style="color:#10b981">T1</b> <b style="color:#0284c7">T2</b> <b style="color:#7c3aed">T3</b> <b style="color:#d97706">T4</b> <b style="color:#dc2626">T5</b> <b style="color:#818cf8">T6</b> · extras: <b style="color:#eab308">T7</b> <b style="color:#db2777">T8</b> <b style="color:#06b6d4">T9</b> <b style="color:#f8fafc">T10</b>. As espadas marcadas com ★ foram criadas para completar o catálogo (o PDF veio truncado).</p>
+<li><b>Tier 5/6</b>: Fragmentos Celestes → Forja Celeste. Invoque o <b>Colosso Estelar</b> e forje as espadas míticas com o Núcleo Mítico.</li></ol>
+<p style="color:var(--mut);margin-top:10px">As cores de raridade seguem o GDD: <b style="color:#10b981">T1</b> <b style="color:#0284c7">T2</b> <b style="color:#7c3aed">T3</b> <b style="color:#d97706">T4</b> <b style="color:#dc2626">T5</b> <b style="color:#818cf8">T6</b>. As espadas marcadas com ★ foram criadas para completar o catálogo (o PDF veio truncado).</p>
 <div style="text-align:center;margin-top:12px"><button class="btn pri" id="help-close">Fechar</button></div>`;
 }
 function showHelp(show) { const h = $('help'); if (show) { $('help-box').innerHTML = helpHTML(); h.classList.remove('hidden'); $('help-close').onclick = () => showHelp(false); } else h.classList.add('hidden'); }

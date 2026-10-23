@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 // Folha de contato das espadas novas (Tiers 7–10) — renderiza os sprites reais do jogo em Node.
-//   node dev/art_sheet.js                 -> docs/img/14_espadas_novas.png
+//   node dev/art_sheet.js                 -> espadas_t7_10.png (na pasta atual)
 //   node dev/art_sheet.js out.png 3       -> saída e escala
 // Usa @napi-rs/canvas só para o preview (o jogo em si não tem dependências).
 const fs = require('fs'), path = require('path'), vm = require('vm');
@@ -29,7 +29,7 @@ function loadGame() {
 }
 
 const A = loadGame();
-const OUT = process.argv[2] || path.join(ROOT, 'docs/img/14_espadas_novas.png');
+const OUT = process.argv[2] || 'espadas_t7_10.png';
 const SC = +(process.argv[3] || 3);
 const NEW = A.SWORDS.filter(s => s.num > 120);
 const TIERS_NEW = [7, 8, 9, 10];

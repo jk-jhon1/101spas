@@ -33,10 +33,11 @@ for (const r of RECIPES) {
 console.log('recipes:', RECIPES.length, '| items:', Object.keys(IT).length);
 // cada espada tem look válido e pelo menos efeitos (exceto 019)
 SWORDS.forEach(s => { if (!s.look || !s.look.sh || !s.look.col) err('look inválido ' + s.id); if (!s.passiveEffects.length && s.num !== 19) err('sem efeito ' + s.id); if (!s.txt) err('sem texto ' + s.id); });
-// CSV
+// CSV (só grava em docs/ se você pedir: CATALOGO=1 node dev/validate.js)
+const WRITE_DOCS = process.env.CATALOGO === '1';
 let csv = '#;Nome;Tier;Dano;Vel;KB;Crit;Tipo de ataque;Mecânica única;Origem;Estação;Receita\n';
 for (const s of SWORDS) { const r = RECIPES.find(r => r.out === s.id); csv += [String(s.num).padStart(3, '0'), s.swordName, s.tierLevel, s.baseDamage, s.attackSpeed, s.knockbackForce, Math.round(s.critChance * 100) + '%', s.attackType, '"' + s.txt.replace(/"/g, '""') + '"', s.src === 'pdf' ? 'PDF (GDD)' : 'CRIADA (PDF truncado)', STATION_NAME[s.station], Object.entries(r.ing).map(([k, v]) => v + 'x ' + IT[k].n).join(' + ')].join(';') + '\n'; }
-fs.writeFileSync(__dirname + '/../docs/catalogo_200_espadas.csv', '\ufeff' + csv);
+if (WRITE_DOCS) fs.writeFileSync(__dirname + '/../docs/catalogo_200_espadas.csv', '\ufeff' + csv);
 // Markdown por tier
 let md = '# Catálogo mestre — 200 espadas\n\n> Gerado automaticamente a partir dos dados do jogo (`src/11_swords.js` e `src/11b_swords_x.js`).\n> **Origem:** `PDF` = linha original do GDD · `★ CRIADA` = criada para o jogo (o PDF veio **truncado** nos Tiers 2, 4 e 6; os **Tiers 7–10 são novos**, 20 espadas cada, com arte pintada pixel a pixel em `src/06b_swordart.js`).\n\n';
 const TN = { 1: 'TIER 1 — Início de jogo & Básico (001–020)', 2: 'TIER 2 — Pré-Bosses Intermediários (021–040)', 3: 'TIER 3 — Transição & Mid-Game (041–060)', 4: 'TIER 4 — Hardmode Inicial (061–080)', 5: 'TIER 5 — Hardmode Avançado (081–100)', 6: 'TIER 6 — End-Game / Mítico (101–120)', 7: 'TIER 7 — Forja Estelar · Lendário (121–140) ★', 8: 'TIER 8 — Relicário do Vazio · Ancestral (141–160) ★', 9: 'TIER 9 — Eco Primordial · Divino (161–180) ★', 10: 'TIER 10 — Origem · Supremo (181–200) ★' };
@@ -47,7 +48,7 @@ for (let t = 1; t <= 10; t++) {
   for (const s of L) { const r = RECIPES.find(r => r.out === s.id); md += `| ${String(s.num).padStart(3, '0')}${s.src === 'novo' ? ' ★' : ''} | **${s.swordName}** | ${s.baseDamage} | ${s.attackSpeed} | ${s.knockbackForce} | ${Math.round(s.critChance * 100)}% | ${s.txt} | ${Object.entries(r.ing).map(([k, v]) => v + '× ' + IT[k].n).join(', ')} _(${STATION_NAME[s.station]}${s.station === 'bench' ? '' : ''})_ |\n`; }
   md += '\n';
 }
-fs.writeFileSync(__dirname + '/../docs/catalogo_200_espadas.md', md);
+if (WRITE_DOCS) { fs.writeFileSync(__dirname + '/../docs/catalogo_200_espadas.md', md); console.log('docs/catalogo_200_espadas.{md,csv} atualizados'); }
 // ---- 50 chefes novos: dados completos + docs/chefes_novos.md ----
 console.log('chefes novos:', BXLIST.length);
 if (BXLIST.length !== 50) err('esperado 50 chefes novos, há ' + BXLIST.length);

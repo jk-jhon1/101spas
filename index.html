@@ -350,7 +350,7 @@ body.touch-on #boss-name{font-size:13px}
     <div id="logo">ESPADAS DO DESTINO<small>SANDBOX 2D PLATFORMER</small></div>
     <div id="tiers-strip"></div>
     <button class="menu-btn hidden" id="btn-load">Continuar<small id="btn-load-sub"></small></button>
-    <button class="menu-btn" id="btn-adv">Nova Aventura<small>Mine, crie, derrote chefes e forje as 200 espadas · cada mundo é único</small></button>
+    <button class="menu-btn" id="btn-adv">Nova Aventura<small>Mine, crie, derrote chefes e forje as 120 espadas · cada mundo é único</small></button>
     <button class="menu-btn" id="btn-cre">Modo Criativo<small>Arsenal completo: todas as espadas, inimigos e bonecos de treino</small></button>
     <button class="menu-btn" id="btn-worlds">Meus Mundos<small id="btn-worlds-sub">Nenhum mundo salvo ainda</small></button>
     <button class="menu-btn" id="btn-help">Controles e Guia</button>
@@ -401,7 +401,7 @@ body.touch-on #boss-name{font-size:13px}
 /* ===== 00_util.js ===== */
 'use strict';
 /* ============================================================
-   200 ESPADAS — Sandbox 2D  |  00_util: matemática, RNG, ruído
+   120 ESPADAS — Sandbox 2D  |  00_util: matemática, RNG, ruído
    ============================================================ */
 const TAU = Math.PI * 2, PI = Math.PI;
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -3745,13 +3745,13 @@ function mid(a, b) { return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2])
 // ---------------- ÍCONES (canvas 48x48 -> data URL) ----------------
 function iconCanvas(id) {   // ícones 32x32 em pixel-art (alfa binário, sem suavização)
   if (_icoCache[id]) return _icoCache[id];
-  const _it0 = IT[id];
-  const art2 = _it0 && _it0.type === 'sword' && _it0.sw.look && _it0.sw.look.art2;
+  const it = IT[id];
+  const art2 = it && it.type === 'sword' && it.sw.look && it.sw.look.art2;
   const IC = 32, HH = IC / 2;   // 1:1 com os slots da interface
-  const it2 = _it0; const c = mk(IC, IC), g = c.getContext('2d', { willReadFrequently: true });
-  if (!it2) { _icoCache[id] = c; return c; }
-  if (it2.type === 'sword') {
-    const sw = it2.sw, spr = getSwordSprite(sw), tcol = TIERS[sw.tierLevel].col;
+  const c = mk(IC, IC), g = c.getContext('2d', { willReadFrequently: true });
+  if (!it) { _icoCache[id] = c; return c; }
+  if (it.type === 'sword') {
+    const sw = it.sw, spr = getSwordSprite(sw), tcol = TIERS[sw.tierLevel].col;
     glowDot(g, HH, HH, HH, tcol, art2 ? .3 : .22);
     if (sw.look.glow) glowDot(g, HH, HH, HH * .82, sw.look.glow, .3);
     const t = mk(IC, IC), tg = t.getContext('2d', { willReadFrequently: true });
@@ -4921,7 +4921,8 @@ function killProj(p, why) { if (p.dead) return; p.dead = true; if (p.onDie) p.on
 function updateProjs(dt) {
   const a = G.projs, P = G.P;
   for (let i = a.length - 1; i >= 0; i--) {
-    const p = a[i]; if (p.dead) { a.splice(i, 1); continue; }
+    const p = a[i]; if (!p) continue;   // o teto de 700 projéteis pode encurtar a lista no meio do laço
+    if (p.dead) { a.splice(i, 1); continue; }
     if (p.delay > 0) { p.delay -= dt; if (p.delay > 0) continue; if (p.onStart) p.onStart(p); }
     p.age += dt; p.life -= dt; p.rot += p.spin * dt;
     // tempo parado afeta projéteis hostis
@@ -4990,7 +4991,6 @@ function drawProj(g, p, glowPass) {
     case 'blackhole': { const rr = r * (p.grow ? Math.min(1, p.age / .25) : 1); g.rotate(p.rot); g.fillStyle = '#000'; g.beginPath(); g.arc(0, 0, rr * .55, 0, TAU); g.fill(); g.strokeStyle = p.col; g.lineWidth = 2.4; for (let i = 0; i < 3; i++) { g.globalAlpha = .8 - i * .2; g.beginPath(); g.ellipse(0, 0, rr * (.75 + i * .2), rr * (.3 + i * .08), i * .7, .3, 5.3); g.stroke(); } g.globalAlpha = 1; break; }
     case 'portal': { g.rotate(p.angle || 0); const s = Math.min(1, p.age / .2) * Math.min(1, p.life / .2 + .01); g.scale(s, s); g.fillStyle = '#12002a'; g.beginPath(); g.ellipse(0, 0, r * .55, r, 0, 0, TAU); g.fill(); g.strokeStyle = p.col; g.lineWidth = 3; g.beginPath(); g.ellipse(0, 0, r * .55, r, 0, 0, TAU); g.stroke(); g.strokeStyle = p.col2; g.lineWidth = 1.5; g.beginPath(); g.ellipse(0, 0, r * .35, r * .72, p.rot, 0, TAU * .75); g.stroke(); break; }
     case 'fissure': { g.fillStyle = '#120a08'; g.beginPath(); g.moveTo(-p.hw, 0); g.lineTo(-p.hw * .5, -3); g.lineTo(p.hw * .3, -2); g.lineTo(p.hw, 0); g.lineTo(p.hw * .4, 3); g.lineTo(-p.hw * .4, 2); g.closePath(); g.fill(); g.strokeStyle = p.col; g.lineWidth = 1.5; g.stroke(); break; }
-    case 'ring': { g.strokeStyle = p.col; g.lineWidth = Math.max(2, r * .07); g.globalAlpha = .55 + .2 * Math.sin(p.age * 3); g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke(); g.globalAlpha = 1; break; }
     case 'beam': drawBeam(g, p, false); break;
     case 'sparkle': g.fillStyle = p.col; g.fillRect(-1, -r, 2, r * 2); g.fillRect(-r, -1, r * 2, 2); break;
     case 'wave': { g.fillStyle = p.col; const h = p.hh * 2; g.beginPath(); g.moveTo(-r * .6, p.hh); g.lineTo(0, p.hh - h); g.lineTo(r * .6, p.hh); g.closePath(); g.fill(); g.fillStyle = p.col2; g.fillRect(-r * .6, p.hh - 2, r * 1.2, 2); break; }
@@ -5432,7 +5432,7 @@ function breakHeldSword() { // 005: 5% de chance de quebrar (reembolsa metade do
 ;
 /* ===== 11_swords.js ===== */
 /* ============================================================
-   11_swords: CATÁLOGO MESTRE — 120 espadas (schema SwordItemSO); as 80 dos Tiers 7–10 ficam em 11b_swords_x.js
+   11_swords: CATÁLOGO MESTRE — 120 espadas (schema SwordItemSO)
    Tiers 1, 3 e 5: textos originais do GDD (src:'pdf').
    Tiers 2, 4 e 6: o PDF veio truncado -> criadas seguindo as
    regras de cada tier (src:'novo').
@@ -5616,6 +5616,7 @@ const fx2fake = o => Object.assign({ sw: sword(G.P), dmgMult: 1, id: -1 }, o || 
 const FX2 = {
   // eco: repete o arco do golpe com arcos fantasmas atrasados, alternando a inclinação
   echo: (n, dm, o) => ({ onApex(P, inst) {
+    if (inst.ghost || inst.sub) return;   // um eco nunca gera outros ecos (senão vira exponencial e trava o jogo)
     o = o || {};
     for (let i = 1; i <= n; i++) startSwing(P, inst.sw, { ghost: true, delay: i * (o.gap || .09), aim: inst.aim + (i % 2 ? -1 : 1) * (o.spread === undefined ? .24 : o.spread), dmgMult: dm, dur: o.dur || .2, alpha: Math.max(.35, .85 - i * .18) });
     ringFx(inst.tip.x, inst.tip.y, 30 + n * 6, o.col || '#fde68a', .35, 2); sfx('swing2', .5);
@@ -5825,6 +5826,7 @@ const FX2 = {
 
   // espelho: um segundo arco invertido acompanha o golpe
   mirror: (dm, o) => ({ onApex(P, inst) {
+    if (inst.ghost || inst.sub) return;   // o arco espelhado não se espelha de novo
     o = o || {};
     startSwing(P, inst.sw, { ghost: true, aim: PI - inst.aim, side: -(inst.side || 1), dmgMult: dm || .7, delay: .06, dur: .22, alpha: .75 });
     ringFx(inst.tip.x, inst.tip.y, 26, o.col || '#ffffff', .3, 2); sfx('magic', .4);
@@ -8408,8 +8410,8 @@ function openChest(tx, ty) { const wd = G.world, k = wd.idx(tx, ty); let c = wd.
 const ARS_TABS = [['T1', 'Tier 1'], ['T2', 'Tier 2'], ['T3', 'Tier 3'], ['T4', 'Tier 4'], ['T5', 'Tier 5'], ['T6', 'Tier 6'], ['T7', 'Tier 7'], ['T8', 'Tier 8'], ['T9', 'Tier 9'], ['T10', 'Tier 10'], ['ALL', 'Todas'], ['items', 'Itens'], ['enemies', 'Inimigos & Chefes'], ['world', 'Mundo']];
 function arsGive(id, n) { const left = invAdd(id, n || 1); if (left) dropItem(id, left, G.P.x, G.P.y); sfx('pickup'); G.ui.craftDirty = true; }
 function renderArsenal() {
-  const cre = G.mode === 'creative'; $('ars-title').textContent = cre ? 'Arsenal (Modo Criativo)' : 'Catálogo das 200 Espadas';
-  const tabs = $('ars-tabs'); tabs.innerHTML = ''; const avail = cre ? ARS_TABS : ARS_TABS.slice(0, 7);
+  const cre = G.mode === 'creative'; $('ars-title').textContent = cre ? 'Arsenal (Modo Criativo)' : 'Catálogo das 120 Espadas';
+  const tabs = $('ars-tabs'); tabs.innerHTML = ''; const avail = cre ? ARS_TABS : ARS_TABS.filter(([k]) => /^T\d+$/.test(k) || k === 'ALL');   // catálogo da aventura: todos os tiers + Todas
   if (!avail.some(t => t[0] === G.ui.arsTab)) G.ui.arsTab = 'T1';
   avail.forEach(([k, n]) => { const t = document.createElement('div'); t.className = 'tab' + (G.ui.arsTab === k ? ' on' : ''); t.textContent = n; if (/^T\d+$/.test(k)) t.style.borderColor = TIERS[+k.slice(1)].col; t.onclick = () => { G.ui.arsTab = k; renderArsenal(); }; tabs.appendChild(t); });
   const body = $('ars-body'), tab = G.ui.arsTab; body.innerHTML = '';
@@ -8418,7 +8420,7 @@ function renderArsenal() {
     const swords = SWORDS.filter(s => tab === 'ALL' || s.tierLevel === +tab.slice(1));
     if (/^T\d+$/.test(tab)) { const T_ = TIERS[+tab.slice(1)]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px 12px;border-left:4px solid ' + T_.col + ';background:rgba(255,255,255,.05);border-radius:6px;font-size:13px'; const sws = swords; d.innerHTML = `<b style="color:${T_.col}">${T_.n}</b> · multiplicador de dano ${T_.mult[0]}x–${T_.mult[1]}x · ${sws.length} espadas · dano ${Math.min(...sws.map(s => s.baseDamage))}–${Math.max(...sws.map(s => s.baseDamage))}<br><span style="color:var(--mut)">${T_.mech}</span>` + ((+tab.slice(1)) > 6 ? '<br><span style="color:#fbbf24">★ Tier novo (pós-jogo): 20 espadas inéditas, cada uma com arte pintada pixel a pixel e efeito próprio.</span>' : (+tab.slice(1)) % 2 === 0 ? '<br><span style="color:#fbbf24">★ Este tier estava truncado no PDF — as 20 espadas foram criadas seguindo as regras acima.</span>' : ''); body.appendChild(d); }
     body.appendChild(grid(swords.map(s => s.id), true));
-    const note = document.createElement('div'); note.style.cssText = 'margin-top:10px;font-size:12px;color:var(--mut)'; note.textContent = cre ? 'Clique para pegar 1 espada · ★ = criada/nova. Passe o mouse para ver detalhes e receita.' : 'Passe o mouse sobre uma espada para ver atributos, mecânica e receita. ★ = criada para completar o catálogo.'; body.appendChild(note);
+    const note = document.createElement('div'); note.style.cssText = 'margin-top:10px;font-size:12px;color:var(--mut)'; note.textContent = cre ? 'Clique para pegar 1 espada · ★ = criada (não consta no PDF). Passe o mouse para ver detalhes e receita.' : 'Passe o mouse sobre uma espada para ver atributos, mecânica e receita. ★ = criada para completar o GDD.'; body.appendChild(note);
   } else if (tab === 'items') {
     const groups = [['Blocos', i => i.type === 'block' || i.type === 'wall'], ['Materiais', i => i.type === 'mat'], ['Ferramentas', i => i.type === 'pick'], ['Armaduras', i => i.type === 'armor'], ['Acessórios', i => i.type === 'acc'], ['Consumíveis e Invocações', i => i.type === 'use']];
     for (const [n, f] of groups) { const s = document.createElement('div'); s.className = 'sect'; s.textContent = n; body.appendChild(s); body.appendChild(grid(Object.keys(IT).filter(id => IT[id].type !== 'sword' && f(IT[id])), false)); }
@@ -8478,7 +8480,7 @@ function helpHTML() {
 <tr><td><kbd>A</kbd> <kbd>D</kbd> / <kbd>←</kbd> <kbd>→</kbd></td><td>Mover</td></tr><tr><td><kbd>Espaço</kbd> <kbd>W</kbd> <kbd>↑</kbd></td><td>Pular · nadar para cima</td></tr>
 <tr><td>Botão esquerdo (segurar)</td><td>Atacar (arco em direção ao cursor) · minerar · colocar bloco · usar item</td></tr><tr><td>Botão direito</td><td>Abrir baú · abrir/fechar porta · falar com NPC</td></tr>
 <tr><td><kbd>1</kbd>–<kbd>0</kbd> / roda do mouse</td><td>Selecionar item da barra</td></tr><tr><td><kbd>E</kbd> / <kbd>Tab</kbd></td><td>Inventário + criação (fique perto de Bancada, Fornalha, Bigorna...)</td></tr>
-<tr><td><kbd>B</kbd></td><td>Arsenal (criativo) · Catálogo das 200 espadas (aventura)</td></tr><tr><td><kbd>M</kbd></td><td>Mapa do mundo</td></tr><tr><td><kbd>Q</kbd></td><td>Poção de cura rápida</td></tr>
+<tr><td><kbd>B</kbd></td><td>Arsenal (criativo) · Catálogo das 120 espadas (aventura)</td></tr><tr><td><kbd>M</kbd></td><td>Mapa do mundo</td></tr><tr><td><kbd>Q</kbd></td><td>Poção de cura rápida</td></tr>
 <tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoom</td></tr><tr><td><kbd>F3</kbd></td><td>Informações de depuração</td></tr><tr><td><kbd>Esc</kbd></td><td>Fechar painéis / pausar · no menu de pausa: <b>Salvar mundo</b> ou <b>Salvar e voltar ao menu</b> (o jogo também salva sozinho a cada minuto; seus mundos ficam em <b>Meus Mundos</b>)</td></tr></table>
 <h2 style="margin-top:16px">Controle (gamepad)</h2><table>
 <tr><td>Analógico esq. / <kbd>◀</kbd> <kbd>▶</kbd></td><td>Mover</td></tr><tr><td><kbd>A</kbd></td><td>Pular · nadar para cima</td></tr>
@@ -8498,9 +8500,8 @@ function helpHTML() {
 <li><b>Tier 1</b>: corte árvores, mine cobre/ferro e faça Bancada → Fornalha → Bigorna. Espadas básicas.</li>
 <li><b>Tier 2</b>: platina, meteorito (ilhas do céu), Brasita do Inferno, gemas. Derrote o <b>Rei Slime</b> e o <b>Olho Colossal</b> (noite).</li>
 <li><b>Tier 3/4 (Hardmode)</b>: vá ao Inferno, use o <b>Boneco Infernal</b> contra o Guardião do Abismo. Surgem Cobalto, Paládio, Mithril, Orichalcum, Titânio, Adamantita e inimigos elementais que dropam Essências.</li>
-<li><b>Tier 5/6</b>: Fragmentos Celestes → Forja Celeste. Invoque o <b>Colosso Estelar</b> e forje as espadas míticas com o Núcleo Mítico.</li>
-<li><b>Tiers 7–10 (pós-jogo, 121–200)</b>: gaste os Fragmentos Celestes e os Núcleos Míticos na Bigorna Avançada (T7–T8) e na Forja Celeste (T9–T10). Cada uma das 80 espadas novas tem <b>arte pintada pixel a pixel</b> e um efeito próprio (ecos, domínios, marcas que detonam, fendas, singularidades, big bang).</li></ol>
-<p style="color:var(--mut);margin-top:10px">As cores de raridade seguem o GDD: <b style="color:#10b981">T1</b> <b style="color:#0284c7">T2</b> <b style="color:#7c3aed">T3</b> <b style="color:#d97706">T4</b> <b style="color:#dc2626">T5</b> <b style="color:#818cf8">T6</b> · extras: <b style="color:#eab308">T7</b> <b style="color:#db2777">T8</b> <b style="color:#06b6d4">T9</b> <b style="color:#f8fafc">T10</b>. As espadas marcadas com ★ foram criadas para completar o catálogo (o PDF veio truncado).</p>
+<li><b>Tier 5/6</b>: Fragmentos Celestes → Forja Celeste. Invoque o <b>Colosso Estelar</b> e forje as espadas míticas com o Núcleo Mítico.</li></ol>
+<p style="color:var(--mut);margin-top:10px">As cores de raridade seguem o GDD: <b style="color:#10b981">T1</b> <b style="color:#0284c7">T2</b> <b style="color:#7c3aed">T3</b> <b style="color:#d97706">T4</b> <b style="color:#dc2626">T5</b> <b style="color:#818cf8">T6</b>. As espadas marcadas com ★ foram criadas para completar o catálogo (o PDF veio truncado).</p>
 <div style="text-align:center;margin-top:12px"><button class="btn pri" id="help-close">Fechar</button></div>`;
 }
 function showHelp(show) { const h = $('help'); if (show) { $('help-box').innerHTML = helpHTML(); h.classList.remove('hidden'); $('help-close').onclick = () => showHelp(false); } else h.classList.add('hidden'); }
@@ -8538,7 +8539,7 @@ const NPC_ORDER = ['guide', 'trader', 'nurse', 'smith'];
 G.rooms = []; G.npcs = []; G.npcScanT = 3; G.npcSpawnT = 8;
 function itemValue(id) {
   const it = IT[id]; if (!it) return 1; if (it.val) return it.val; const t = it.tier || 0;
-  if (id === 'coin') return 1; if (it.type === 'sword') return [0, 60, 160, 420, 1000, 2600, 7500][t];
+  if (id === 'coin') return 1; if (it.type === 'sword') return [0, 60, 160, 420, 1000, 2600, 7500, 18000, 42000, 90000, 200000][t] || 7500;
   if (it.type === 'pick') return Math.round(30 * Math.pow(it.pow, 1.7)); if (it.type === 'armor') return it.def * 40; if (it.type === 'acc') return 90 * t * t + 60;
   if (id.endsWith('_ore')) return 3 + 4 * t; if (id.endsWith('_bar')) return 10 + 16 * t; if (id.startsWith('e_')) return 70; if (id === 'celestial_frag') return 120; if (id === 'mythic_core') return 6000;
   if (['ruby', 'emerald', 'topaz', 'sapphire', 'amethyst'].includes(id)) return 28; if (id === 'life_crystal') return 450; if (it.use === 'heal') return [0, 28, 0, 70, 0, 160][t] || 40;
@@ -9737,7 +9738,7 @@ function finishLoad(sv) {
     G.time = sv.time; G.day = sv.day; G.t = sv.t || 0; G.stage = sv.stage; G.flags = sv.flags; G.kills = sv.kills || 0; Object.assign(G.opts, sv.opts || {});
     P.x = sv.P.x; P.y = sv.P.y; P.crystals = sv.P.crystals; P.inv = sv.P.inv; P.equip = sv.P.equip; P.sel = sv.P.sel || 0;
     for (const nd of sv.npcs || []) { const rm = { id: nd.home, cx: +nd.home.split(',')[0], cy: +nd.home.split(',')[1], minx: +nd.home.split(',')[0] - 3, maxx: +nd.home.split(',')[0] + 3 }; const n = spawnNpcQuiet(nd.type, rm); n.x = nd.x; n.y = nd.y; }
-  } else if (G.mode === 'creative') { G.opts.god = false; give('pick_celestial'); give('s001'); give('s062'); give('s100'); give('s120'); give('s121'); give('s160'); give('s021'); give('s055'); give('torch', 99); give('potion3', 20); give('stone', 999); give('plank', 999); give('bench'); give('chest'); P.crystals = 15; }
+  } else if (G.mode === 'creative') { G.opts.god = false; give('pick_celestial'); give('s001'); give('s062'); give('s100'); give('s120'); give('s021'); give('s055'); give('torch', 99); give('potion3', 20); give('stone', 999); give('plank', 999); give('bench'); give('chest'); P.crystals = 15; }
   else { give('s001'); give('pick_copper'); give('torch', 12); give('potion1', 3); }
   G.invChanged = true; recalcStats(); P.hp = sv ? Math.min(sv.P.hp, P.maxHp) : P.maxHp; if (!sv) P.sel = 0;
   G.cam.init = false; for (let i = 0; i < 6; i++) { _revT.t = 0; revealMap(P); } wd.liqAct.clear();
@@ -9883,7 +9884,7 @@ function renderMenuBg() {
   const mb = $('menu-bg'), g = mb.getContext('2d'), w = mb.width, h = mb.height, t = performance.now() / 1000, ms = PIXZ / DPR / 2;   // ms: tamanho do pixel novo / pixel antigo (1.0 em 1280x720)
   if (!SKY.clouds) initSky(7); const frac = .18 + Math.sin(t * .05) * .02;
   drawSky(g, w, h, t * 30, 1890, 1, frac, 'forest', t);
-  if (!_menuSwords.length) for (let i = 0; i < 26; i++) _menuSwords.push({ id: SWORDS[(i * 7 + 3) % SWORDS.length].id, x: Math.random(), y: Math.random(), s: .3 + Math.random() * .7, a: Math.random() * TAU, v: (Math.random() - .5) * .6, sp: .01 + Math.random() * .02 });
+  if (!_menuSwords.length) for (let i = 0; i < 26; i++) _menuSwords.push({ id: SWORDS[(i * 5 + 3) % 120].id, x: Math.random(), y: Math.random(), s: .3 + Math.random() * .7, a: Math.random() * TAU, v: (Math.random() - .5) * .6, sp: .01 + Math.random() * .02 });
   g.imageSmoothingEnabled = false;
   for (const s of _menuSwords) { s.x += s.sp * .016; if (s.x > 1.1) s.x = -.1; const c = iconCanvas(s.id); g.save(); g.globalAlpha = .35 + .35 * s.s; g.translate(Math.round(s.x * w), Math.round((s.y * .8 + .1) * h + Math.sin(t * s.s + s.a) * 8 / ms)); g.rotate(s.a + t * s.v); const sz = Math.round((26 + s.s * 34) / ms / 4) * 4; g.drawImage(c, -sz / 2, -sz / 2, sz, sz); g.restore(); }
   g.fillStyle = 'rgb(10,22,14)';

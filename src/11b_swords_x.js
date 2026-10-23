@@ -23,6 +23,7 @@ const fx2fake = o => Object.assign({ sw: sword(G.P), dmgMult: 1, id: -1 }, o || 
 const FX2 = {
   // eco: repete o arco do golpe com arcos fantasmas atrasados, alternando a inclinação
   echo: (n, dm, o) => ({ onApex(P, inst) {
+    if (inst.ghost || inst.sub) return;   // um eco nunca gera outros ecos (senão vira exponencial e trava o jogo)
     o = o || {};
     for (let i = 1; i <= n; i++) startSwing(P, inst.sw, { ghost: true, delay: i * (o.gap || .09), aim: inst.aim + (i % 2 ? -1 : 1) * (o.spread === undefined ? .24 : o.spread), dmgMult: dm, dur: o.dur || .2, alpha: Math.max(.35, .85 - i * .18) });
     ringFx(inst.tip.x, inst.tip.y, 30 + n * 6, o.col || '#fde68a', .35, 2); sfx('swing2', .5);
@@ -232,6 +233,7 @@ const FX2 = {
 
   // espelho: um segundo arco invertido acompanha o golpe
   mirror: (dm, o) => ({ onApex(P, inst) {
+    if (inst.ghost || inst.sub) return;   // o arco espelhado não se espelha de novo
     o = o || {};
     startSwing(P, inst.sw, { ghost: true, aim: PI - inst.aim, side: -(inst.side || 1), dmgMult: dm || .7, delay: .06, dur: .22, alpha: .75 });
     ringFx(inst.tip.x, inst.tip.y, 26, o.col || '#ffffff', .3, 2); sfx('magic', .4);

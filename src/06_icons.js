@@ -209,13 +209,13 @@ function mid(a, b) { return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2])
 // ---------------- ÍCONES (canvas 48x48 -> data URL) ----------------
 function iconCanvas(id) {   // ícones 32x32 em pixel-art (alfa binário, sem suavização)
   if (_icoCache[id]) return _icoCache[id];
-  const _it0 = IT[id];
-  const art2 = _it0 && _it0.type === 'sword' && _it0.sw.look && _it0.sw.look.art2;
+  const it = IT[id];
+  const art2 = it && it.type === 'sword' && it.sw.look && it.sw.look.art2;
   const IC = 32, HH = IC / 2;   // 1:1 com os slots da interface
-  const it2 = _it0; const c = mk(IC, IC), g = c.getContext('2d', { willReadFrequently: true });
-  if (!it2) { _icoCache[id] = c; return c; }
-  if (it2.type === 'sword') {
-    const sw = it2.sw, spr = getSwordSprite(sw), tcol = TIERS[sw.tierLevel].col;
+  const c = mk(IC, IC), g = c.getContext('2d', { willReadFrequently: true });
+  if (!it) { _icoCache[id] = c; return c; }
+  if (it.type === 'sword') {
+    const sw = it.sw, spr = getSwordSprite(sw), tcol = TIERS[sw.tierLevel].col;
     glowDot(g, HH, HH, HH, tcol, art2 ? .3 : .22);
     if (sw.look.glow) glowDot(g, HH, HH, HH * .82, sw.look.glow, .3);
     const t = mk(IC, IC), tg = t.getContext('2d', { willReadFrequently: true });

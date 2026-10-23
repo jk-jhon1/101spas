@@ -1,5 +1,5 @@
 /* ============================================================
-   11_swords: CATÁLOGO MESTRE — 120 espadas (schema SwordItemSO); as 80 dos Tiers 7–10 ficam em 11b_swords_x.js
+   11_swords: CATÁLOGO MESTRE — 120 espadas (schema SwordItemSO)
    Tiers 1, 3 e 5: textos originais do GDD (src:'pdf').
    Tiers 2, 4 e 6: o PDF veio truncado -> criadas seguindo as
    regras de cada tier (src:'novo').

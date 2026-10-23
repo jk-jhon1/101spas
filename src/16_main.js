@@ -88,7 +88,7 @@ function finishLoad(sv) {
     G.time = sv.time; G.day = sv.day; G.t = sv.t || 0; G.stage = sv.stage; G.flags = sv.flags; G.kills = sv.kills || 0; Object.assign(G.opts, sv.opts || {});
     P.x = sv.P.x; P.y = sv.P.y; P.crystals = sv.P.crystals; P.inv = sv.P.inv; P.equip = sv.P.equip; P.sel = sv.P.sel || 0;
     for (const nd of sv.npcs || []) { const rm = { id: nd.home, cx: +nd.home.split(',')[0], cy: +nd.home.split(',')[1], minx: +nd.home.split(',')[0] - 3, maxx: +nd.home.split(',')[0] + 3 }; const n = spawnNpcQuiet(nd.type, rm); n.x = nd.x; n.y = nd.y; }
-  } else if (G.mode === 'creative') { G.opts.god = false; give('pick_celestial'); give('s001'); give('s062'); give('s100'); give('s120'); give('s121'); give('s160'); give('s021'); give('s055'); give('torch', 99); give('potion3', 20); give('stone', 999); give('plank', 999); give('bench'); give('chest'); P.crystals = 15; }
+  } else if (G.mode === 'creative') { G.opts.god = false; give('pick_celestial'); give('s001'); give('s062'); give('s100'); give('s120'); give('s021'); give('s055'); give('torch', 99); give('potion3', 20); give('stone', 999); give('plank', 999); give('bench'); give('chest'); P.crystals = 15; }
   else { give('s001'); give('pick_copper'); give('torch', 12); give('potion1', 3); }
   G.invChanged = true; recalcStats(); P.hp = sv ? Math.min(sv.P.hp, P.maxHp) : P.maxHp; if (!sv) P.sel = 0;
   G.cam.init = false; for (let i = 0; i < 6; i++) { _revT.t = 0; revealMap(P); } wd.liqAct.clear();
@@ -234,7 +234,7 @@ function renderMenuBg() {
   const mb = $('menu-bg'), g = mb.getContext('2d'), w = mb.width, h = mb.height, t = performance.now() / 1000, ms = PIXZ / DPR / 2;   // ms: tamanho do pixel novo / pixel antigo (1.0 em 1280x720)
   if (!SKY.clouds) initSky(7); const frac = .18 + Math.sin(t * .05) * .02;
   drawSky(g, w, h, t * 30, 1890, 1, frac, 'forest', t);
-  if (!_menuSwords.length) for (let i = 0; i < 26; i++) _menuSwords.push({ id: SWORDS[(i * 7 + 3) % SWORDS.length].id, x: Math.random(), y: Math.random(), s: .3 + Math.random() * .7, a: Math.random() * TAU, v: (Math.random() - .5) * .6, sp: .01 + Math.random() * .02 });
+  if (!_menuSwords.length) for (let i = 0; i < 26; i++) _menuSwords.push({ id: SWORDS[(i * 5 + 3) % 120].id, x: Math.random(), y: Math.random(), s: .3 + Math.random() * .7, a: Math.random() * TAU, v: (Math.random() - .5) * .6, sp: .01 + Math.random() * .02 });
   g.imageSmoothingEnabled = false;
   for (const s of _menuSwords) { s.x += s.sp * .016; if (s.x > 1.1) s.x = -.1; const c = iconCanvas(s.id); g.save(); g.globalAlpha = .35 + .35 * s.s; g.translate(Math.round(s.x * w), Math.round((s.y * .8 + .1) * h + Math.sin(t * s.s + s.a) * 8 / ms)); g.rotate(s.a + t * s.v); const sz = Math.round((26 + s.s * 34) / ms / 4) * 4; g.drawImage(c, -sz / 2, -sz / 2, sz, sz); g.restore(); }
   g.fillStyle = 'rgb(10,22,14)';

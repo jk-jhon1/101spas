@@ -93,5 +93,5 @@ server.on('error', (e) => {
   process.exit(1);
 });
 server.listen(porta, '0.0.0.0', () => {
-  console.log(`200 Espadas em http://localhost:${porta}/   (Ctrl+C para parar)`);
+  console.log(`120 Espadas em http://localhost:${porta}/   (Ctrl+C para parar)`);
 });

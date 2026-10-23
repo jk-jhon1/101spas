@@ -181,7 +181,8 @@ function killProj(p, why) { if (p.dead) return; p.dead = true; if (p.onDie) p.on
 function updateProjs(dt) {
   const a = G.projs, P = G.P;
   for (let i = a.length - 1; i >= 0; i--) {
-    const p = a[i]; if (p.dead) { a.splice(i, 1); continue; }
+    const p = a[i]; if (!p) continue;   // o teto de 700 projéteis pode encurtar a lista no meio do laço
+    if (p.dead) { a.splice(i, 1); continue; }
     if (p.delay > 0) { p.delay -= dt; if (p.delay > 0) continue; if (p.onStart) p.onStart(p); }
     p.age += dt; p.life -= dt; p.rot += p.spin * dt;
     // tempo parado afeta projéteis hostis
@@ -250,7 +251,6 @@ function drawProj(g, p, glowPass) {
     case 'blackhole': { const rr = r * (p.grow ? Math.min(1, p.age / .25) : 1); g.rotate(p.rot); g.fillStyle = '#000'; g.beginPath(); g.arc(0, 0, rr * .55, 0, TAU); g.fill(); g.strokeStyle = p.col; g.lineWidth = 2.4; for (let i = 0; i < 3; i++) { g.globalAlpha = .8 - i * .2; g.beginPath(); g.ellipse(0, 0, rr * (.75 + i * .2), rr * (.3 + i * .08), i * .7, .3, 5.3); g.stroke(); } g.globalAlpha = 1; break; }
     case 'portal': { g.rotate(p.angle || 0); const s = Math.min(1, p.age / .2) * Math.min(1, p.life / .2 + .01); g.scale(s, s); g.fillStyle = '#12002a'; g.beginPath(); g.ellipse(0, 0, r * .55, r, 0, 0, TAU); g.fill(); g.strokeStyle = p.col; g.lineWidth = 3; g.beginPath(); g.ellipse(0, 0, r * .55, r, 0, 0, TAU); g.stroke(); g.strokeStyle = p.col2; g.lineWidth = 1.5; g.beginPath(); g.ellipse(0, 0, r * .35, r * .72, p.rot, 0, TAU * .75); g.stroke(); break; }
     case 'fissure': { g.fillStyle = '#120a08'; g.beginPath(); g.moveTo(-p.hw, 0); g.lineTo(-p.hw * .5, -3); g.lineTo(p.hw * .3, -2); g.lineTo(p.hw, 0); g.lineTo(p.hw * .4, 3); g.lineTo(-p.hw * .4, 2); g.closePath(); g.fill(); g.strokeStyle = p.col; g.lineWidth = 1.5; g.stroke(); break; }
-    case 'ring': { g.strokeStyle = p.col; g.lineWidth = Math.max(2, r * .07); g.globalAlpha = .55 + .2 * Math.sin(p.age * 3); g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke(); g.globalAlpha = 1; break; }
     case 'beam': drawBeam(g, p, false); break;
     case 'sparkle': g.fillStyle = p.col; g.fillRect(-1, -r, 2, r * 2); g.fillRect(-r, -1, r * 2, 2); break;
     case 'wave': { g.fillStyle = p.col; const h = p.hh * 2; g.beginPath(); g.moveTo(-r * .6, p.hh); g.lineTo(0, p.hh - h); g.lineTo(r * .6, p.hh); g.closePath(); g.fill(); g.fillStyle = p.col2; g.fillRect(-r * .6, p.hh - 2, r * 1.2, 2); break; }

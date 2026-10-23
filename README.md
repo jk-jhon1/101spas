@@ -1,12 +1,7 @@
-# 200 ESPADAS — Sandbox 2D Platformer
+# 120 ESPADAS — Sandbox 2D Platformer
 
-Jogo 2D de exploração, mineração e combate no estilo *Terraria*, com **200 espadas únicas**, implementado a partir do
+Jogo 2D de exploração, mineração e combate no estilo *Terraria*, com **120 espadas únicas**, implementado a partir do
 documento **"GDD & MASTER PROMPT: SANDBOX 2D PLATFORMER"** (PDF enviado).
-
-> **Novidade — Tiers 7 a 10 (espadas 121–200):** 4 tiers novos de pós-jogo, **20 espadas cada**, todas com **arte
-> pintada pixel a pixel** (`src/06b_swordart.js`) — silhueta, guarda, cabo, pomo, gemas e efeitos de brilho próprios —
-> e **um efeito de combate exclusivo** por espada (ecos do golpe, leques de lâminas, domínios, marcas que detonam,
-> fendas devoradoras, singularidades, big bang). Veja a folha de contato: [`docs/img/14_espadas_novas.png`](docs/img/14_espadas_novas.png).
 
 > **Jogar online:** **https://jk-jhon1.github.io/101spas/** — direto no navegador, sem instalar nada.
 >
@@ -26,9 +21,6 @@ terminam logo após o cabeçalho, sem nenhuma linha. Só os Tiers **1, 3 e 5** (
 - As **40 espadas faltantes foram criadas** seguindo as regras de cada tier do próprio GDD (faixa de multiplicador de dano,
   cor e tipo de mecânica). Elas aparecem marcadas com **★** no jogo e no catálogo.
   Se você tiver o PDF completo, basta editar as linhas correspondentes em `src/11_swords.js` e rodar `node build.js`.
-- As **80 espadas dos Tiers 7–10** (121–200) são **novas**: não constam no PDF. Foram criadas depois, como pós-jogo,
-  com **arte pintada pixel a pixel** e **efeito de combate exclusivo por espada** (catálogo em `src/11b_swords_x.js`,
-  desenho em `src/06b_swordart.js`).
 
 | Tier | Espadas | Origem | Regra do GDD que guiou as criadas |
 |---|---|---|---|
@@ -38,12 +30,8 @@ terminam logo após o cabeçalho, sem nenhuma linha. Só os Tiers **1, 3 e 5** (
 | T4 Hardmode Inicial `#d97706` | 061–080 | ★ criadas | ondas de choque no relevo, estalagmites, esporos flutuantes, aura gravitacional |
 | T5 Hardmode Avançado `#dc2626` | 081–100 | PDF | — |
 | T6 End-Game Mítico `#4f46e5` | 101–120 | ★ criadas | projéteis rastreadores, colapso estelar, portais de ataque, dano em tela cheia |
-| **T7 Forja Estelar** `#eab308` | 121–140 | ★ **tier novo** | ecos do golpe, leques de lâminas, correntes elétricas, escudos vivos |
-| **T8 Relicário do Vazio** `#db2777` | 141–160 | ★ **tier novo** | marcas que detonam, fendas devoradoras, almas perseguidoras, domínios |
-| **T9 Eco Primordial** `#06b6d4` | 161–180 | ★ **tier novo** | domínios divinos, feixes de julgamento, tempo parado, órbitas de luz |
-| **T10 Origem** `#f8fafc` | 181–200 | ★ **tier novo** | dano em tela cheia, colapsos cósmicos, singularidades, big bang |
 
-Catálogo completo (com receitas): [`docs/catalogo_200_espadas.md`](docs/catalogo_200_espadas.md) e `.csv`.
+Catálogo completo (com receitas): [`docs/catalogo_120_espadas.md`](docs/catalogo_120_espadas.md) e `.csv`.
 
 ---
 
@@ -62,8 +50,6 @@ Catálogo completo (com receitas): [`docs/catalogo_200_espadas.md`](docs/catalog
 ![Os 4 chefes no zoom do jogo: Rei Slime, Olho Colossal, Guardião do Abismo (fase 2) e Colosso Estelar (fase 3)](docs/img/12_chefes.png)
 
 ![Os 50 chefes novos, em ordem de ato (Ato I a IV)](docs/img/13_chefes_novos.png)
-
-![As 80 espadas novas dos Tiers 7 a 10, com a arte pixel a pixel de cada uma](docs/img/14_espadas_novas.png)
 
 ---
 
@@ -176,11 +162,10 @@ casas válidas (sala fechada com paredes de fundo, luz, mesa/bancada, cadeira e 
 | `DanoFinal = (DanoBase + ModAcessórios) × (1+CritMult) × ModResistência` | `hitEnemy()`: acessórios somam dano plano; crítico `×(1+CritMult)`; resistência `60/(60+defesa)` |
 | Projéteis herdam **100% da direção do arco no ápice** | `shoot()` em `10_fx.js` dispara em `inst.aim` a partir de `inst.tip` no meio do arco |
 | **Inventário**: slots, IDs únicos, stack ≤ 999, metadados de raridade | 40 slots + 4 de equipamento; `STACK_MAX = 999`; `item.tier` define cor de borda/nome/tooltip (`TIERS` em `01_data.js`) |
-| **Tiers e cores** (T6 índigo/dourado) | `TIERS`: `#10b981 #0284c7 #7c3aed #d97706 #dc2626 #4f46e5` + extras `#eab308 #db2777 #06b6d4 #f8fafc` (T7–T10) |
+| **Tiers e cores** (T6 índigo/dourado) | `TIERS`: `#10b981 #0284c7 #7c3aed #d97706 #dc2626 #4f46e5` + brilho dourado no T6 |
 | **Schema `SwordItemSO`** | `11_swords.js`: `swordID, swordName, tierLevel, baseDamage, attackSpeed, knockbackForce, critChance, projectilePrefab, attackType (ArcSwing/Thrust/Orbital/Beam), passiveEffects[]`, métodos `OnSwing(combat, dir)` e `OnHitEnemy(enemy, info)` |
 | **Comportamentos de projétil**: Ballistic, Linear perfurante, Homing, Static/Área | `spawnProj()` (`09_combat.js`): `ballistic` (gravidade), `linear` (`pierce = X`), `homing` (`Vnew = Vcurr + Lerp(Alvo−Pos, steer)`), `static` + `custom` (órbita, onda de chão, feixe, buraco negro…) |
-| **Catálogo de 200 espadas** | `11_swords.js` (001–120) + `11b_swords_x.js` (121–200) + bibliotecas de efeitos `10_fx.js` e `FX2` (hooks `swing/onSwing/onApex/mod/onHit/onProjHit/onKill/tick/atkMult/stats/init`) |
-| **Arte das 80 espadas novas** | `06b_swordart.js`: pintura pixel a pixel por receita (`look.art2`): 27 famílias de lâmina + 21 guardas + 7 cabos + 4 pomos + 20 extras (anéis, asas, glifos, runas, rachaduras, estrelas, brasas, gelo, correntes…) — nenhuma receita repete a combinação de outra |
+| **Catálogo de 120 espadas** | `11_swords.js` + biblioteca de efeitos reutilizáveis `10_fx.js` (hooks `swing/onSwing/onApex/mod/onHit/onKill/tick/atkMult/stats`) |
 
 ### Interpretações assumidas (onde o GDD é ambíguo)
 - **Ápice** = metade do arco, quando a lâmina aponta para o cursor; é aí que saem os projéteis e efeitos.
@@ -210,8 +195,6 @@ src/
   05d_bosspaint.js      ferramentas de pintura pixel a pixel dos chefes: formas (polígono, elipse, traço, curva), preenchimento com luz de cima à esquerda, borda, brilho com halo pontilhado e marcação dos pixels que emitem luz
   05e_bossart.js        sprites dos 4 chefes (corpo escuro + brilho de uma cor), quadros de animação em cache e peças móveis (lanterna, íris, anéis, orbes)
   05f_bxart.js          base da arte dos 50 chefes novos: rampas de cor, ajudas de pintura (formas, espelho, brilho com halo, contorno), cache de quadros e variantes
-  06b_swordart.js       arte pixel a pixel das 80 espadas novas: silhuetas (reta, katana, foice, tridente, garra, chama, cristal…), guardas, cabos, pomos, gemas, runas, contorno e pixels emissivos
-  11b_swords_x.js       as 80 espadas dos Tiers 7–10: dados, receitas e os 25 efeitos novos (FX2)
   05g..05j_bxart*.js    um pintor por chefe novo (Ato I a IV)
   14b_draw_bx.js        desenho dos chefes novos e dos lacaios (camadas móveis, sombra, tinta de dano)
   07_sky.js             céu em baixa resolução: faixas, sol/lua com halo, estrelas, nuvens de pixels, colinas em colunas
@@ -219,7 +202,7 @@ src/
   09_combat.js          dano, status, projéteis, explosões, feixes
   09b_swing.js          arco de ataque, ápice, colisão da lâmina
   10_fx.js              biblioteca de efeitos de espadas
-  11_swords.js          as 120 espadas originais (schema SwordItemSO)
+  11_swords.js          as 120 espadas (schema SwordItemSO)
   12_player.js          jogador, inventário, crafting, mineração, blocos
   13_enemies.js         inimigos, IA, spawn, drops · 13b_bosses.js: 4 chefes
   13c_bossx.js          motor dos 50 chefes novos: registro (bx), laço de IA com golpes em geradores (yield), zonas de perigo, raios com aviso, lacaios, debuffs do jogador, loot e vitória
@@ -232,8 +215,8 @@ src/
   15f_transfer.js       este aparelho (código), proteção do armazenamento, mapa em arquivo (exportar / importar + validação)
   15g_touch.js          controles de toque: direcional virtual, botão de ação com mira por arrasto, pulo, interagir, painéis
   16_main.js            loop, câmera, renderização em camadas (cena em baixa resolução + zoom inteiro), input
-docs/                 catálogo das 200 espadas (md/csv) e capturas de tela (img/)
-dev/                  scripts de teste (Node + Playwright) · `art_sheet.js` gera a folha de contato das 80 espadas novas
+docs/                 catálogo das 120 espadas (md/csv) e capturas de tela (img/)
+dev/                  scripts de teste (Node + Playwright)
 ```
 
 ### Portar para Unity / Godot
@@ -257,13 +240,12 @@ Os dados (tiles, itens, receitas, 120 espadas) estão em tabelas simples, fácei
 ## Testes realizados (automatizados, Chromium headless)
 > **Como rodar:** `node dev/validate.js` (catálogo; também regenera `docs/catalogo_*`), `node dev/reach.js`, `node dev/seeds.js`, `node dev/layouts.js` (variedade dos mundos) e `node dev/transfer.js` (mapa em arquivo, validação, aparelho, proteção) precisam só do Node (`npm test` roda os cinco). Os testes de navegador usam Playwright: `npm install && npx playwright install chromium`, depois `node dev/test_swords.js` etc. (`npm run test:browser` roda os doze com veredito: mundos salvos, aparelho/arquivos, controle, toque, aparência, arsenal, inimigos, chefes, chefes novos (luta e arte), soak e espadas). `node dev/http_check.js [url]` confere uma URL do jogo (local ou publicada) de ponta a ponta: carrega, salva, recarrega e continua. Os scripts localizam o `index.html` pelo próprio caminho e dividem utilitários em `dev/lib.js`; capturas temporárias vão para `dev/*.png` (ignoradas pelo git). Depois de editar `src/`, recompile com `node build.js`.
 
-- **Catálogo**: 200 espadas, 20 por tier (10 tiers), faixas de dano por tier, receitas válidas (`node dev/validate.js`).
+- **Catálogo**: 120 espadas, 20 por tier, faixas de dano por tier, receitas válidas (`node dev/validate.js`).
 - **Progressão**: todo item é obtível e as 120 espadas são craftáveis a partir de fontes reais do mundo (`node dev/reach.js`); gerador testado em 8 sementes (`node dev/seeds.js`).
 - **Variedade dos mundos** (`dev/layouts.js`): 20.000 layouts (as 24 ordens de bioma equilibradas, oceanos de 90 a 220 colunas, spawn sempre na floresta, larguras mínimas), o sorteio de sementes (nunca repete; os 24 primeiros mundos têm 24 ordens diferentes) e 14 mundos completos comparados entre si — biomas, relevo, terreno bloco a bloco — mais o determinismo (mesma semente = mesmo mundo).
 - **Mundos salvos** (`dev/test_worlds.js`, 60 verificações): 6 mundos criados pelos botões (sementes, nomes, ordens de bioma e miniaturas diferentes), reabrir depois de recarregar a página, **fidelidade do save bloco a bloco** (blocos, paredes, líquidos, baús, inventário, chefes, Hardmode…), autosave, renomear/excluir, teletransporte do Arsenal para o bioma certo, semente excluída que nunca volta, migração do save antigo (inclusive sem IndexedDB: o save antigo nunca é apagado se o mundo não puder ser gravado de verdade), ambiente sem IndexedDB, cota estourada e mundo corrompido.
 - **Mapa em arquivo, aparelho e proteção** — sem navegador (`dev/transfer.js`, 73 verificações): CRC‑32 (igual ao `zlib`), ida e volta byte a byte, **52 adulterações com o CRC refeito** (item/bloco/bioma/NPC inexistente, camadas truncadas, valores fora da faixa, `__proto__`, quantidades absurdas…) todas recusadas sem exceção, fuzz de 400 arquivos corrompidos, regras de importação (novo / atualiza / ignora / divergente), código do aparelho, 12 *user‑agents* e a API de proteção (concedida, negada, com erro, ausente). No navegador (`dev/test_device.js`, 69 verificações): vários "aparelhos" separados — exportar de um e importar em outro (o que fica guardado é **idêntico**, camada por camada), levar o progresso de volta, dois aparelhos que evoluíram separados, proteção (Chrome, Firefox, sem a API), celular (iPhone, sem rolagem horizontal), sem IndexedDB e arquivos maliciosos (injeção de código no nome, na miniatura e no rótulo: nada é executado).
-- **Efeitos das 80 espadas novas** (`dev/test_swords_x.js`): executa **todos os hooks** de cada uma (init/swing/onApex/mod/onHit/onProjHit/onKill/tick/atkMult/stats) num motor de mentira e falha se alguma lançar exceção ou não chamar nada.
-- **120 espadas originais em combate** (`dev/test_swords.js`): cada uma ataca bonecos/inimigos por ~4,5 s — sem exceções, todas causam dano, status esperados observados (sangramento, veneno, gelo, atordoamento, tempo parado, podridão, pânico, cegueira…).
+- **120 espadas em combate** (`dev/test_swords.js`): cada uma ataca bonecos/inimigos por ~4,5 s — sem exceções, todas causam dano, status esperados observados (sangramento, veneno, gelo, atordoamento, tempo parado, podridão, pânico, cegueira…).
 - **Todos os inimigos, variantes elementais e os 4 chefes** (`dev/test_enemies.js`) e **~45.000 passos** de simulação com spawn natural em 14 cenários, todas as camadas e estágios (`dev/soak.js`): zero erros.
 - **Aparência e copas** (`dev/test_skin.js`, 20 verificações): interface azul única (o menu de Pausa não tem botão para trocar, mesmo com a escolha antiga "escura" guardada no aparelho), silhueta, contorno e cache das copas das árvores, lote de desenho, e a ausência do retângulo "DPS · Total" (removido da tela).
 - **Sprites dos 4 chefes** (`dev/test_bosses.js`, 62 verificações): corpo escuro com brilho de uma cor própria para cada chefe, paleta curta, fases, espelhamento exato do Guardião, íris que acompanha o jogador, clarão de dano e tinta de status, sombra no chão dos chefes voadores, cache de quadros limitado, tempo de geração e caixas de colisão intactas.
