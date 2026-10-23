@@ -1,7 +1,7 @@
-# Catálogo mestre — 120 espadas
+# Catálogo mestre — 200 espadas
 
-> Gerado automaticamente a partir dos dados do jogo (`src/11_swords.js`).
-> **Origem:** `PDF` = linha original do GDD · `★ CRIADA` = o PDF veio **truncado** (só existiam os Tiers 1, 3 e 5); as 40 espadas dos Tiers 2, 4 e 6 foram criadas seguindo as regras de cada tier.
+> Gerado automaticamente a partir dos dados do jogo (`src/11_swords.js` e `src/11b_swords_x.js`).
+> **Origem:** `PDF` = linha original do GDD · `★ CRIADA` = criada para o jogo (o PDF veio **truncado** nos Tiers 2, 4 e 6; os **Tiers 7–10 são novos**, 20 espadas cada, com arte pintada pixel a pixel em `src/06b_swordart.js`).
 
 ## TIER 1 — Início de jogo & Básico (001–020)
 
@@ -176,4 +176,120 @@
 | 118 ★ | **Armagedom** | 275 | 0.8 | 8 | 10% | Danos em tela cheia contínuos: todos os inimigos visíveis sofrem 35% do dano a cada golpe. | 1× Núcleo Mítico, 14× Barra de Celeste, 12× Essência de Fogo, 10× Essência de Sangue _(Forja Celeste)_ |
 | 119 ★ | **Origem do Cosmos** | 250 | 1 | 6 | 10% | Combina tudo: leque de 8 projéteis rastreadores e um portal de ataque que dispara uma lâmina gigante. | 1× Núcleo Mítico, 13× Barra de Celeste, 12× Essência de Luz, 12× Essência do Tempo _(Forja Celeste)_ |
 | 120 ★ | **Gênesis Primordial** | 280 | 1.1 | 8 | 18% | A espada suprema: rastreadores a cada golpe, colapso estelar em críticos e dano em tela cheia a cada 3 golpes. | 1× Núcleo Mítico, 20× Barra de Celeste, 15× Essência de Luz, 15× Essência do Tempo, 12× Essência de Sombra _(Forja Celeste)_ |
+
+## TIER 7 — Forja Estelar · Lendário (121–140) ★
+
+- Cor de raridade: `#eab308` · multiplicador de dano do GDD: **14x–22x** · estação de criação: **Bigorna Avançada**
+- Regra do tier: Ecos do golpe, leques de lâminas, correntes elétricas e escudos vivos.
+- Origem: **★ TIER NOVO** — 20 espadas inéditas com arte exclusiva
+
+| # | Espada | Dano | Vel | KB | Crít | Mecânica única | Receita |
+|---|---|---|---|---|---|---|---|
+| 121 ★ | **Aurora Boreal** | 300 | 1.35 | 4 | 12% | Cada golpe projeta dois ecos de gelo atrasados que congelam quem estiver na frente. | 6× Barra de Celeste, 10× Essência de Gelo, 14× Fragmento Gélido _(Bigorna Avançada)_ |
+| 122 ★ | **Tempestade de Aço** | 312 | 1.4 | 4 | 12% | Abre um leque de cinco lâminas de aço e repete o arco uma vez. | 6× Barra de Celeste, 6× Essência de Raio, 12× Barra de Prata _(Bigorna Avançada)_ |
+| 123 ★ | **Coração da Forja** | 328 | 1.1 | 6 | 12% | Ao golpear, libera uma onda de calor que incendeia todos os inimigos ao redor. | 6× Barra de Celeste, 12× Essência de Fogo, 8× Barra de Infernal _(Bigorna Avançada)_ |
+| 124 ★ | **Lâmina do Cometa** | 336 | 1.25 | 5 | 12% | Puxa um cometa de gelo sobre o cursor e corta a linha do impacto com um feixe. | 7× Barra de Celeste, 8× Essência de Gelo, 6× Essência de Luz _(Bigorna Avançada)_ |
+| 125 ★ | **Cristal do Amanhecer** | 320 | 1.15 | 5 | 12% | Estalagmites de cristal irrompem do solo em cascata na direção do alvo. | 6× Barra de Celeste, 10× Essência de Luz, 20× Quartzo _(Bigorna Avançada)_ |
+| 126 ★ | **Vingança Prateada** | 305 | 1.55 | 3 | 12% | Acertos acumulam um escudo de 55 pontos e concedem +9 de armadura enquanto empunhada. | 6× Barra de Celeste, 6× Essência de Luz, 16× Barra de Prata _(Bigorna Avançada)_ |
+| 127 ★ | **Corrente Celeste** | 315 | 1.3 | 5 | 12% | O impacto salta como corrente elétrica entre até três inimigos próximos. | 6× Barra de Celeste, 10× Essência de Raio, 12× Barra de Ouro _(Bigorna Avançada)_ |
+| 128 ★ | **Gume do Horizonte** | 340 | 1 | 7 | 12% | Desenha um arco de energia que varre toda a frente do jogador. | 7× Barra de Celeste, 10× Essência de Água, 6× Essência de Luz _(Bigorna Avançada)_ |
+| 129 ★ | **Sentinela de Marfim** | 318 | 1.1 | 6 | 12% | Invoca três sentinelas de marfim que orbitam e golpeiam quem se aproximar. | 7× Barra de Celeste, 8× Essência de Luz, 30× Osso _(Bigorna Avançada)_ |
+| 130 ★ | **Eco do Trovão** | 330 | 1.2 | 5 | 12% | Cada golpe troveja três ecos elétricos em sequência. | 6× Barra de Celeste, 12× Essência de Raio, 10× Barra de Paládio _(Bigorna Avançada)_ |
+| 131 ★ | **Rosa dos Ventos** | 322 | 1.3 | 4 | 12% | Abre um leque circular de oito pétalas cortantes em todas as direções frontais. | 6× Barra de Celeste, 8× Essência de Sangue, 4× Essência de Luz, 20× Pena _(Bigorna Avançada)_ |
+| 132 ★ | **Fúria do Titã** | 360 | 0.85 | 9 | 12% | O impacto corre pelo relevo nos dois sentidos e puxa os inimigos para o chão. | 7× Barra de Celeste, 12× Essência de Terra, 6× Essência de Fogo _(Bigorna Avançada)_ |
+| 133 ★ | **Selo do Inverno** | 326 | 1.2 | 5 | 12% | Marca o inimigo com gelo: um instante depois o selo estoura e congela a área. | 6× Barra de Celeste, 12× Essência de Gelo, 20× Fragmento Gélido _(Bigorna Avançada)_ |
+| 134 ★ | **Prelúdio das Chamas** | 334 | 1.15 | 5 | 12% | Invoca uma chuva de brasas no cursor e queima tudo o que tocar. | 6× Barra de Celeste, 14× Essência de Fogo, 10× Barra de Meteorito _(Bigorna Avançada)_ |
+| 135 ★ | **Lâmina do Eclipse** | 344 | 1.3 | 4 | 12% | Cega os inimigos próximos e projeta um eco sombrio do golpe. | 6× Barra de Celeste, 10× Essência de Sombra, 6× Essência do Tempo _(Bigorna Avançada)_ |
+| 136 ★ | **Bênção do Oásis** | 300 | 1.25 | 4 | 12% | Cria um oásis que fere lentamente os inimigos e cura 3% do dano causado. | 6× Barra de Celeste, 10× Essência de Água, 25× Esporo _(Bigorna Avançada)_ |
+| 137 ★ | **Fio da Balança** | 315 | 1.2 | 5 | 12% | Executa alvos com pouca vida e descarrega uma carga extra a cada quatro acertos. | 6× Barra de Celeste, 8× Essência de Luz, 4× Essência do Tempo, 25× Quartzo _(Bigorna Avançada)_ |
+| 138 ★ | **Relâmpago Engarrafado** | 332 | 1.25 | 4 | 12% | Tempestade de raios cai no cursor e salta entre os inimigos atingidos. | 6× Barra de Celeste, 12× Essência de Raio, 12× Barra de Cobalto _(Bigorna Avançada)_ |
+| 139 ★ | **Muralha de Aço** | 350 | 0.95 | 8 | 12% | Cria uma muralha de aço: escudo de 95 pontos e uma onda que empurra quem encosta. | 7× Barra de Celeste, 8× Essência de Terra, 14× Barra de Titânio _(Bigorna Avançada)_ |
+| 140 ★ | **Coroa de Estrelas** | 355 | 1.05 | 6 | 12% | Dispara uma coroa de estrelas teleguiadas que perseguem os inimigos. | 8× Barra de Celeste, 10× Essência de Luz, 4× Essência do Tempo _(Bigorna Avançada)_ |
+
+## TIER 8 — Relicário do Vazio · Ancestral (141–160) ★
+
+- Cor de raridade: `#db2777` · multiplicador de dano do GDD: **22x–32x** · estação de criação: **Bigorna Avançada**
+- Regra do tier: Marcas que detonam, fendas devoradoras, almas perseguidoras e domínios.
+- Origem: **★ TIER NOVO** — 20 espadas inéditas com arte exclusiva
+
+| # | Espada | Dano | Vel | KB | Crít | Mecânica única | Receita |
+|---|---|---|---|---|---|---|---|
+| 141 ★ | **Sussurro do Abismo** | 470 | 1.35 | 4 | 15% | Cada acerto sussurra uma marca que detona em área logo depois. | 1× Núcleo Mítico, 8× Barra de Celeste, 12× Essência de Sombra _(Bigorna Avançada)_ |
+| 142 ★ | **Âncora do Vazio** | 560 | 0.9 | 9 | 15% | Ancora os inimigos no lugar, abre uma fenda e os puxa para dentro. | 1× Núcleo Mítico, 9× Barra de Celeste, 10× Essência do Tempo _(Bigorna Avançada)_ |
+| 143 ★ | **Espelho Partido** | 500 | 1.25 | 5 | 15% | Um espelho do golpe corta o outro lado e os projéteis se partem em três. | 1× Núcleo Mítico, 8× Barra de Celeste, 10× Essência de Luz _(Bigorna Avançada)_ |
+| 144 ★ | **Corrente de Almas** | 520 | 1.2 | 5 | 15% | Cada abate solta duas almas perseguidoras que saltam entre inimigos. | 1× Núcleo Mítico, 8× Barra de Celeste, 8× Essência de Sangue, 6× Essência de Sombra _(Bigorna Avançada)_ |
+| 145 ★ | **Relicário de Osso** | 540 | 1.05 | 7 | 15% | Os ossos dos caídos viram três espíritos e um escudo vivo. | 1× Núcleo Mítico, 8× Barra de Celeste, 6× Essência de Luz, 40× Osso _(Bigorna Avançada)_ |
+| 146 ★ | **Coro dos Ancestrais** | 510 | 1.3 | 4 | 15% | Dois ecos do golpe e dois orbes ancestrais lutam ao seu lado. | 1× Núcleo Mítico, 8× Barra de Celeste, 8× Essência de Sombra, 4× Essência de Sangue _(Bigorna Avançada)_ |
+| 147 ★ | **Marca do Silêncio** | 530 | 1.4 | 4 | 15% | Silencia o inimigo: ele fica lento, marcado e detona um instante depois. | 1× Núcleo Mítico, 8× Barra de Celeste, 10× Essência de Sombra, 6× Essência do Tempo _(Bigorna Avançada)_ |
+| 148 ★ | **Devorador de Luz** | 545 | 1.15 | 5 | 15% | Abre um buraco negro que devora luz, puxa inimigos e explode ao fechar. | 1× Núcleo Mítico, 9× Barra de Celeste, 12× Essência de Sombra, 4× Essência do Tempo _(Bigorna Avançada)_ |
+| 149 ★ | **Raiz do Mundo** | 525 | 1.1 | 6 | 15% | Raízes venenosas brotam do solo e um domínio verde envenena quem fica perto. | 1× Núcleo Mítico, 8× Barra de Celeste, 10× Essência de Veneno, 6× Essência de Terra _(Bigorna Avançada)_ |
+| 150 ★ | **Portal Móvel** | 480 | 1.35 | 4 | 15% | Dois portais se abrem e cospem lâminas enquanto o jogador avança. | 1× Núcleo Mítico, 8× Barra de Celeste, 8× Essência de Sombra, 4× Essência de Luz _(Bigorna Avançada)_ |
+| 151 ★ | **Máscara do Vazio** | 555 | 1 | 6 | 15% | A máscara reflete metade de cada golpe e devolve escudo ao jogador. | 1× Núcleo Mítico, 9× Barra de Celeste, 10× Essência de Sombra, 4× Essência de Luz _(Bigorna Avançada)_ |
+| 152 ★ | **Selo de Sangue** | 600 | 0.95 | 8 | 15% | Cada acerto se alimenta de sangue — cura o jogador e explode em vermelho. | 1× Núcleo Mítico, 9× Barra de Celeste, 14× Essência de Sangue _(Bigorna Avançada)_ |
+| 153 ★ | **Manto de Névoa** | 490 | 1.3 | 4 | 15% | A névoa que segue o jogador corrói a vida dos inimigos em silêncio. | 1× Núcleo Mítico, 8× Barra de Celeste, 8× Essência de Sombra, 6× Essência de Água _(Bigorna Avançada)_ |
+| 154 ★ | **Cálice de Estrelas** | 515 | 1.2 | 5 | 15% | Derrama estrelas do céu e dois sóis orbitam o jogador. | 1× Núcleo Mítico, 9× Barra de Celeste, 12× Essência de Luz _(Bigorna Avançada)_ |
+| 155 ★ | **Fenda de Prata** | 535 | 1.25 | 5 | 15% | Abre uma fenda prateada instantânea que parte os projéteis em dois. | 1× Núcleo Mítico, 8× Barra de Celeste, 8× Essência de Luz, 12× Barra de Platina _(Bigorna Avançada)_ |
+| 156 ★ | **Lamento Fúnebre** | 565 | 1.05 | 6 | 15% | Cada abate libera foices espectrais e marca quem estiver por perto. | 1× Núcleo Mítico, 9× Barra de Celeste, 10× Essência de Sangue, 8× Essência de Sombra _(Bigorna Avançada)_ |
+| 157 ★ | **Grilhões Etéreos** | 505 | 1.25 | 5 | 15% | Grilhões puxam os inimigos e os acorrentam com raios entre eles. | 1× Núcleo Mítico, 8× Barra de Celeste, 10× Essência de Sombra, 4× Essência do Tempo _(Bigorna Avançada)_ |
+| 158 ★ | **Véu da Meia-Noite** | 520 | 1.3 | 4 | 15% | Apaga a luz da tela, cega os inimigos e corta dos dois lados. | 1× Núcleo Mítico, 8× Barra de Celeste, 12× Essência de Sombra _(Bigorna Avançada)_ |
+| 159 ★ | **Ressonância Púrpura** | 548 | 1.2 | 5 | 15% | Acumula ressonância a cada golpe e libera tudo no quinto acerto. | 1× Núcleo Mítico, 9× Barra de Celeste, 8× Essência de Luz, 6× Essência do Tempo _(Bigorna Avançada)_ |
+| 160 ★ | **Coroa do Abismo** | 620 | 1 | 7 | 15% | A coroa abre uma fenda devoradora e puxa tudo para o seu centro. | 1× Núcleo Mítico, 10× Barra de Celeste, 12× Essência de Sombra, 8× Essência do Tempo _(Bigorna Avançada)_ |
+
+## TIER 9 — Eco Primordial · Divino (161–180) ★
+
+- Cor de raridade: `#06b6d4` · multiplicador de dano do GDD: **33x–46x** · estação de criação: **Forja Celeste**
+- Regra do tier: Domínios divinos, feixes de julgamento, paradas no tempo e órbitas de luz.
+- Origem: **★ TIER NOVO** — 20 espadas inéditas com arte exclusiva
+
+| # | Espada | Dano | Vel | KB | Crít | Mecânica única | Receita |
+|---|---|---|---|---|---|---|---|
+| 161 ★ | **Julgamento Seráfico** | 700 | 1.15 | 6 | 18% | Chuva de lâminas sagradas no cursor e um domínio de luz ao redor do jogador. | 1× Núcleo Mítico, 10× Barra de Celeste, 14× Essência de Luz, 6× Essência do Tempo _(Forja Celeste)_ |
+| 162 ★ | **Asas do Amanhecer** | 720 | 1.2 | 5 | 18% | Quatro asas de luz orbitam e golpeiam; o golpe abre uma nova dourada. | 1× Núcleo Mítico, 10× Barra de Celeste, 12× Essência de Luz, 6× Essência de Água _(Forja Celeste)_ |
+| 163 ★ | **Lei do Silêncio** | 690 | 1.35 | 4 | 18% | Impõe a lei: inimigos ficam lentos, marcados e detonam em silêncio. | 1× Núcleo Mítico, 10× Barra de Celeste, 14× Essência do Tempo, 8× Essência de Sombra _(Forja Celeste)_ |
+| 164 ★ | **Cetro do Sol Nascente** | 740 | 1.05 | 7 | 18% | Varre o horizonte com um arco solar e chama um cometa de fogo no cursor. | 1× Núcleo Mítico, 11× Barra de Celeste, 12× Essência de Luz, 10× Essência de Fogo _(Forja Celeste)_ |
+| 165 ★ | **Lança da Constelação** | 700 | 1.4 | 3 | 18% | Três lanças-estrela voam em linha reta e se partem em três ao acertar. | 1× Núcleo Mítico, 10× Barra de Celeste, 10× Essência de Luz, 8× Essência do Tempo _(Forja Celeste)_ |
+| 166 ★ | **Veredito Celeste** | 830 | 0.95 | 8 | 18% | Profere o veredito: dano em tela cheia e um colapso no ponto do golpe. | 1× Núcleo Mítico, 12× Barra de Celeste, 15× Essência de Luz, 8× Essência do Tempo _(Forja Celeste)_ |
+| 167 ★ | **Hino dos Querubins** | 705 | 1.3 | 4 | 18% | Um hino cura o jogador, dá escudo e fere lentamente tudo ao redor. | 1× Núcleo Mítico, 10× Barra de Celeste, 10× Essência de Luz, 6× Essência de Sangue _(Forja Celeste)_ |
+| 168 ★ | **Domínio do Trovão** | 760 | 1.15 | 5 | 18% | O domínio do trovão salta por quatro inimigos e chama três raios no cursor. | 1× Núcleo Mítico, 10× Barra de Celeste, 16× Essência de Raio _(Forja Celeste)_ |
+| 169 ★ | **Aurora Dourada** | 735 | 1.25 | 5 | 18% | Um arco dourado varre a frente e deixa dois ecos de aurora. | 1× Núcleo Mítico, 10× Barra de Celeste, 12× Essência de Luz, 4× Essência de Fogo _(Forja Celeste)_ |
+| 170 ★ | **Cálice da Eternidade** | 715 | 1.2 | 5 | 18% | Quatro acertos enchem o cálice e liberam uma onda eterna. | 1× Núcleo Mítico, 10× Barra de Celeste, 10× Essência do Tempo, 8× Essência de Água _(Forja Celeste)_ |
+| 171 ★ | **Coroa da Criação** | 745 | 1.25 | 5 | 18% | Cria um reflexo de cada golpe e três coroas orbitais que cortam sozinhas. | 1× Núcleo Mítico, 11× Barra de Celeste, 12× Essência de Luz, 6× Essência do Tempo _(Forja Celeste)_ |
+| 172 ★ | **Selo do Juízo Final** | 880 | 0.9 | 9 | 18% | O selo risca a tela com um feixe de julgamento e explode em luz. | 1× Núcleo Mítico, 12× Barra de Celeste, 14× Essência de Luz, 8× Essência de Terra _(Forja Celeste)_ |
+| 173 ★ | **Lâmina do Tempo Zero** | 690 | 1.45 | 4 | 18% | Críticos param o tempo por 1,2s; cada golpe deixa dois ecos. | 1× Núcleo Mítico, 10× Barra de Celeste, 14× Essência do Tempo, 6× Essência de Gelo _(Forja Celeste)_ |
+| 174 ★ | **Arauto da Luz** | 775 | 1.2 | 5 | 18% | Anuncia a luz: um feixe puro e um domínio que queima os ímpios. | 1× Núcleo Mítico, 11× Barra de Celeste, 16× Essência de Luz _(Forja Celeste)_ |
+| 175 ★ | **Sinfonia dos Céus** | 730 | 1.3 | 5 | 18% | Três ecos afinados e duas notas celestes caem do céu. | 1× Núcleo Mítico, 10× Barra de Celeste, 10× Essência de Luz, 8× Essência de Sangue _(Forja Celeste)_ |
+| 176 ★ | **Fênix Imortal** | 800 | 1.1 | 5 | 18% | Renasce a cada golpe: cura, incendeia a área e chama brasas do céu. | 1× Núcleo Mítico, 11× Barra de Celeste, 16× Essência de Fogo, 8× Essência de Sangue _(Forja Celeste)_ |
+| 177 ★ | **Escudo do Firmamento** | 850 | 0.95 | 8 | 18% | O firmamento protege: 150 de escudo e uma onda que afasta tudo. | 1× Núcleo Mítico, 12× Barra de Celeste, 14× Essência de Gelo, 10× Essência de Terra _(Forja Celeste)_ |
+| 178 ★ | **Chama Sagrada** | 765 | 1.2 | 5 | 18% | Uma chama sagrada queima sem parar tudo o que se aproxima. | 1× Núcleo Mítico, 11× Barra de Celeste, 14× Essência de Fogo, 8× Essência de Luz _(Forja Celeste)_ |
+| 179 ★ | **Nexo do Infinito** | 720 | 1.3 | 4 | 18% | O nexo dobra o espaço: um buraco negro perseguidor e três lâminas do vazio. | 1× Núcleo Mítico, 11× Barra de Celeste, 12× Essência do Tempo, 10× Essência de Sombra _(Forja Celeste)_ |
+| 180 ★ | **Trono de Ouro** | 840 | 1 | 7 | 18% | O trono chama raios dourados e dobra o espaço ao redor do impacto. | 1× Núcleo Mítico, 12× Barra de Celeste, 14× Essência de Luz, 8× Essência de Terra _(Forja Celeste)_ |
+
+## TIER 10 — Origem · Supremo (181–200) ★
+
+- Cor de raridade: `#f8fafc` · multiplicador de dano do GDD: **46x–72x** · estação de criação: **Forja Celeste**
+- Regra do tier: Dano em tela cheia, colapsos cósmicos, singularidades e big bang.
+- Origem: **★ TIER NOVO** — 20 espadas inéditas com arte exclusiva
+
+| # | Espada | Dano | Vel | KB | Crít | Mecânica única | Receita |
+|---|---|---|---|---|---|---|---|
+| 181 ★ | **Primeira Luz** | 980 | 1.25 | 6 | 22% | A primeira luz do universo: dano em tela cheia, colapso e um domínio branco. | 2× Núcleo Mítico, 14× Barra de Celeste, 18× Essência de Luz, 10× Essência do Tempo _(Forja Celeste)_ |
+| 182 ★ | **Fim de Tudo** | 1150 | 1 | 8 | 22% | O fim: um buraco negro que cresce, uma fenda eterna e nada sobrevive. | 2× Núcleo Mítico, 15× Barra de Celeste, 18× Essência de Sombra, 12× Essência do Tempo _(Forja Celeste)_ |
+| 183 ★ | **Buraco Branco** | 1050 | 1.2 | 6 | 22% | Cospe matéria: uma nova branca gigante e quatro órbitas de luz pura. | 2× Núcleo Mítico, 15× Barra de Celeste, 20× Essência de Luz, 12× Essência do Tempo _(Forja Celeste)_ |
+| 184 ★ | **Cosmos Vivo** | 1080 | 1.15 | 6 | 22% | Um cosmos inteiro desaba: cinco estrelas caem e cada estilhaço se divide. | 2× Núcleo Mítico, 15× Barra de Celeste, 14× Essência de Luz, 12× Essência do Tempo, 8× Essência de Sombra _(Forja Celeste)_ |
+| 185 ★ | **Teorema Final** | 1120 | 1.1 | 7 | 22% | Prova o teorema: um feixe que atravessa tudo e o reflexo exato do golpe. | 2× Núcleo Mítico, 14× Barra de Celeste, 16× Essência de Raio, 10× Essência do Tempo _(Forja Celeste)_ |
+| 186 ★ | **O Último Nome** | 1200 | 1.3 | 5 | 22% | Diz o último nome do inimigo: executa os feridos e sela os vivos. | 2× Núcleo Mítico, 15× Barra de Celeste, 16× Essência de Sombra, 12× Essência do Tempo _(Forja Celeste)_ |
+| 187 ★ | **Origem do Vazio** | 1300 | 0.9 | 10 | 22% | Do nada, tudo: puxa o mundo para si e colapsa a tela em seguida. | 2× Núcleo Mítico, 16× Barra de Celeste, 18× Essência de Sombra, 12× Essência de Terra _(Forja Celeste)_ |
+| 188 ★ | **Relógio do Universo** | 1010 | 1.35 | 5 | 22% | Atrasa o tempo dos inimigos, acelera o seu e repete o golpe duas vezes. | 2× Núcleo Mítico, 14× Barra de Celeste, 18× Essência do Tempo, 8× Essência de Luz _(Forja Celeste)_ |
+| 189 ★ | **Semente Cósmica** | 1040 | 1.2 | 6 | 22% | Planta um mundo: um domínio vivo cura e três sementes caçam os inimigos. | 2× Núcleo Mítico, 14× Barra de Celeste, 14× Essência de Veneno, 12× Essência de Terra _(Forja Celeste)_ |
+| 190 ★ | **Axioma** | 1060 | 1.45 | 4 | 22% | Verdade absoluta: cinco agulhas perfeitas e cada uma se parte em três. | 2× Núcleo Mítico, 14× Barra de Celeste, 16× Essência de Luz, 10× Essência do Tempo _(Forja Celeste)_ |
+| 191 ★ | **Convergência Final** | 1090 | 1.15 | 6 | 22% | Três acertos bastam para convergir tudo num único golpe devastador. | 2× Núcleo Mítico, 15× Barra de Celeste, 16× Essência de Luz, 12× Essência do Tempo _(Forja Celeste)_ |
+| 192 ★ | **Espada do Autor** | 1250 | 0.95 | 9 | 22% | Reescreve a cena: dano na tela inteira, colapso e 200 de escudo divino. | 3× Núcleo Mítico, 18× Barra de Celeste, 20× Essência de Luz, 14× Essência do Tempo _(Forja Celeste)_ |
+| 193 ★ | **Nada Eterno** | 1180 | 1.25 | 5 | 22% | O vazio eterno: suga, retarda e apaga o que sobrar. | 2× Núcleo Mítico, 15× Barra de Celeste, 18× Essência de Sombra, 14× Essência do Tempo _(Forja Celeste)_ |
+| 194 ★ | **Tudo de Uma Vez** | 1210 | 1.2 | 6 | 22% | Faz tudo simultaneamente: ecos, órbitas e uma nova a cada golpe. | 2× Núcleo Mítico, 16× Barra de Celeste, 16× Essência de Luz, 12× Essência do Tempo, 8× Essência de Fogo _(Forja Celeste)_ |
+| 195 ★ | **Ponto Zero** | 1100 | 1.3 | 5 | 22% | Marca o ponto zero do alvo: ele detona em 1s enquanto o feixe varre a tela. | 2× Núcleo Mítico, 15× Barra de Celeste, 16× Essência do Tempo, 12× Essência de Gelo _(Forja Celeste)_ |
+| 196 ★ | **Coração do Multiverso** | 1130 | 1.2 | 6 | 22% | O coração pulsa em vários mundos: cura, explode em rosa e colapsa a tela. | 2× Núcleo Mítico, 16× Barra de Celeste, 18× Essência de Sangue, 12× Essência de Luz _(Forja Celeste)_ |
+| 197 ★ | **Lâmina Absoluta** | 1280 | 1 | 8 | 22% | Um corte absoluto: feixe branco que atravessa tudo e executa os feridos. | 3× Núcleo Mítico, 16× Barra de Celeste, 20× Essência de Luz, 10× Essência do Tempo _(Forja Celeste)_ |
+| 198 ★ | **Maré Cósmica** | 1160 | 1.15 | 6 | 22% | A maré cósmica cobre a arena e conduz raios entre os inimigos. | 2× Núcleo Mítico, 16× Barra de Celeste, 16× Essência de Água, 12× Essência de Raio _(Forja Celeste)_ |
+| 199 ★ | **Brado do Infinito** | 1220 | 1.1 | 7 | 22% | Um brado que chama seis lanças do céu e varre o horizonte em ouro. | 2× Núcleo Mítico, 16× Barra de Celeste, 14× Essência de Luz, 14× Essência de Fogo _(Forja Celeste)_ |
+| 200 ★ | **Apoteose** | 1400 | 1.05 | 10 | 26% | A espada final: dano em tela cheia, colapso, cinco órbitas e um domínio de luz eterna. | 4× Núcleo Mítico, 20× Barra de Celeste, 20× Essência de Luz, 16× Essência do Tempo, 12× Essência de Sombra _(Forja Celeste)_ |
 

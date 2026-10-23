@@ -1,5 +1,5 @@
 /* ============================================================
-   11_swords: CATÁLOGO MESTRE — 120 espadas (schema SwordItemSO)
+   11_swords: CATÁLOGO MESTRE — 120 espadas (schema SwordItemSO); as 80 dos Tiers 7–10 ficam em 11b_swords_x.js
    Tiers 1, 3 e 5: textos originais do GDD (src:'pdf').
    Tiers 2, 4 e 6: o PDF veio truncado -> criadas seguindo as
    regras de cada tier (src:'novo').
@@ -9,14 +9,14 @@
    ============================================================ */
 const SWORDS = [], SWORD_BY_NUM = {};
 const LK = (sh, col, len, o) => Object.assign({ sh, col, len }, o || {});
-const DEF_CRIT = { 1: .04, 2: .05, 3: .06, 4: .07, 5: .08, 6: .10 };
-const TIER_STATION = { 1: 'anvil', 2: 'anvil', 3: 'advanvil', 4: 'advanvil', 5: 'forge', 6: 'forge' };
+const DEF_CRIT = { 1: .04, 2: .05, 3: .06, 4: .07, 5: .08, 6: .10, 7: .12, 8: .15, 9: .18, 10: .22 };
+const TIER_STATION = { 1: 'anvil', 2: 'anvil', 3: 'advanvil', 4: 'advanvil', 5: 'forge', 6: 'forge', 7: 'advanvil', 8: 'advanvil', 9: 'forge', 10: 'forge' };
 function S(num, name, d, v, k, look, fx, txt, rec, o) {
   o = o || {}; const t = Math.ceil(num / 20), id = 's' + String(num).padStart(3, '0');
   const sw = {
     swordID: num, num, id, swordName: name, tierLevel: t, baseDamage: d, attackSpeed: v, knockbackForce: k,
     critChance: o.crit !== undefined ? o.crit : DEF_CRIT[t], projectilePrefab: o.prefab || (fx.length ? 'Proj_' + id : null),
-    attackType: o.atk || 'ArcSwing', passiveEffects: fx, look, txt, src: (t % 2 === 1) ? 'pdf' : 'novo', station: o.st || TIER_STATION[t],
+    attackType: o.atk || 'ArcSwing', passiveEffects: fx, look, txt, src: t <= 6 ? ((t % 2 === 1) ? 'pdf' : 'novo') : 'novo', station: o.st || TIER_STATION[t],
     // métodos virtuais do SwordItemSO
     OnSwing(combat, dir) { const P = G.P; if (P && combat) fxCall(this, 'onSwing', P, combat, dir); },
     OnHitEnemy(enemy, info) { const P = G.P; if (P) fxCall(this, 'onHit', P, enemy, info.h || {}, info); },
