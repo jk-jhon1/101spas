@@ -12,11 +12,11 @@ const { SWORDS, IT, RECIPES, TIERS, STATION_NAME, BXLIST, BX_ACTS, BXART, ED, BX
 let errs = 0; const err = m => { console.log('  ✗', m); errs++; };
 console.log('files:', use.join(' '));
 console.log('swords:', SWORDS.length);
-if (SWORDS.length !== 120) err('esperado 120 espadas');
-const nums = new Set(SWORDS.map(s => s.num)); for (let i = 1; i <= 120; i++) if (!nums.has(i)) err('falta espada ' + i);
+if (SWORDS.length !== 200) err('esperado 200 espadas');
+const nums = new Set(SWORDS.map(s => s.num)); for (let i = 1; i <= 200; i++) if (!nums.has(i)) err('falta espada ' + i);
 const names = new Set(); SWORDS.forEach(s => { if (names.has(s.swordName)) err('nome duplicado ' + s.swordName); names.add(s.swordName); });
-const rng = { 1: [8, 22], 2: [26, 40], 3: [42, 68], 4: [72, 104], 5: [110, 150], 6: [165, 280] };
-for (let t = 1; t <= 6; t++) {
+const rng = { 1: [8, 22], 2: [26, 40], 3: [42, 68], 4: [72, 104], 5: [110, 150], 6: [165, 280], 7: [300, 430], 8: [460, 640], 9: [680, 900], 10: [950, 1400] };
+for (let t = 1; t <= 10; t++) {
   const L = SWORDS.filter(s => s.tierLevel === t); if (L.length !== 20) err('tier ' + t + ' tem ' + L.length);
   const d = L.map(s => s.baseDamage), mn = Math.min(...d), mx = Math.max(...d);
   const base = 23.5; // multiplicador relativo (dano / base) — referência GDD
@@ -33,21 +33,22 @@ for (const r of RECIPES) {
 console.log('recipes:', RECIPES.length, '| items:', Object.keys(IT).length);
 // cada espada tem look válido e pelo menos efeitos (exceto 019)
 SWORDS.forEach(s => { if (!s.look || !s.look.sh || !s.look.col) err('look inválido ' + s.id); if (!s.passiveEffects.length && s.num !== 19) err('sem efeito ' + s.id); if (!s.txt) err('sem texto ' + s.id); });
-// CSV
+// CSV (só grava em docs/ se você pedir: CATALOGO=1 node dev/validate.js)
+const WRITE_DOCS = process.env.CATALOGO === '1';
 let csv = '#;Nome;Tier;Dano;Vel;KB;Crit;Tipo de ataque;Mecânica única;Origem;Estação;Receita\n';
 for (const s of SWORDS) { const r = RECIPES.find(r => r.out === s.id); csv += [String(s.num).padStart(3, '0'), s.swordName, s.tierLevel, s.baseDamage, s.attackSpeed, s.knockbackForce, Math.round(s.critChance * 100) + '%', s.attackType, '"' + s.txt.replace(/"/g, '""') + '"', s.src === 'pdf' ? 'PDF (GDD)' : 'CRIADA (PDF truncado)', STATION_NAME[s.station], Object.entries(r.ing).map(([k, v]) => v + 'x ' + IT[k].n).join(' + ')].join(';') + '\n'; }
-fs.writeFileSync(__dirname + '/../docs/catalogo_120_espadas.csv', '\ufeff' + csv);
+if (WRITE_DOCS) fs.writeFileSync(__dirname + '/../docs/catalogo_200_espadas.csv', '\ufeff' + csv);
 // Markdown por tier
-let md = '# Catálogo mestre — 120 espadas\n\n> Gerado automaticamente a partir dos dados do jogo (`src/11_swords.js`).\n> **Origem:** `PDF` = linha original do GDD · `★ CRIADA` = o PDF veio **truncado** (só existiam os Tiers 1, 3 e 5); as 40 espadas dos Tiers 2, 4 e 6 foram criadas seguindo as regras de cada tier.\n\n';
-const TN = { 1: 'TIER 1 — Início de jogo & Básico (001–020)', 2: 'TIER 2 — Pré-Bosses Intermediários (021–040)', 3: 'TIER 3 — Transição & Mid-Game (041–060)', 4: 'TIER 4 — Hardmode Inicial (061–080)', 5: 'TIER 5 — Hardmode Avançado (081–100)', 6: 'TIER 6 — End-Game / Mítico (101–120)' };
-const COLS = { 1: '#10b981', 2: '#0284c7', 3: '#7c3aed', 4: '#d97706', 5: '#dc2626', 6: '#4f46e5' };
-for (let t = 1; t <= 6; t++) {
+let md = '# Catálogo mestre — 200 espadas\n\n> Gerado automaticamente a partir dos dados do jogo (`src/11_swords.js` e `src/11b_swords_x.js`).\n> **Origem:** `PDF` = linha original do GDD · `★ CRIADA` = criada para o jogo (o PDF veio **truncado** nos Tiers 2, 4 e 6; os **Tiers 7–10 são novos**, 20 espadas cada, com arte pintada pixel a pixel em `src/06b_swordart.js`).\n\n';
+const TN = { 1: 'TIER 1 — Início de jogo & Básico (001–020)', 2: 'TIER 2 — Pré-Bosses Intermediários (021–040)', 3: 'TIER 3 — Transição & Mid-Game (041–060)', 4: 'TIER 4 — Hardmode Inicial (061–080)', 5: 'TIER 5 — Hardmode Avançado (081–100)', 6: 'TIER 6 — End-Game / Mítico (101–120)', 7: 'TIER 7 — Forja Estelar · Lendário (121–140) ★', 8: 'TIER 8 — Relicário do Vazio · Ancestral (141–160) ★', 9: 'TIER 9 — Eco Primordial · Divino (161–180) ★', 10: 'TIER 10 — Origem · Supremo (181–200) ★' };
+const COLS = { 1: '#10b981', 2: '#0284c7', 3: '#7c3aed', 4: '#d97706', 5: '#dc2626', 6: '#4f46e5', 7: '#eab308', 8: '#db2777', 9: '#06b6d4', 10: '#f8fafc' };
+for (let t = 1; t <= 10; t++) {
   const L = SWORDS.filter(x => x.tierLevel === t), T_ = TIERS[t];
-  md += `## ${TN[t]}\n\n- Cor de raridade: \`${COLS[t]}\` · multiplicador de dano do GDD: **${T_.mult[0]}x–${T_.mult[1]}x** · estação de criação: **${[...new Set(L.map(x => STATION_NAME[x.station]))].join(' / ')}**\n- Regra do tier: ${T_.mech}\n- Origem: ${L[0].src === 'pdf' ? '**PDF (GDD)** — textos originais' : '**★ CRIADAS** (PDF truncado)'}\n\n| # | Espada | Dano | Vel | KB | Crít | Mecânica única | Receita |\n|---|---|---|---|---|---|---|---|\n`;
+  md += `## ${TN[t]}\n\n- Cor de raridade: \`${COLS[t]}\` · multiplicador de dano do GDD: **${T_.mult[0]}x–${T_.mult[1]}x** · estação de criação: **${[...new Set(L.map(x => STATION_NAME[x.station]))].join(' / ')}**\n- Regra do tier: ${T_.mech}\n- Origem: ${L[0].src === 'pdf' ? '**PDF (GDD)** — textos originais' : (t <= 6 ? '**★ CRIADAS** (PDF truncado)' : '**★ TIER NOVO** — 20 espadas inéditas com arte exclusiva')}\n\n| # | Espada | Dano | Vel | KB | Crít | Mecânica única | Receita |\n|---|---|---|---|---|---|---|---|\n`;
   for (const s of L) { const r = RECIPES.find(r => r.out === s.id); md += `| ${String(s.num).padStart(3, '0')}${s.src === 'novo' ? ' ★' : ''} | **${s.swordName}** | ${s.baseDamage} | ${s.attackSpeed} | ${s.knockbackForce} | ${Math.round(s.critChance * 100)}% | ${s.txt} | ${Object.entries(r.ing).map(([k, v]) => v + '× ' + IT[k].n).join(', ')} _(${STATION_NAME[s.station]}${s.station === 'bench' ? '' : ''})_ |\n`; }
   md += '\n';
 }
-fs.writeFileSync(__dirname + '/../docs/catalogo_120_espadas.md', md);
+if (WRITE_DOCS) { fs.writeFileSync(__dirname + '/../docs/catalogo_200_espadas.md', md); console.log('docs/catalogo_200_espadas.{md,csv} atualizados'); }
 // ---- 50 chefes novos: dados completos + docs/chefes_novos.md ----
 console.log('chefes novos:', BXLIST.length);
 if (BXLIST.length !== 50) err('esperado 50 chefes novos, há ' + BXLIST.length);

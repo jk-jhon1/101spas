@@ -181,7 +181,8 @@ function killProj(p, why) { if (p.dead) return; p.dead = true; if (p.onDie) p.on
 function updateProjs(dt) {
   const a = G.projs, P = G.P;
   for (let i = a.length - 1; i >= 0; i--) {
-    const p = a[i]; if (p.dead) { a.splice(i, 1); continue; }
+    const p = a[i]; if (!p) continue;   // o teto de 700 projéteis pode encurtar a lista no meio do laço
+    if (p.dead) { a.splice(i, 1); continue; }
     if (p.delay > 0) { p.delay -= dt; if (p.delay > 0) continue; if (p.onStart) p.onStart(p); }
     p.age += dt; p.life -= dt; p.rot += p.spin * dt;
     // tempo parado afeta projéteis hostis

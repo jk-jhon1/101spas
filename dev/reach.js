@@ -30,4 +30,4 @@ console.log('receitas inalcançáveis:', missing.length, missing.map(r => r.out)
 console.log('ingredientes sem fonte:', raw.join(', ') || 'nenhum');
 const notObtainable = Object.keys(IT).filter(k => !have.has(k)); console.log('itens inalcançáveis:', notObtainable.join(', ') || 'nenhum');
 // custo total em minério por tier (informativo)
-console.log('espadas craftáveis:', SWORDS.filter(s => have.has(s.id)).length, '/ 120');
+console.log('espadas craftáveis:', SWORDS.filter(s => have.has(s.id)).length, '/ 200');

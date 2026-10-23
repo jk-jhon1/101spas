@@ -13,6 +13,11 @@ const TIERS = {
   4: { n: 'Tier 4: Hardmode Inicial', col: '#d97706', mult: [3.0, 4.2], mech: 'Ondas de choque no relevo, estalagmites, esporos flutuantes, aura gravitacional.' },
   5: { n: 'Tier 5: Hardmode Avançado', col: '#dc2626', mult: [4.5, 6.5], mech: 'Meteoros do céu, lasers perfurantes, manipulação de tempo/velocidade.' },
   6: { n: 'Tier 6: End-Game Mítico', col: '#4f46e5', mult: [7.0, 12.0], mech: 'Projéteis rastreadores, colapso estelar, portais de ataque, danos em tela cheia.' },
+  // ---- tiers extras (121–200): pós-jogo, acima do Colosso Estelar ----
+  7: { n: 'Tier 7: Forja Estelar', col: '#eab308', mult: [14, 22], mech: 'Ecos do golpe, leques de lâminas, correntes elétricas e escudos vivos.' },
+  8: { n: 'Tier 8: Relicário do Vazio', col: '#db2777', mult: [22, 32], mech: 'Marcas que detonam, fendas devoradoras, almas perseguidoras e domínios.' },
+  9: { n: 'Tier 9: Eco Primordial', col: '#06b6d4', mult: [33, 46], mech: 'Domínios divinos, feixes de julgamento, paradas no tempo e órbitas de luz.' },
+  10: { n: 'Tier 10: Origem', col: '#f8fafc', mult: [46, 72], mech: 'Dano em tela cheia, colapsos cósmicos, singularidades e big bang.' },
 };
 const TIER_GOLD = '#fbbf24';
 

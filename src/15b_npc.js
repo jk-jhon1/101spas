@@ -16,7 +16,7 @@ const NPC_ORDER = ['guide', 'trader', 'nurse', 'smith'];
 G.rooms = []; G.npcs = []; G.npcScanT = 3; G.npcSpawnT = 8;
 function itemValue(id) {
   const it = IT[id]; if (!it) return 1; if (it.val) return it.val; const t = it.tier || 0;
-  if (id === 'coin') return 1; if (it.type === 'sword') return [0, 60, 160, 420, 1000, 2600, 7500][t];
+  if (id === 'coin') return 1; if (it.type === 'sword') return [0, 60, 160, 420, 1000, 2600, 7500, 18000, 42000, 90000, 200000][t] || 7500;
   if (it.type === 'pick') return Math.round(30 * Math.pow(it.pow, 1.7)); if (it.type === 'armor') return it.def * 40; if (it.type === 'acc') return 90 * t * t + 60;
   if (id.endsWith('_ore')) return 3 + 4 * t; if (id.endsWith('_bar')) return 10 + 16 * t; if (id.startsWith('e_')) return 70; if (id === 'celestial_frag') return 120; if (id === 'mythic_core') return 6000;
   if (['ruby', 'emerald', 'topaz', 'sapphire', 'amethyst'].includes(id)) return 28; if (id === 'life_crystal') return 450; if (it.use === 'heal') return [0, 28, 0, 70, 0, 160][t] || 40;

@@ -136,6 +136,10 @@ function bladeProf(sh, t, x) { // -> [meia-largura, curvatura(y)]
   return [2.2, 0];
 }
 function getSwordSprite(sw) {
+  if (sw.look && sw.look.art2) return art2Sprite(sw);   // Tiers 7–10: pintura pixel a pixel (06b_swordart.js)
+  return getSwordSpriteLegacy(sw);
+}
+function getSwordSpriteLegacy(sw) {
   if (SWORD_SPR[sw.id]) return SWORD_SPR[sw.id];
   const o = sw.look, len = o.len, sh = o.sh, tier = sw.tierLevel;
   const base = hex2rgb(o.col), dark = drk(base, .45), light = lit(base, .38), edge = lit(base, .72);
@@ -205,17 +209,22 @@ function mid(a, b) { return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2])
 // ---------------- ÍCONES (canvas 48x48 -> data URL) ----------------
 function iconCanvas(id) {   // ícones 32x32 em pixel-art (alfa binário, sem suavização)
   if (_icoCache[id]) return _icoCache[id];
-  const it = IT[id]; const c = mk(32, 32), g = c.getContext('2d', { willReadFrequently: true });
+  const it = IT[id];
+  const art2 = it && it.type === 'sword' && it.sw.look && it.sw.look.art2;
+  const IC = 32, HH = IC / 2;   // 1:1 com os slots da interface
+  const c = mk(IC, IC), g = c.getContext('2d', { willReadFrequently: true });
   if (!it) { _icoCache[id] = c; return c; }
   if (it.type === 'sword') {
     const sw = it.sw, spr = getSwordSprite(sw), tcol = TIERS[sw.tierLevel].col;
-    glowDot(g, 16, 16, 16, tcol, .22);
-    if (sw.look.glow) glowDot(g, 16, 16, 13, sw.look.glow, .3);
-    const t = mk(32, 32), tg = t.getContext('2d', { willReadFrequently: true });
-    tg.translate(16, 16); tg.rotate(-PI / 4);
-    const sc = clamp(27 / (.707 * spr.w + 2), .5, 1.4); tg.scale(sc, sc);
+    glowDot(g, HH, HH, HH, tcol, art2 ? .3 : .22);
+    if (sw.look.glow) glowDot(g, HH, HH, HH * .82, sw.look.glow, .3);
+    const t = mk(IC, IC), tg = t.getContext('2d', { willReadFrequently: true });
+    tg.translate(HH, HH); tg.rotate(-PI / 4);
+    // as espadas novas são sprites grandes e cheios de detalhe: ocupam quase todo o ícone
+    const sc = art2 ? clamp((IC - 5) / (.707 * (spr.sw + spr.sh)), .28, 1.15) : clamp(27 / (.707 * spr.w + 2), .5, 1.4);
+    tg.scale(sc, sc);
     tg.imageSmoothingEnabled = false; tg.drawImage(spr.c, -spr.w / 2, -spr.h / 2);
-    pixelizeCanvas(t, { th: 110, outline: false, shade: false });
+    pixelizeCanvas(t, { th: art2 ? 90 : 110, outline: false, shade: false });
     g.drawImage(t, 0, 0);
   } else {
     drawIconSpec(g, it.ic || ['x'], it);

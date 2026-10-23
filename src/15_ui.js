@@ -199,18 +199,18 @@ function closePanels(silent) {
 }
 function openChest(tx, ty) { const wd = G.world, k = wd.idx(tx, ty); let c = wd.chests.get(k); if (!c) { c = new Array(20).fill(null); wd.chests.set(k, c); } G.chestSlots = c; G.chestPos = k; openPanel('inv'); G.chestSlots = c; G.chestPos = k; refreshInvUI(); sfx('door'); }
 // ---------- Arsenal / Catálogo ----------
-const ARS_TABS = [['T1', 'Tier 1'], ['T2', 'Tier 2'], ['T3', 'Tier 3'], ['T4', 'Tier 4'], ['T5', 'Tier 5'], ['T6', 'Tier 6'], ['ALL', 'Todas'], ['items', 'Itens'], ['enemies', 'Inimigos & Chefes'], ['world', 'Mundo']];
+const ARS_TABS = [['T1', 'Tier 1'], ['T2', 'Tier 2'], ['T3', 'Tier 3'], ['T4', 'Tier 4'], ['T5', 'Tier 5'], ['T6', 'Tier 6'], ['T7', 'Tier 7'], ['T8', 'Tier 8'], ['T9', 'Tier 9'], ['T10', 'Tier 10'], ['ALL', 'Todas'], ['items', 'Itens'], ['enemies', 'Inimigos & Chefes'], ['world', 'Mundo']];
 function arsGive(id, n) { const left = invAdd(id, n || 1); if (left) dropItem(id, left, G.P.x, G.P.y); sfx('pickup'); G.ui.craftDirty = true; }
 function renderArsenal() {
   const cre = G.mode === 'creative'; $('ars-title').textContent = cre ? 'Arsenal (Modo Criativo)' : 'Catálogo das 120 Espadas';
-  const tabs = $('ars-tabs'); tabs.innerHTML = ''; const avail = cre ? ARS_TABS : ARS_TABS.slice(0, 7);
+  const tabs = $('ars-tabs'); tabs.innerHTML = ''; const avail = cre ? ARS_TABS : ARS_TABS.filter(([k]) => /^T\d+$/.test(k) || k === 'ALL');   // catálogo da aventura: todos os tiers + Todas
   if (!avail.some(t => t[0] === G.ui.arsTab)) G.ui.arsTab = 'T1';
-  avail.forEach(([k, n]) => { const t = document.createElement('div'); t.className = 'tab' + (G.ui.arsTab === k ? ' on' : ''); t.textContent = n; if (/^T\d$/.test(k)) t.style.borderColor = TIERS[+k[1]].col; t.onclick = () => { G.ui.arsTab = k; renderArsenal(); }; tabs.appendChild(t); });
+  avail.forEach(([k, n]) => { const t = document.createElement('div'); t.className = 'tab' + (G.ui.arsTab === k ? ' on' : ''); t.textContent = n; if (/^T\d+$/.test(k)) t.style.borderColor = TIERS[+k.slice(1)].col; t.onclick = () => { G.ui.arsTab = k; renderArsenal(); }; tabs.appendChild(t); });
   const body = $('ars-body'), tab = G.ui.arsTab; body.innerHTML = '';
   const grid = (ids, withNum) => { const g = document.createElement('div'); g.className = 'ars-grid'; ids.forEach(id => { const it = IT[id], el = document.createElement('div'); el.className = 'slot t' + (it.tier || 0) + (it.type === 'sword' && it.sw.src === 'novo' ? ' novo' : ''); el.innerHTML = `<i class="ic ${iconClass(id)}"></i>` + (withNum && it.type === 'sword' ? `<span class="num">${String(it.sw.num).padStart(3, '0')}</span>` : ''); el.onmouseenter = ev => showTip(tipHTML(id), ev); el.onmousemove = moveTip; el.onmouseleave = hideTip; el.onmousedown = ev => { ev.preventDefault(); if (cre) arsGive(id, ev.shiftKey ? stackMax(id) > 1 ? 99 : 1 : 1); else toast(it.n + ': ' + (RECIPES.find(r => r.out === id) ? 'veja a receita no tooltip e construa no inventário (E).' : ''), tierCol(id)); }; g.appendChild(el); }); return g; };
-  if (/^T\d$/.test(tab) || tab === 'ALL') {
-    const swords = SWORDS.filter(s => tab === 'ALL' || s.tierLevel === +tab[1]);
-    if (/^T\d$/.test(tab)) { const T_ = TIERS[+tab[1]]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px 12px;border-left:4px solid ' + T_.col + ';background:rgba(255,255,255,.05);border-radius:6px;font-size:13px'; const sws = swords; d.innerHTML = `<b style="color:${T_.col}">${T_.n}</b> · multiplicador de dano ${T_.mult[0]}x–${T_.mult[1]}x · ${sws.length} espadas · dano ${Math.min(...sws.map(s => s.baseDamage))}–${Math.max(...sws.map(s => s.baseDamage))}<br><span style="color:var(--mut)">${T_.mech}</span>` + ((+tab[1]) % 2 === 0 ? '<br><span style="color:#fbbf24">★ Este tier estava truncado no PDF — as 20 espadas foram criadas seguindo as regras acima.</span>' : ''); body.appendChild(d); }
+  if (/^T\d+$/.test(tab) || tab === 'ALL') {
+    const swords = SWORDS.filter(s => tab === 'ALL' || s.tierLevel === +tab.slice(1));
+    if (/^T\d+$/.test(tab)) { const T_ = TIERS[+tab.slice(1)]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px 12px;border-left:4px solid ' + T_.col + ';background:rgba(255,255,255,.05);border-radius:6px;font-size:13px'; const sws = swords; d.innerHTML = `<b style="color:${T_.col}">${T_.n}</b> · multiplicador de dano ${T_.mult[0]}x–${T_.mult[1]}x · ${sws.length} espadas · dano ${Math.min(...sws.map(s => s.baseDamage))}–${Math.max(...sws.map(s => s.baseDamage))}<br><span style="color:var(--mut)">${T_.mech}</span>` + ((+tab.slice(1)) > 6 ? '<br><span style="color:#fbbf24">★ Tier novo (pós-jogo): 20 espadas inéditas, cada uma com arte pintada pixel a pixel e efeito próprio.</span>' : (+tab.slice(1)) % 2 === 0 ? '<br><span style="color:#fbbf24">★ Este tier estava truncado no PDF — as 20 espadas foram criadas seguindo as regras acima.</span>' : ''); body.appendChild(d); }
     body.appendChild(grid(swords.map(s => s.id), true));
     const note = document.createElement('div'); note.style.cssText = 'margin-top:10px;font-size:12px;color:var(--mut)'; note.textContent = cre ? 'Clique para pegar 1 espada · ★ = criada (não consta no PDF). Passe o mouse para ver detalhes e receita.' : 'Passe o mouse sobre uma espada para ver atributos, mecânica e receita. ★ = criada para completar o GDD.'; body.appendChild(note);
   } else if (tab === 'items') {
@@ -300,7 +300,7 @@ function showHelp(show) { const h = $('help'); if (show) { $('help-box').innerHT
 function initUI() {
   buildSlotsUI(); buildCraftTabs();
   const mp = document.createElement('div'); mp.id = 'panel-map'; mp.className = 'panel hidden'; mp.style.cssText = 'left:50%;top:50%;transform:translate(-50%,-50%);padding:10px'; mp.innerHTML = '<h3><span>Mapa do Mundo</span><span style="text-transform:none;letter-spacing:0">(M para fechar) · branco = você · verde = spawn</span></h3><canvas id="map-cv" style="display:block;border:1px solid var(--line);border-radius:6px"></canvas>'; $('app').appendChild(mp);
-  const ts = $('tiers-strip'); ts.innerHTML = ''; for (let t = 1; t <= 6; t++) { const s = document.createElement('span'); s.style.background = TIERS[t].col; s.title = TIERS[t].n; ts.appendChild(s); }
+  const ts = $('tiers-strip'); ts.innerHTML = ''; for (let t = 1; t <= 10; t++) { const s = document.createElement('span'); s.style.background = TIERS[t].col; s.title = TIERS[t].n; ts.appendChild(s); }
   $('craft-search').addEventListener('input', e => { G.ui.search = e.target.value; G.ui.craftDirty = true; renderCrafting(); });
   $('craft-search').addEventListener('keydown', e => e.stopPropagation());
   const cl = $('craft-list');
