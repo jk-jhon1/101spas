@@ -1,18 +1,18 @@
 'use strict';
-// Conteúdo — parte 2: Parte III (a pasta src/, 43 módulos).
+// Conteúdo — parte 2: Parte III (a pasta src/, 46 módulos).
 const { C } = require('./engine.js');
 
 const COL = { base: '#64748b', world: '#0e7490', art: '#b45309', sim: '#1e3a8a', play: '#b91c1c', ui: '#6d28d9', main: '#0f172a' };
 
 function part3(doc) {
-  doc.partPage('III', 'A pasta src/', 'Os 43 módulos do jogo, na ordem em que são carregados: dados, mundo, arte, combate, conteúdo, interface e motor.');
+  doc.partPage('III', 'A pasta src/', 'Os 46 módulos do jogo, na ordem em que são carregados: dados, mundo, arte, combate, conteúdo, interface e motor.');
   doc.setPart('Parte III — A pasta src/');
 
   doc.h2('8.  Bloco 00–01 · base e dados', { mark: 's8' });
   doc.para('Os dois primeiros módulos não desenham nada e não simulam nada: eles fornecem ferramentas matemáticas e **todo o conteúdo estático** do jogo. São os únicos que os testes carregam sempre, porque tudo depende deles.');
 
   doc.fileCard({
-    name: 'src/00_util.js', lines: 79, tag: 'Base', role: 'Matemática, sorteio determinístico e cores', color: COL.base,
+    name: 'src/00_util.js', lines: 84, tag: 'Base', role: 'Matemática, sorteio determinístico e cores', color: COL.base,
     summary: 'Funções curtas usadas por todos os outros módulos: interpolação, ângulos, ruído, hash, conversão de cor e escape de HTML.',
     what: 'Concentra o “vocabulário” numérico do jogo. O ponto mais importante é o `mulberry32`: um gerador pseudoaleatório **determinístico**, que permite que uma semente produza sempre o mesmo mundo. O `Perlin` gera o relevo e as nuvens; `hash2` faz variações estáveis por coordenada (sem guardar nada em memória).',
     how: [
@@ -26,7 +26,7 @@ function part3(doc) {
 
   doc.fileCard({
     name: 'src/01_data.js', lines: 259, tag: 'Dados', role: 'Tiers, tiles, paredes, itens e receitas', color: COL.base,
-    summary: 'A “planilha” do jogo: 11 tiers de raridade, 62 blocos, 10 paredes, 434 itens e 333 receitas de criação (os minérios, armaduras e acessórios novos ficam em `11c_gear_x.js`).',
+    summary: 'A “planilha” do jogo: 11 tiers de raridade, 62 blocos, 10 paredes, 584 itens e 433 receitas de criação (os minérios, armaduras e acessórios novos ficam em `11c_gear_x.js`).',
     what: 'Declara os dados por meio de pequenas funções de registro (`tile`, `item`, `rec`, `ORE`) e monta as tabelas que o resto do motor consulta: `T` (id dos tiles), `TD` (dureza, drop, som, estação), `IT` (itens), `RECIPES` (receitas) e `STATION_NAME`/`STATION_SAT` (estações e o que cada uma libera).',
     how: [
       '`TIERS` guarda nome, cor e faixa de multiplicador de dano de cada tier — é o que colore slots, tooltips e o catálogo.',
@@ -54,7 +54,7 @@ function part3(doc) {
   });
 
   doc.fileCard({
-    name: 'src/03_worldgen.js', lines: 438, tag: 'Mundo', role: 'Gerador procedural em fatias', color: COL.world,
+    name: 'src/03_worldgen.js', lines: 439, tag: 'Mundo', role: 'Gerador procedural em fatias', color: COL.world,
     summary: 'Gera o mundo inteiro em 11 etapas, cedendo o controle entre elas para a barra de carregamento não travar a página.',
     what: '`genWorld` é um **gerador** (`function*`): cada `yield` devolve `[progresso, mensagem]` e o `startGame` consome um pouco por quadro. A semente define o layout dos biomas, o estilo do relevo, as cavernas, os minérios, as árvores, as ilhas do céu e o inferno. `chooseSeed` sorteia sementes comparando o “layout” das já usadas para garantir mundos visivelmente diferentes.',
     how: [
@@ -181,7 +181,7 @@ function part3(doc) {
   });
 
   doc.fileCard({
-    name: 'src/06_icons.js', lines: 235, tag: 'Arte', role: 'Ícones e sprites das 120 primeiras espadas', color: COL.art,
+    name: 'src/06_icons.js', lines: 243, tag: 'Arte', role: 'Ícones e sprites das 120 primeiras espadas', color: COL.art,
     summary: 'Desenha os ícones 32×32 de todos os itens e gera as espadas 1–120 por perfil de lâmina vetorial, pixelizado no fim.',
     what: 'Há duas responsabilidades: (1) o desenho de cada item na interface, por especificações declarativas (`it.ic`) — poção, minério, machado, armadura, sigilo etc.; (2) o sprite da espada no mundo, gerado a partir de `look` (formato, cor, comprimento) por `bladeProf`, que devolve meia-largura e curvatura ao longo da lâmina. O sprite é pixelizado para manter o estilo.',
     how: [
@@ -207,6 +207,22 @@ function part3(doc) {
   });
 
   doc.fileCard({
+    name: 'src/06c_gearart.js', lines: 760, tag: 'Arte', role: 'Arte dos 50 minérios, 50 barras, 50 armaduras, 50 acessórios e 5 picaretas', color: COL.art,
+    summary: 'Desenha cada peça de equipamento a partir da **semente do item**: o formato do minério, a massa e a inclinação da barra, o corte da couraça, o tipo de acessório e a cabeça da picareta mudam de peça para peça.',
+    what: 'A ideia é que nenhum item pareça o outro. Em vez de uma silhueta por família, cada desenho recebe `(forma, tier, seed)` e decide com a semente: quantas agulhas o cristal tem e para onde se inclinam, que casca o geodo ganha, qual dos cinco cortes de couraça a armadura usa, quantos dedos a manopla tem, o comprimento do bico da bota, quantas pontas a coroa leva. Por cima entram o brasão da família (dez desenhos), o motivo do peito (tabardo, gemas, corrente, gola de pelo, ombro assimétrico, faixa rúnica), os cravos da borda e as marcas de tier. A paleta é derivada da cor do minério, com um ajuste de luminância (`gaLift`) para os metais quase pretos continuarem visíveis no fundo escuro do inventário.',
+    how: [
+      '`gaRnd(seed)` é um gerador determinístico: o mesmo item desenha igual em qualquer sessão e em qualquer navegador.',
+      '`drawOreArt` tem três formas (agulhas, geodo, lasca); a ganga é tingida pela cor do minério.',
+      '`drawBarArt` varia a massa, a inclinação, o entalhe e a lasca; o selo da família e as marcas de tier ficam no topo.',
+      '`drawArmorArt` combina cinco cortes × cinco degraus de escala e um motivo diferente por peça, com o brasão por cima.',
+      '`drawAccArt` cobre treze formas (anel, pingente, manopla, botas, manto, coroa, fole, nadadeira, bolha, ampulheta, coração, escudo, vazio). Dentro das quatro maiores, **cada peça tem um desenho nomeado**: dez anéis (solitário, sinete, aro duplo, trançado, alado, garra, serpente, face, aro aberto, pedras em órbita), nove pingentes (gota, medalhão, placa, aro aberto, torque, duplo, olho, frasco, chave), dez manoplas (luva, pesada, garra, braceleto, espinhos, mão aberta, avambraço, munhequeira, placas, esfera) e dez botas (botina, cano alto, alada, greva, bico longo, gola de pelo, joelheira, sandália, salto, cravos). O índice vem de `GACC_VAR`, no catálogo — não da semente.',
+      '`dev/test_gear_art.js` desenha os 205 ícones e compara o hash do alfa: se duas peças tiverem a mesma silhueta, o teste falha.',
+    ],
+    funcs: 'gaRnd · gaGem · gaSpark · gaDots · gaEdgeMarks · gaLift · drawOreArt · drawBarArt · drawArmorArt · drawArmorMotif · drawAccArt · drawPickArt · drawFamilyCrest',
+    deps: '00_util', used: '06_icons (drawIconSpec), 11c_gear_x (sementes das peças)',
+  });
+
+  doc.fileCard({
     name: 'src/07_sky.js', lines: 100, tag: 'Arte', role: 'Céu, sol, lua, nuvens e colinas', color: COL.art,
     summary: 'Desenha o céu em faixas de cor que mudam com a hora do dia, com estrelas, astros com halo, nuvens de pixels e colinas em paralaxe.',
     what: '`drawSky` recebe o tempo normalizado (0–1 em 420 s de dia) e interpola as cores de uma tabela de sete paradas: madrugada, amanhecer, dia, tarde, pôr do sol e noite. Nuvens e estrelas têm posições estáveis por semente; as colinas usam a cor do bioma e se movem mais devagar que a câmera.',
@@ -229,6 +245,7 @@ function part3(doc) {
     ['50 chefes novos', '05g..05j + 14b_draw_bx', 'Pintura pixel a pixel, uma silhueta por chefe'],
     ['Espadas 1–120 (ícones)', '06_icons', 'Vetor pixelizado a partir de `look`'],
     ['Espadas 121–200 (ícones e mundo)', '06b_swordart', 'Pintura pixel a pixel por família'],
+    ['Minérios, barras, armaduras, acessórios, picaretas', '06c_gearart', 'Um desenho nomeado por peça + brasão da família'],
     ['Efeitos, projéteis, partículas', '10_fx + 09_combat', 'Formas em canvas + brilho aditivo'],
     ['Céu, astros, nuvens, colinas', '07_sky', 'Faixas interpoladas + paralaxe'],
   ], [0.3, 0.3, 0.4], { size: 8.1 });
