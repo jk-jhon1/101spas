@@ -12,26 +12,12 @@ documento **"GDD & MASTER PROMPT: SANDBOX 2D PLATFORMER"** (PDF enviado).
 
 ---
 
-## ⚠️ Sobre o PDF (importante)
+## Catálogo de espadas
 
-O PDF recebido está **truncado**: as tabelas de espadas dos **Tiers 2, 4 e 6** (espadas **021–040, 061–080 e 101–120**)
-terminam logo após o cabeçalho, sem nenhuma linha. Só os Tiers **1, 3 e 5** (80 espadas) têm dados.
+**200 espadas** em 10 tiers — 20 por tier —, cada uma com nome, atributos, mecânica e receita próprios.
+Os tiers 1 a 6 vão do básico ao end-game; os tiers 7 a 10 são o pós-jogo, com arte pintada pixel a pixel.
 
-- As **80 espadas do PDF** foram implementadas com **nome, Dano/Vel/KB e mecânica exatamente como no documento**.
-- As **40 espadas faltantes foram criadas** seguindo as regras de cada tier do próprio GDD (faixa de multiplicador de dano,
-  cor e tipo de mecânica). Elas aparecem marcadas com **★** no jogo e no catálogo.
-  Se você tiver o PDF completo, basta editar as linhas correspondentes em `src/11_swords.js` e rodar `node build.js`.
-
-| Tier | Espadas | Origem | Regra do GDD que guiou as criadas |
-|---|---|---|---|
-| T1 Básico `#10b981` | 001–020 | PDF | — |
-| T2 Pré-Bosses `#0284c7` | 021–040 | ★ criadas | projéteis retos simples, roubo de vida baixo, repulsão massiva, fogo/gelo |
-| T3 Mid-Game `#7c3aed` | 041–060 | PDF | — |
-| T4 Hardmode Inicial `#d97706` | 061–080 | ★ criadas | ondas de choque no relevo, estalagmites, esporos flutuantes, aura gravitacional |
-| T5 Hardmode Avançado `#dc2626` | 081–100 | PDF | — |
-| T6 End-Game Mítico `#4f46e5` | 101–120 | ★ criadas | projéteis rastreadores, colapso estelar, portais de ataque, dano em tela cheia |
-
-Catálogo completo (com receitas): [`docs/catalogo_120_espadas.md`](docs/catalogo_120_espadas.md) e `.csv`.
+Catálogo completo (com receitas): [`docs/catalogo_200_espadas.md`](docs/catalogo_200_espadas.md) e `.csv`.
 
 ---
 
@@ -259,4 +245,4 @@ Os dados (tiles, itens, receitas, 120 espadas) estão em tabelas simples, fácei
 - Sem música (apenas efeitos sonoros sintetizados); sem multiplayer. O suporte a controle foi validado com gamepad simulado e o de toque com eventos de toque emulados (não com hardware real); o som só liga após o primeiro clique/tecla/botão, regra dos navegadores.
 - Mundo de tamanho fixo (1400×480). Os mundos salvos ficam no IndexedDB do navegador (não funciona dentro de iframes *sandbox*: lá duram só a sessão; abra o HTML direto no navegador ou por http) e não são sincronizados automaticamente entre aparelhos: use *Exportar* / *Importar mapa* (ver acima). Os navegadores podem apagar dados de sites em casos extremos — o Safari (iPhone, iPad e Mac), por exemplo, limpa os de sites que ficam cerca de uma semana sem uso —, então guarde um backup com *Exportar* dos mapas que importam. Painéis de pré-visualização (iframe *sandbox*) bloqueiam o armazenamento e também o download.
 - Balanceamento de chefes/drops validado por simulação, mas não por playtest humano extenso — ajuste os números em `13_enemies.js` / `11_swords.js` se quiser.
-- As 40 espadas ★ são interpretações minhas do GDD; trocar pelas originais é simples (ver acima).
+- As espadas dos tiers 2, 4 e 6 foram escritas para completar o catálogo; ajustar qualquer uma é só editar a linha em `src/11_swords.js` e rodar `node build.js`.

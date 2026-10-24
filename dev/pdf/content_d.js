@@ -107,9 +107,9 @@ function part4(doc) {
   doc.setPart('Parte V — A pasta docs/');
   doc.h2('15.  Catálogo, chefes e imagens', { mark: 's15' });
   doc.fileCard({
-    name: 'docs/catalogo_120_espadas.md / .csv', lines: 340, tag: 'Gerado', role: 'Catálogo das espadas em texto', color: COL.base,
-    summary: 'Tabela por tier com nome, dano, velocidade, knockback, crítico, mecânica, receita e estação — gerada a partir dos dados do jogo.',
-    what: 'Serve para consultar e comparar espadas sem abrir o jogo, e para planilha (o CSV usa ponto e vírgula e BOM, abrindo direto no Excel em português). O nome do arquivo ainda diz “120” porque este documento descreve o catálogo original; os tiers 7–10 vivem no jogo e no código (`11b_swords_x.js`).',
+    name: 'docs/catalogo_200_espadas.md / .csv', lines: 295, tag: 'Gerado', role: 'Catálogo das espadas em texto', color: COL.base,
+    summary: 'Tabela com as 200 espadas, tier por tier: nome, dano, velocidade, knockback, crítico, mecânica, receita e estação — gerada a partir dos dados do jogo.',
+    what: 'Serve para consultar e comparar espadas sem abrir o jogo, e para planilha (o CSV usa ponto e vírgula e BOM, abrindo direto no Excel em português). Cobre os 10 tiers, inclusive os 7–10, que vivem em `11b_swords_x.js`.',
     how: ['Recriado com `CATALOGO=1 node dev/validate.js`.', 'O CSV tem uma linha por espada; o MD agrupa por tier com a regra de cada um.'],
     deps: '11_swords.js', used: 'README, consulta',
   });
