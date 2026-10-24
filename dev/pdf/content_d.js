@@ -12,7 +12,7 @@ function part4(doc) {
 
   doc.h3('Validação e dados (sem navegador)');
   doc.fileCard({
-    name: 'dev/validate.js', lines: 75, tag: 'Teste', role: 'Valida o catálogo inteiro', color: COL.ui,
+    name: 'dev/validate.js', lines: 141, tag: 'Teste', role: 'Valida o catálogo inteiro', color: COL.ui,
     summary: 'Carrega os módulos de dados no Node e confere 200 espadas, 20 por tier, faixas de dano, nomes únicos, receitas, estações e os 50 chefes.',
     what: 'É o teste mais rápido e o mais abrangente sobre conteúdo. Ele falha se faltar uma espada, se um tier tiver 19 ou 21, se o dano sair da faixa, se um ingrediente não existir, se a estação for inválida ou se um nome repetir. Também gera o catálogo em Markdown/CSV — mas só quando pedido, para não sujar o repositório a cada execução.',
     how: [
@@ -22,7 +22,7 @@ function part4(doc) {
     deps: 'fs, path, stubs de DOM', used: 'npm test',
   });
   doc.fileCard({
-    name: 'dev/reach.js', lines: 33, tag: 'Teste', role: 'Tudo é obtível?', color: COL.ui,
+    name: 'dev/reach.js', lines: 34, tag: 'Teste', role: 'Tudo é obtível?', color: COL.ui,
     summary: 'Verifica se cada item usado em alguma receita tem fonte (bloco, drop, baú, loja ou outra receita) e se as 200 espadas são craftáveis.',
     what: 'Responde à pergunta “dá para terminar o jogo?”. Percorre o grafo de receitas para trás e aponta ingredientes sem origem e itens inalcançáveis. Hoje: 200/200 espadas craftáveis, nenhum ingrediente sem fonte.',
     deps: 'mesmos stubs de validate', used: 'npm test',
@@ -34,10 +34,22 @@ function part4(doc) {
     deps: '03_worldgen', used: 'npm test',
   });
   doc.fileCard({
-    name: 'dev/transfer.js', lines: 231, tag: 'Teste', role: 'Arquivo de mundo', color: COL.ui,
+    name: 'dev/transfer.js', lines: 233, tag: 'Teste', role: 'Arquivo de mundo', color: COL.ui,
     summary: 'Testa o formato `.json` de exportação sem navegador: CRC, ida e volta exata, arquivos adulterados, fuzz e a lógica de importação.',
     what: 'É o teste de segurança do recurso de exportar/importar. Modifica arquivos válidos bit a bit, refaz o CRC para tentar burlar a checagem, injeta campos proibidos e confirma que a importação recusa ou limpa tudo o que não deveria entrar.',
     deps: '15f_transfer', used: 'npm test',
+  });
+  doc.fileCard({
+    name: 'dev/test_gear_art.js', lines: 126, tag: 'Teste', role: 'Nenhuma peça de equipamento repete outra', color: COL.ui,
+    summary: 'Desenha os 205 ícones novos (50 minérios, 50 barras, 50 armaduras, 50 acessórios e 5 picaretas) em um canvas de verdade e compara a **silhueta** de cada um com todas as outras.',
+    what: 'A regra “cada peça tem aparência própria” precisa de um teste objetivo, porque arte gerada por código repete com facilidade. O script carrega `src/` num contexto `node:vm`, pede cada ícone a `iconCanvas`, calcula o hash SHA-1 do RGBA (cor + forma) e do canal alfa isolado (só a silhueta) e acusa qualquer par igual. Também conta os pixels pintados, para pegar ícone vazio ou quase invisível. Com `--sheet pasta/` grava cinco folhas de contato ampliadas para conferência a olho.',
+    how: [
+      '`npm run test:art` → imprime por grupo e termina com `ARTE OK — nenhuma peça repete outra` (saída 0) ou a lista dos pares repetidos (saída 1).',
+      'Antes disso ele lista, por tipo de acessório, quantos desenhos distintos existem e acusa se duas peças do mesmo tipo caíram na mesma variante.',
+      '`node dev/test_gear_art.js --sheet /tmp/folhas` → grava `minerios.png`, `barras.png`, `armaduras.png`, `acessorios.png` e `picaretas.png`.',
+      'Precisa de `@napi-rs/canvas`: `npm --prefix dev/pdf install` instala a mesma biblioteca que gera este PDF.',
+    ],
+    deps: 'fs, vm, crypto, @napi-rs/canvas', used: 'npm run test:art',
   });
   doc.fileCard({
     name: 'dev/test_swords_x.js', lines: 134, tag: 'Teste', role: 'As 80 espadas novas, sem navegador', color: COL.ui,
@@ -178,10 +190,11 @@ function part6(doc) {
   doc.callout('warn', 'Cuidado ao criar uma espada nova', 'A receita precisa ter ingredientes que existam em `IT` e uma estação válida, o nome não pode repetir, o dano deve cair na faixa do tier (o `validate.js` cobra isso) e o número tem de estar livre. Depois de acrescentar, rode `node dev/validate.js` e `node dev/test_swords_x.js`.');
 
   doc.h2('18.  Como a arte é gerada', { mark: 's18' });
-  doc.para('Não existe um único arquivo de imagem no jogo: **tudo é desenhado por código**, em dois pipelines diferentes.');
+  doc.para('Não existe um único arquivo de imagem no jogo: **tudo é desenhado por código**, em três pipelines diferentes.');
   doc.table(['Pipeline', 'O que usa', 'Como funciona'], [
     ['Vetorial + pixelização', 'Espadas 1–120, ícones de itens, bonecos, tiles', 'Desenha formas suaves num canvas pequeno, binariza o alfa, adiciona contorno escuro e sombreamento de cima-esquerda.'],
     ['Pintura pixel a pixel', 'Espadas 121–200 e chefes', 'Um buffer RGBA recebe pixels um a um, com rampas de tom, bisel, contorno e pixels emissivos — sem nenhuma suavização.'],
+    ['Formas por semente', 'Minérios, barras, armaduras, acessórios, picaretas', 'A semente do item sorteia o corte, o comprimento e os enfeites; o brasão da família entra por cima.'],
   ], [0.22, 0.34, 0.44], { size: 8.2 });
   doc.para('O resultado é sempre **cacheado**: um sprite é gerado uma vez e reaproveitado. Os ícones da interface são gerados em 32×32, centralizando a espada em diagonal e usando a caixa real do desenho (`sw`/`sh`) para que nenhuma espada longa seja cortada. No mundo, o sprite é desenhado em tamanho real, com ampliação por fator inteiro — daí o pixel quadrado.');
   doc.h3('Regras de estilo que o código respeita');
@@ -244,12 +257,12 @@ function part6(doc) {
 function appendix(doc) {
   doc.setPart('Apêndices');
   doc.h2('A.  Todos os módulos em uma tabela', { mark: 'sa', break: true });
-  doc.para('Referência rápida: nome, linhas e papel de cada um dos 43 módulos, na ordem de carga.');
+  doc.para('Referência rápida: nome, linhas e papel de cada um dos 46 módulos, na ordem de carga.');
   const mods = [
-    ['00_util.js', 79, 'Matemática, RNG determinístico, Perlin, cores'],
+    ['00_util.js', 84, 'Matemática, RNG determinístico, Perlin, cores'],
     ['01_data.js', 259, 'Tiers, tiles, paredes, itens, receitas'],
     ['02_world.js', 230, 'Matriz de blocos, líquidos, quedas, árvores'],
-    ['03_worldgen.js', 438, 'Gerador procedural em fatias'],
+    ['03_worldgen.js', 439, 'Gerador procedural em fatias'],
     ['04_light.js', 106, 'Iluminação dinâmica por opacidade'],
     ['05_gfx.js', 346, 'Sprites 16×16 dos tiles e auto-tiling'],
     ['05b_pixel.js', 156, 'Pixelização e bonecos humanos'],
@@ -261,39 +274,40 @@ function appendix(doc) {
     ['05h_bxart2.js', 243, 'Arte dos chefes do Ato II (14)'],
     ['05i_bxart3.js', 236, 'Arte dos chefes do Ato III (16)'],
     ['05j_bxart4.js', 179, 'Arte dos chefes do Ato IV (12)'],
-    ['06_icons.js', 235, 'Ícones de itens e sprites das espadas 1–120'],
+    ['06_icons.js', 243, 'Ícones de itens e sprites das espadas 1–120'],
     ['06b_swordart.js', 649, 'Arte pixel a pixel das espadas 121–200'],
+    ['06c_gearart.js', 760, 'Arte própria de cada peça de equipamento'],
     ['07_sky.js', 100, 'Céu, astros, nuvens e colinas'],
     ['08_phys.js', 145, 'Estado global G, colisão, partículas, drops'],
     ['08b_audio.js', 60, 'Efeitos sonoros sintetizados'],
-    ['09_combat.js', 315, 'Dano, status, projéteis, explosões'],
-    ['09b_swing.js', 93, 'Arco do golpe, ápice, colisão da lâmina'],
+    ['09_combat.js', 334, 'Dano, status, projéteis, explosões'],
+    ['09b_swing.js', 95, 'Arco do golpe, ápice, colisão da lâmina'],
     ['10_fx.js', 276, 'Biblioteca de 101 efeitos de espada'],
     ['11_swords.js', 157, 'Catálogo das 120 primeiras espadas'],
     ['11b_swords_x.js', 425, 'Tiers 7–10: 80 espadas + 25 efeitos'],
-    ['10b_gear_fx.js', 499, 'Mecânicas de acessórios, armaduras e conjuntos'],
+    ['10b_gear_fx.js', 498, 'Mecânicas de acessórios, armaduras e conjuntos'],
     ['11c_gear_x.js', 256, '50 minérios, 50 armaduras, 50 acessórios, 5 picaretas'],
-    ['12_player.js', 333, 'Jogador, inventário, criação, mineração'],
-    ['13_enemies.js', 333, 'Inimigos, IA, spawn e drops'],
+    ['12_player.js', 360, 'Jogador, inventário, criação, mineração'],
+    ['13_enemies.js', 334, 'Inimigos, IA, spawn e drops'],
     ['13b_bosses.js', 78, 'Os 4 chefes clássicos'],
-    ['13c_bossx.js', 302, 'Motor dos 50 chefes novos'],
+    ['13c_bossx.js', 306, 'Motor dos 50 chefes novos'],
     ['13d_bx_a1.js', 120, 'Chefes novos do Ato I (8)'],
     ['13e_bx_a2.js', 269, 'Chefes novos do Ato II (14)'],
     ['13f_bx_a3.js', 263, 'Chefes novos do Ato III (16)'],
     ['13g_bx_a4.js', 187, 'Chefes novos do Ato IV (12)'],
     ['14_draw_enemies.js', 236, 'Desenho de inimigos e chefes'],
     ['14b_draw_bx.js', 36, 'Desenho dos chefes novos'],
-    ['15_ui.js', 312, 'HUD, inventário, catálogo, mapa, ajuda'],
+    ['15_ui.js', 319, 'HUD, inventário, catálogo, mapa, ajuda'],
     ['15b_npc.js', 145, 'Moradia, NPCs e lojas'],
     ['15c_save.js', 241, 'Biblioteca de mundos (IndexedDB, RLE)'],
     ['15d_gamepad.js', 204, 'Suporte a controle'],
     ['15e_worlds.js', 179, 'Menu do título e “Meus Mundos”'],
-    ['15f_transfer.js', 260, 'Aparelho, proteção e arquivo de mundo'],
+    ['15f_transfer.js', 261, 'Aparelho, proteção e arquivo de mundo'],
     ['15g_touch.js', 80, 'Controles de toque'],
     ['16_main.js', 270, 'Loop, render, input, câmera'],
   ];
   doc.table(['Módulo', 'Linhas', 'Papel'], mods.map(m => [m[0], String(m[1]), m[2]]), [0.28, 0.1, 0.62], { size: 7.9 });
-  doc.para('Total: **43 módulos · 9.393 linhas** de JavaScript, mais 404 linhas de CSS e template.');
+  doc.para('Total: **46 módulos · 10.757 linhas** de JavaScript, mais 404 linhas de CSS e template.');
 
   doc.h2('B.  Comandos e ganchos de teste', { mark: 'sb' });
   doc.table(['Comando', 'Efeito'], [
@@ -307,7 +321,7 @@ function appendix(doc) {
   ], [0.42, 0.58], { size: 8.4 });
   doc.h3('Ganchos expostos no navegador');
   doc.para('O `16_main.js` publica alguns atalhos em `window` para que os testes dirijam o jogo sem depender de cliques: `__G` (estado), `__step(dt)`, `__render()`, `__start(opções)`, `__SW` (catálogo), `__IT` (itens), `__Worlds`, `__chooseSeed`, `__PAD` e `__padUpdate`. Eles não afetam o jogador — são a interface de automação do projeto.');
-  doc.callout('ok', 'Resumo final', 'O 101spas é um jogo de navegador em arquivo único, construído por concatenação de 43 módulos globais. Os dados de conteúdo estão separados do motor; o desenho é gerado por código em dois pipelines (vetorial pixelizado e pintura pixel a pixel); o estado vive em G; a interface é DOM sobre um canvas de baixa resolução ampliado por fator inteiro; e a verificação é feita em duas camadas — Node para dados e lógica, Chromium para o jogo de verdade.');
+  doc.callout('ok', 'Resumo final', 'O 101spas é um jogo de navegador em arquivo único, construído por concatenação de 46 módulos globais. Os dados de conteúdo estão separados do motor; o desenho é gerado por código em dois pipelines (vetorial pixelizado e pintura pixel a pixel); o estado vive em G; a interface é DOM sobre um canvas de baixa resolução ampliado por fator inteiro; e a verificação é feita em duas camadas — Node para dados e lógica, Chromium para o jogo de verdade.');
 }
 
 module.exports = { part4, part6, appendix };

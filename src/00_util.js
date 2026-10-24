@@ -60,6 +60,11 @@ class Perlin {
 
 // ---- cores ----
 function hex2rgb(h) {
+  if (Array.isArray(h)) return h;
+  if (!h) return [0, 0, 0];
+  h = String(h).trim();
+  const m = /^rgba?\(([^)]+)\)$/.exec(h);            // aceita o que o próprio shade() devolve
+  if (m) { const p = m[1].split(',').map(Number); return [p[0] | 0, p[1] | 0, p[2] | 0]; }
   if (h[0] === '#') h = h.slice(1);
   if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
   const n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255];

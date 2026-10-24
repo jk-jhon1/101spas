@@ -30,6 +30,10 @@ Dez **famílias** — Braseiro, Geada, Corisco, Maré, Raiz, Véu, Alvorada, Rel
 - **50 armaduras** com passiva própria (não é só "+defesa"): incendeia, congela, devolve dano, renasce, executa…
 - **50 acessórios**, cada um com uma mecânica única: **45 vêm de chefes** (um exclusivo por chefe, inclusive os 4 clássicos)
   e **5 são forjados** com os minérios novos.
+- **Aparência própria**: os 205 desenhos (50 minérios, 50 barras, 50 armaduras, 50 acessórios e 5 picaretas) são gerados
+  por semente em `src/06c_gearart.js` — muda o corte, o comprimento, os enfeites e a paleta de cada peça, então nenhuma
+  repete a silhueta de outra. O teste `dev/test_gear_art.js` compara o alfa de todos os ícones e falha se dois coincidirem
+  (`npm run test:art`, ou `node dev/test_gear_art.js --sheet pasta/` para gravar as folhas de contato).
 
 Catálogo do equipamento: [`docs/catalogo_equipamentos.md`](docs/catalogo_equipamentos.md).
 
@@ -190,6 +194,8 @@ src/
   03_worldgen.js        geração procedural assíncrona (generator)
   04_light.js           iluminação por propagação de opacidade, céu
   05_gfx.js / 06_icons  sprites 16×16 procedurais (bordas lascadas, folhas, galhos), ícones 32×32 em pixel-art, sprites das espadas
+  06b_swordart.js       arte pixel a pixel das 80 espadas novas (silhueta, bisel, contorno, pixels emissivos)
+  06c_gearart.js        arte dos equipamentos: minérios, barras, armaduras, acessórios e picaretas, cada peça com geometria própria por semente
   05b_pixel.js          pixelizador (alfa binário + contorno + sombreamento) usado por inimigos, jogador, NPCs e ícones; bonecos humanos de frente (jogador, NPCs, zumbis); corações da HUD
   05c_canopy.js         copas das árvores desenhadas por vizinhança: silhueta redonda com contorno escuro, folhas pontiagudas sobrepostas e luz de cima à esquerda (só o desenho; a geração do mundo não muda)
   05d_bosspaint.js      ferramentas de pintura pixel a pixel dos chefes: formas (polígono, elipse, traço, curva), preenchimento com luz de cima à esquerda, borda, brilho com halo pontilhado e marcação dos pixels que emitem luz

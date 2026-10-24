@@ -33,7 +33,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/09_combat.js', lines: 315, tag: 'Simulação', role: 'Dano, status, projéteis e explosões', color: COL.sim,
+    name: 'src/09_combat.js', lines: 334, tag: 'Simulação', role: 'Dano, status, projéteis e explosões', color: COL.sim,
     summary: 'O pipeline completo de combate: aplicar dano, calcular crítico e defesa, status, morte, projéteis de todos os formatos, feixes e explosões.',
     what: 'É o módulo que decide tudo o que acontece quando algo acerta algo. `hitEnemy` calcula dano (base × multiplicador × crítico − defesa), aplica elemento e status, dispara os ganchos da espada e devolve o resultado. `killEnemy` dá drops, moedas e conta chefes. `spawnProj`/`updateProjs`/`drawProj` movem e desenham projéteis de ~18 formatos diferentes, com homing, balística, perfuração e recarga por alvo.',
     how: [
@@ -46,7 +46,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/09b_swing.js', lines: 93, tag: 'Simulação', role: 'O arco do golpe', color: COL.sim,
+    name: 'src/09b_swing.js', lines: 95, tag: 'Simulação', role: 'O arco do golpe', color: COL.sim,
     summary: 'Implementa o golpe como um arco (ArcSwing), estocada (Thrust) e feixe (Beam), com ápice, colisão da lâmina e clones “fantasma”.',
     what: 'O GDD pede que o golpe varra um arco em torno do ombro, na direção do cursor, e que os projéteis saiam na direção do arco no seu ponto médio. `startSwing` cria uma **instância** de golpe (com tempo de vida, lado, alcance e multiplicador de dano); `updateSwings` calcula o ângulo, a ponta, o rastro e chama o gancho de ápice; `swingHit` testa o segmento da lâmina contra a caixa de cada inimigo.',
     how: [
@@ -101,7 +101,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/10b_gear_fx.js', lines: 430, tag: 'Equipamento', role: 'Mecânicas dos acessórios, armaduras e conjuntos', color: COL.play,
+    name: 'src/10b_gear_fx.js', lines: 498, tag: 'Equipamento', role: 'Mecânicas dos acessórios, armaduras e conjuntos', color: COL.play,
     summary: 'As 50 passivas de armadura (`ARM_FX`), as 50 mecânicas de acessório (`ACC_FX`) e os 10 bônus de conjunto (`SET_FX`), escritas como fábricas de ganchos.',
     what: 'Cada peça devolve um objeto de ganchos que o motor chama em momentos fixos do jogo: `stats` (ao recalcular atributos), `tick` (a cada quadro), `mod` (antes do dano), `onHit`, `onKill`, `onHurt`, `incoming` (escolhe esquiva e reduções), `onLethal` (renascimento), `onJump`, `onLand`, `onWater`, `onPotion`, `onSwing` e `atkMult`. `rebuildGear` monta a lista ativa quando o equipamento muda e conta as famílias para ativar os conjuntos.',
     how: [
@@ -114,7 +114,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/11c_gear_x.js', lines: 260, tag: 'Conteúdo', role: '50 minérios, 50 armaduras, 50 acessórios e 5 picaretas', color: COL.play,
+    name: 'src/11c_gear_x.js', lines: 256, tag: 'Conteúdo', role: '50 minérios, 50 armaduras, 50 acessórios e 5 picaretas', color: COL.play,
     summary: 'Dez famílias (Braseiro, Geada, Corisco, Maré, Raiz, Véu, Alvorada, Relojoaria, Vazio e Origem), cada uma com 5 minérios, 5 armaduras e 5 acessórios.',
     what: 'Os 50 minérios viram 50 telhados de minério no mundo (gerados por `gearPlaceOres`, chamada pelo gerador em `03_worldgen.js`) e 50 barras na Fornalha. As armaduras são forjadas com as barras da própria família, em Bigorna, Bigorna Avançada ou Forja Celeste. Os acessórios vêm de 45 chefes (um exclusivo por chefe, incluindo os 4 clássicos) e 5 são forjados.',
     how: [
@@ -127,7 +127,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/12_player.js', lines: 333, tag: 'Conteúdo', role: 'Jogador, inventário e criação', color: COL.play,
+    name: 'src/12_player.js', lines: 360, tag: 'Conteúdo', role: 'Jogador, inventário e criação', color: COL.play,
     summary: 'O corpo do jogador (12×26 px), os 40 espaços de inventário, os equipamentos (1 armadura + 4 acessórios), as estatísticas, a criação, a mineração, a construção e o desenho.',
     what: 'É o módulo mais “jogável” do projeto. Cuida do movimento com colisão, pulo, natação, i-frames, morte e renascimento; do inventário de 40 posições + armadura + três acessórios; da criação de itens com verificação de estação próxima; de quebrar e colocar blocos com alcance; de usar consumíveis; e de desenhar o boneco com as peças de 05b.',
     how: [
@@ -140,7 +140,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/13_enemies.js', lines: 333, tag: 'Conteúdo', role: 'Inimigos comuns, IA e spawn', color: COL.play,
+    name: 'src/13_enemies.js', lines: 334, tag: 'Conteúdo', role: 'Inimigos comuns, IA e spawn', color: COL.play,
     summary: 'Define os 84 inimigos (com variantes elementais), oito tipos de IA, as tabelas de spawn por camada/bioma/noite/estágio e os drops.',
     what: 'A função `enemy(chave, dados)` registra um inimigo em `ED` com vida, dano, defesa, velocidade, massa, cor, sangue, drops e moedas. A IA é escolhida por `kind`: slime (pulos), walker (anda e vira), archer (atira), flyer (voo direto), hover (paira), ghost (atravessa paredes), swim e critter (inofensivo). `spawnTick` sorteia o que aparece conforme onde o jogador está.',
     how: [
@@ -165,7 +165,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/13c_bossx.js', lines: 302, tag: 'Conteúdo', role: 'Motor dos 50 chefes novos', color: COL.play,
+    name: 'src/13c_bossx.js', lines: 306, tag: 'Conteúdo', role: 'Motor dos 50 chefes novos', color: COL.play,
     summary: 'Registro `BX`, condições de invocação, sigilos, repertório de golpes escritos como geradores e um kit de peças reutilizáveis (zonas, feixes, projéteis, lacaios, teleporte).',
     what: 'Cada chefe novo se declara com `bx(id, { ... })`: atributos, ato, condição (bioma, item, horário), mecânica única descrita em texto, e um conjunto de golpes escritos como `function*` — `yield 0.5` espera meio segundo e `yield` sozinho espera um quadro. O motor executa esses geradores, cuida das três fases, das zonas de perigo, dos projéteis telegrafados, dos lacaios e dos debuffs no jogador.',
     how: [
@@ -226,7 +226,7 @@ function part3b(doc) {
   doc.para('O último bloco liga o jogo ao navegador: interface em DOM, NPCs e moradia, biblioteca de mundos salvos, gamepad, toque, exportação de arquivo e o laço principal com o pipeline de render.');
 
   doc.fileCard({
-    name: 'src/15_ui.js', lines: 312, tag: 'Interface', role: 'HUD, inventário, catálogo, mapa e ajuda', color: COL.ui,
+    name: 'src/15_ui.js', lines: 319, tag: 'Interface', role: 'HUD, inventário, catálogo, mapa e ajuda', color: COL.ui,
     summary: 'Toda a interface em DOM: corações, barra de itens, painéis de inventário e criação, catálogo das espadas, tooltips, minimapa, mapa grande e a tela de ajuda.',
     what: 'A interface não é desenhada em canvas: são elementos HTML posicionados sobre o jogo, o que dá texto nítido, rolagem e acessibilidade de graça. Este módulo monta os slots, sincroniza o inventário com o DOM, calcula o HTML de cada tooltip, filtra e ordena receitas, e renderiza o catálogo com abas.',
     how: [
@@ -288,7 +288,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/15f_transfer.js', lines: 260, tag: 'Sistemas', role: 'Este aparelho, proteção e mapa em arquivo', color: COL.ui,
+    name: 'src/15f_transfer.js', lines: 261, tag: 'Sistemas', role: 'Este aparelho, proteção e mapa em arquivo', color: COL.ui,
     summary: 'Gera um código de aparelho, pede armazenamento persistente ao navegador e exporta/importa mundos como arquivos `.json` com CRC-32.',
     what: 'O código do aparelho é aleatório e guardado localmente: serve para dizer de onde um mapa veio, sem usar IP (que o navegador esconde e que muda de rede para rede). A exportação monta um arquivo autocontido com verificação de integridade; a importação **não confia em nada** do arquivo: valida o CRC e reconstrói o mundo apenas com campos e valores permitidos.',
     how: [

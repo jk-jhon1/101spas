@@ -75,8 +75,8 @@ GORE_LIST.forEach((row, k) => {
   const h = GORE_H[t] + ((t === 2 || t === 3) ? (k % 2) : 0);   // usa as 5 picaretas novas (10 a 14)
   // telhado de minério no mundo
   tile(key, { n: nome, h, t: .55 + t * .12, d: key, c: ['#7b8088', '#5a5e66', cor], x: 'ore', ore: cor, gem: brilho || forma === 2, l: brilho ? Lm(cor, .35) : null });
-  item(key, nome, { tier, ic: ['ore2', cor, forma, brilho], desc: 'Minério de ' + GFAM[fam].n + '. Funde na Fornalha (3 minérios = 1 barra). Requer picareta com poder ' + h + '.' });
-  item(key + '_bar', 'Barra de ' + nome, { tier, ic: ['bar', cor], desc: 'Material de criação da família ' + GFAM[fam].n + '.' });
+  item(key, nome, { tier, ic: ['ore2', cor, forma, brilho, 100 + k], desc: 'Minério de ' + GFAM[fam].n + '. Funde na Fornalha (3 minérios = 1 barra). Requer picareta com poder ' + h + '.' });
+  item(key + '_bar', 'Barra de ' + nome, { tier, ic: ['bar2', cor, GFAM_KEYS.indexOf(fam), t, 300 + k], desc: 'Material de criação da família ' + GFAM[fam].n + '.' });
   rec(key + '_bar', 1, key + ':3', 'furnace');
   GORES.push({ key, fam, nome, cor, forma, brilho, tier, h, t, bio: GORE_BIO[fam] || null });
 });
@@ -105,7 +105,7 @@ GFAM_KEYS.forEach(fam => {
     const def = GARM_DEF[t];
     item(id, nome, {
       type: 'armor', tier: GTIER[t], stack: 1, def, color: ore.cor, fam, mech: fam + '_' + t,
-      ic: ['armor2', ore.cor, GFAM_KEYS.indexOf(fam), t],
+      ic: ['armor2', ore.cor, GFAM_KEYS.indexOf(fam), t, 500 + GFAM_KEYS.indexOf(fam) * 5 + t],
       desc: GARM_TXT[fam][t] + ' Conjunto ' + GFAM[fam].n + ' (defesa +' + def + ').',
     });
     rec(id, 1, ore.key + '_bar:' + [18, 22, 26, 30, 34][t] + (t ? ',celestial_frag:' + (t * 3) : ''), GARM_ST[t]);
@@ -173,13 +173,14 @@ const GACC_LIST = [
 ];
 
 const GACCS = [];
+const GACC_VAR = {};   // desenho próprio: índice da peça dentro do seu tipo (0, 1, 2…)
 GACC_LIST.forEach(([fam, key, nome, icone, stats, txt, fonte], idx) => {
   // a lista já está ordenada por tier: 9 de T2, 16 de T4, 16 de T7 e 9 de T10
   const tier = idx < 9 ? 2 : idx < 25 ? 4 : idx < 41 ? 7 : 10;
   const id = 'accx_' + fam + '_' + key;
   item(id, nome, {
     type: 'acc', tier, stack: 1, acc: stats, fam, mech: fam + '_' + key,
-    ic: ['acc2', GFAM[fam].col, icone, tier],
+    ic: ['acc2', GFAM[fam].col, icone, tier, 700 + idx, GACC_VAR[icone] = (GACC_VAR[icone] === undefined ? 0 : GACC_VAR[icone] + 1)],
     desc: txt + ' Conjunto ' + GFAM[fam].n + '.',
   });
   GACCS.push({ id, fam, key, nome, stats, txt, fonte, tier });
@@ -194,7 +195,7 @@ const GPICKS = [
   ['pick_origem', 'Picareta da Origem', 14, 15.0, '#f8fafc', 10, 'or_origem_2_bar:16,or_aurora_2_bar:12,mythic_core:2'],
 ];
 GPICKS.forEach(([id, n, pw, spd, c, t, ing]) => {
-  item(id, n, { type: 'pick', tier: t, stack: 1, pow: pw, spd, ic: ['pick', c], desc: 'Mineração: poder ' + pw + ' · velocidade ' + spd.toFixed(2) + 'x. Mina os minérios mais duros do jogo.' });
+  item(id, n, { type: 'pick', tier: t, stack: 1, pow: pw, spd, ic: ['pick2', c, t, 900 + GPICKS.findIndex(q => q[0] === id)], desc: 'Mineração: poder ' + pw + ' · velocidade ' + spd.toFixed(2) + 'x. Mina os minérios mais duros do jogo.' });
   rec(id, 1, ing, 'forge');
 });
 
