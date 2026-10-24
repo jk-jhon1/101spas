@@ -1,5 +1,5 @@
 'use strict';
-// As 120 espadas em combate: cada uma ataca bonecos/inimigos por ~4,5 s. Sem exceções, todas causam dano.
+// As 200 espadas em combate (o teste percorre o catálogo inteiro): cada uma ataca bonecos/inimigos por ~4,5 s. Sem exceções, todas causam dano.
 //   node dev/test_swords.js        (só as que têm problema)      node dev/test_swords.js -v      (todas)
 const { launch, INDEX_URL, devfile, run, waitPlay, startWorld } = require('./lib');
 

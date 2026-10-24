@@ -1,6 +1,6 @@
 'use strict';
 /* ============================================================
-   120 ESPADAS — Sandbox 2D  |  00_util: matemática, RNG, ruído
+   200 ESPADAS — Sandbox 2D  |  00_util: matemática, RNG, ruído
    ============================================================ */
 const TAU = Math.PI * 2, PI = Math.PI;
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;

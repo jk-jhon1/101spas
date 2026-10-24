@@ -208,7 +208,7 @@ function openChest(tx, ty) { const wd = G.world, k = wd.idx(tx, ty); let c = wd.
 const ARS_TABS = [['T1', 'Tier 1'], ['T2', 'Tier 2'], ['T3', 'Tier 3'], ['T4', 'Tier 4'], ['T5', 'Tier 5'], ['T6', 'Tier 6'], ['T7', 'Tier 7'], ['T8', 'Tier 8'], ['T9', 'Tier 9'], ['T10', 'Tier 10'], ['ALL', 'Todas'], ['items', 'Itens'], ['enemies', 'Inimigos & Chefes'], ['world', 'Mundo']];
 function arsGive(id, n) { const left = invAdd(id, n || 1); if (left) dropItem(id, left, G.P.x, G.P.y); sfx('pickup'); G.ui.craftDirty = true; }
 function renderArsenal() {
-  const cre = G.mode === 'creative'; $('ars-title').textContent = cre ? 'Arsenal (Modo Criativo)' : 'Catálogo das 120 Espadas';
+  const cre = G.mode === 'creative'; $('ars-title').textContent = cre ? 'Arsenal (Modo Criativo)' : 'Catálogo das 200 Espadas';
   const tabs = $('ars-tabs'); tabs.innerHTML = ''; const avail = cre ? ARS_TABS : ARS_TABS.filter(([k]) => /^T\d+$/.test(k) || k === 'ALL');   // catálogo da aventura: todos os tiers + Todas
   if (!avail.some(t => t[0] === G.ui.arsTab)) G.ui.arsTab = 'T1';
   avail.forEach(([k, n]) => { const t = document.createElement('div'); t.className = 'tab' + (G.ui.arsTab === k ? ' on' : ''); t.textContent = n; if (/^T\d+$/.test(k)) t.style.borderColor = TIERS[+k.slice(1)].col; t.onclick = () => { G.ui.arsTab = k; renderArsenal(); }; tabs.appendChild(t); });
@@ -278,7 +278,7 @@ function helpHTML() {
 <tr><td><kbd>A</kbd> <kbd>D</kbd> / <kbd>←</kbd> <kbd>→</kbd></td><td>Mover</td></tr><tr><td><kbd>Espaço</kbd> <kbd>W</kbd> <kbd>↑</kbd></td><td>Pular · nadar para cima</td></tr>
 <tr><td>Botão esquerdo (segurar)</td><td>Atacar (arco em direção ao cursor) · minerar · colocar bloco · usar item</td></tr><tr><td>Botão direito</td><td>Abrir baú · abrir/fechar porta · falar com NPC</td></tr>
 <tr><td><kbd>1</kbd>–<kbd>0</kbd> / roda do mouse</td><td>Selecionar item da barra</td></tr><tr><td><kbd>E</kbd> / <kbd>Tab</kbd></td><td>Inventário + criação (fique perto de Bancada, Fornalha, Bigorna...)</td></tr>
-<tr><td><kbd>B</kbd></td><td>Arsenal (criativo) · Catálogo das 120 espadas (aventura)</td></tr><tr><td><kbd>M</kbd></td><td>Mapa do mundo</td></tr><tr><td><kbd>Q</kbd></td><td>Poção de cura rápida</td></tr>
+<tr><td><kbd>B</kbd></td><td>Arsenal (criativo) · Catálogo das 200 espadas (aventura)</td></tr><tr><td><kbd>M</kbd></td><td>Mapa do mundo</td></tr><tr><td><kbd>Q</kbd></td><td>Poção de cura rápida</td></tr>
 <tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoom</td></tr><tr><td><kbd>F3</kbd></td><td>Informações de depuração</td></tr><tr><td><kbd>Esc</kbd></td><td>Fechar painéis / pausar · no menu de pausa: <b>Salvar mundo</b> ou <b>Salvar e voltar ao menu</b> (o jogo também salva sozinho a cada minuto; seus mundos ficam em <b>Meus Mundos</b>)</td></tr></table>
 <h2 style="margin-top:16px">Controle (gamepad)</h2><table>
 <tr><td>Analógico esq. / <kbd>◀</kbd> <kbd>▶</kbd></td><td>Mover</td></tr><tr><td><kbd>A</kbd></td><td>Pular · nadar para cima</td></tr>
