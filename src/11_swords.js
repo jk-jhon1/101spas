@@ -1,5 +1,5 @@
 /* ============================================================
-   11_swords: CATÁLOGO MESTRE — 120 espadas (schema SwordItemSO)
+   11_swords: espadas dos Tiers 1–6 — 120 peças (schema SwordItemSO)
    Tiers 1, 3 e 5: textos originais do GDD (src:'pdf').
    Tiers 2, 4 e 6: completadas seguindo as regras de cada tier
    (src:'novo').

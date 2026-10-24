@@ -1,6 +1,6 @@
-# 120 ESPADAS — Sandbox 2D Platformer
+# 200 ESPADAS — Sandbox 2D Platformer
 
-Jogo 2D de exploração, mineração e combate no estilo *Terraria*, com **120 espadas únicas**, implementado a partir do
+Jogo 2D de exploração, mineração e combate no estilo *Terraria*, com **200 espadas únicas**, implementado a partir do
 documento **"GDD & MASTER PROMPT: SANDBOX 2D PLATFORMER"** (PDF enviado).
 
 > **Jogar online:** **https://jk-jhon1.github.io/101spas/** — direto no navegador, sem instalar nada.
@@ -67,7 +67,7 @@ Catálogo do equipamento: [`docs/catalogo_equipamentos.md`](docs/catalogo_equipa
 | Botão direito | Abrir baú · abrir/fechar porta · falar com NPC |
 | `1`–`0` / roda do mouse | Selecionar item da barra |
 | `E` / `Tab` | Inventário + criação (fique perto de Bancada, Fornalha, Bigorna…) |
-| `B` | **Arsenal** (modo Criativo) · **Catálogo das 120 espadas** (modo Aventura) |
+| `B` | **Arsenal** (modo Criativo) · **Catálogo das 200 espadas** (modo Aventura) |
 | `M` | Mapa do mundo · `Q` poção de cura · `+` `-` zoom · `F3` debug · `Esc` pausar/fechar |
 
 ### Toque (celular/tablet)
@@ -128,7 +128,7 @@ O GDD manda orientar o arco pelo "cursor do mouse/**analógico**", então o jogo
 Mouse e controle podem se alternar: mexer o mouse devolve a mira a ele. Dentro de um `<iframe>` sem `allow="gamepad"`
 o navegador bloqueia a API (o jogo detecta isso e simplesmente ignora o controle) — abra o `index.html` direto no navegador.
 
-**Modo Aventura:** comece com a espada 001 e uma picareta de cobre; minere, crie, derrote chefes e forje as 120 espadas.
+**Modo Aventura:** comece com a espada 001 e uma picareta de cobre; minere, crie, derrote chefes e forje as 200 espadas.
 **Modo Criativo:** Arsenal com todas as espadas/itens, Boneco de Treino (não morre e mostra o dano de cada golpe), invocação de qualquer
 inimigo/chefe (inclusive variantes elementais), controle de hora, teleporte, estágio do mundo, invencibilidade etc.
 
@@ -169,7 +169,7 @@ casas válidas (sala fechada com paredes de fundo, luz, mesa/bancada, cadeira e 
 | **Tiers e cores** (T6 índigo/dourado) | `TIERS`: `#10b981 #0284c7 #7c3aed #d97706 #dc2626 #4f46e5` + brilho dourado no T6 |
 | **Schema `SwordItemSO`** | `11_swords.js`: `swordID, swordName, tierLevel, baseDamage, attackSpeed, knockbackForce, critChance, projectilePrefab, attackType (ArcSwing/Thrust/Orbital/Beam), passiveEffects[]`, métodos `OnSwing(combat, dir)` e `OnHitEnemy(enemy, info)` |
 | **Comportamentos de projétil**: Ballistic, Linear perfurante, Homing, Static/Área | `spawnProj()` (`09_combat.js`): `ballistic` (gravidade), `linear` (`pierce = X`), `homing` (`Vnew = Vcurr + Lerp(Alvo−Pos, steer)`), `static` + `custom` (órbita, onda de chão, feixe, buraco negro…) |
-| **Catálogo de 120 espadas** | `11_swords.js` + biblioteca de efeitos reutilizáveis `10_fx.js` (hooks `swing/onSwing/onApex/mod/onHit/onKill/tick/atkMult/stats`) |
+| **Catálogo de 200 espadas** | `11_swords.js` + biblioteca de efeitos reutilizáveis `10_fx.js` (hooks `swing/onSwing/onApex/mod/onHit/onKill/tick/atkMult/stats`) |
 
 ### Interpretações assumidas (onde o GDD é ambíguo)
 - **Ápice** = metade do arco, quando a lâmina aponta para o cursor; é aí que saem os projéteis e efeitos.
@@ -208,7 +208,9 @@ src/
   09_combat.js          dano, status, projéteis, explosões, feixes
   09b_swing.js          arco de ataque, ápice, colisão da lâmina
   10_fx.js              biblioteca de efeitos de espadas
-  11_swords.js          as 120 espadas (schema SwordItemSO)
+  11_swords.js          as 120 espadas dos Tiers 1–6 (schema SwordItemSO)
+  11b_swords_x.js       as 80 espadas dos Tiers 7–10 (fábrica S2 + receita de arte A2)
+  11c_gear_x.js         equipamentos: acessórios, armaduras, minérios, barras e picaretas (dados, efeitos e conjuntos)
   12_player.js          jogador, inventário, crafting, mineração, blocos
   13_enemies.js         inimigos, IA, spawn, drops · 13b_bosses.js: 4 chefes
   13c_bossx.js          motor dos 50 chefes novos: registro (bx), laço de IA com golpes em geradores (yield), zonas de perigo, raios com aviso, lacaios, debuffs do jogador, loot e vitória
@@ -221,7 +223,7 @@ src/
   15f_transfer.js       este aparelho (código), proteção do armazenamento, mapa em arquivo (exportar / importar + validação)
   15g_touch.js          controles de toque: direcional virtual, botão de ação com mira por arrasto, pulo, interagir, painéis
   16_main.js            loop, câmera, renderização em camadas (cena em baixa resolução + zoom inteiro), input
-docs/                 catálogo das 120 espadas (md/csv) e capturas de tela (img/)
+docs/                 catálogo de 200 espadas e dos equipamentos (md/csv) e capturas de tela (img/)
 dev/                  scripts de teste (Node + Playwright)
 ```
 
@@ -239,19 +241,19 @@ A arquitetura segue o GDD e foi escrita para ser portada. O schema JS equivale a
 }
 ```
 Os hooks de `10_fx.js` (`swing`, `onApex`, `mod`, `onHit`, `onKill`, `tick`) correspondem 1:1 a métodos virtuais de `PassiveEffect`.
-Os dados (tiles, itens, receitas, 120 espadas) estão em tabelas simples, fáceis de exportar para JSON/CSV (`docs/*.csv`).
+Os dados (tiles, itens, receitas, 200 espadas) estão em tabelas simples, fáceis de exportar para JSON/CSV (`docs/*.csv`).
 
 ---
 
 ## Testes realizados (automatizados, Chromium headless)
 > **Como rodar:** `node dev/validate.js` (catálogo; também regenera `docs/catalogo_*`), `node dev/reach.js`, `node dev/seeds.js`, `node dev/layouts.js` (variedade dos mundos) e `node dev/transfer.js` (mapa em arquivo, validação, aparelho, proteção) precisam só do Node (`npm test` roda os cinco). Os testes de navegador usam Playwright: `npm install && npx playwright install chromium`, depois `node dev/test_swords.js` etc. (`npm run test:browser` roda os doze com veredito: mundos salvos, aparelho/arquivos, controle, toque, aparência, arsenal, inimigos, chefes, chefes novos (luta e arte), soak e espadas). `node dev/http_check.js [url]` confere uma URL do jogo (local ou publicada) de ponta a ponta: carrega, salva, recarrega e continua. Os scripts localizam o `index.html` pelo próprio caminho e dividem utilitários em `dev/lib.js`; capturas temporárias vão para `dev/*.png` (ignoradas pelo git). Depois de editar `src/`, recompile com `node build.js`.
 
-- **Catálogo**: 120 espadas, 20 por tier, faixas de dano por tier, receitas válidas (`node dev/validate.js`).
-- **Progressão**: todo item é obtível e as 120 espadas são craftáveis a partir de fontes reais do mundo (`node dev/reach.js`); gerador testado em 8 sementes (`node dev/seeds.js`).
+- **Catálogo**: 200 espadas, 20 por tier (10 tiers), faixas de dano por tier, receitas válidas (`node dev/validate.js`).
+- **Progressão**: todo item é obtível e as 200 espadas são craftáveis a partir de fontes reais do mundo (`node dev/reach.js`); gerador testado em 8 sementes (`node dev/seeds.js`).
 - **Variedade dos mundos** (`dev/layouts.js`): 20.000 layouts (as 24 ordens de bioma equilibradas, oceanos de 90 a 220 colunas, spawn sempre na floresta, larguras mínimas), o sorteio de sementes (nunca repete; os 24 primeiros mundos têm 24 ordens diferentes) e 14 mundos completos comparados entre si — biomas, relevo, terreno bloco a bloco — mais o determinismo (mesma semente = mesmo mundo).
 - **Mundos salvos** (`dev/test_worlds.js`, 60 verificações): 6 mundos criados pelos botões (sementes, nomes, ordens de bioma e miniaturas diferentes), reabrir depois de recarregar a página, **fidelidade do save bloco a bloco** (blocos, paredes, líquidos, baús, inventário, chefes, Hardmode…), autosave, renomear/excluir, teletransporte do Arsenal para o bioma certo, semente excluída que nunca volta, migração do save antigo (inclusive sem IndexedDB: o save antigo nunca é apagado se o mundo não puder ser gravado de verdade), ambiente sem IndexedDB, cota estourada e mundo corrompido.
 - **Mapa em arquivo, aparelho e proteção** — sem navegador (`dev/transfer.js`, 73 verificações): CRC‑32 (igual ao `zlib`), ida e volta byte a byte, **52 adulterações com o CRC refeito** (item/bloco/bioma/NPC inexistente, camadas truncadas, valores fora da faixa, `__proto__`, quantidades absurdas…) todas recusadas sem exceção, fuzz de 400 arquivos corrompidos, regras de importação (novo / atualiza / ignora / divergente), código do aparelho, 12 *user‑agents* e a API de proteção (concedida, negada, com erro, ausente). No navegador (`dev/test_device.js`, 69 verificações): vários "aparelhos" separados — exportar de um e importar em outro (o que fica guardado é **idêntico**, camada por camada), levar o progresso de volta, dois aparelhos que evoluíram separados, proteção (Chrome, Firefox, sem a API), celular (iPhone, sem rolagem horizontal), sem IndexedDB e arquivos maliciosos (injeção de código no nome, na miniatura e no rótulo: nada é executado).
-- **120 espadas em combate** (`dev/test_swords.js`): cada uma ataca bonecos/inimigos por ~4,5 s — sem exceções, todas causam dano, status esperados observados (sangramento, veneno, gelo, atordoamento, tempo parado, podridão, pânico, cegueira…).
+- **Espadas em combate** (`dev/test_swords.js`): o teste percorre o catálogo inteiro, cada uma ataca bonecos/inimigos por ~4,5 s — sem exceções, todas causam dano, status esperados observados (sangramento, veneno, gelo, atordoamento, tempo parado, podridão, pânico, cegueira…).
 - **Todos os inimigos, variantes elementais e os 4 chefes** (`dev/test_enemies.js`) e **~45.000 passos** de simulação com spawn natural em 14 cenários, todas as camadas e estágios (`dev/soak.js`): zero erros.
 - **Aparência e copas** (`dev/test_skin.js`, 20 verificações): interface azul única (o menu de Pausa não tem botão para trocar, mesmo com a escolha antiga "escura" guardada no aparelho), silhueta, contorno e cache das copas das árvores, lote de desenho, e a ausência do retângulo "DPS · Total" (removido da tela).
 - **Sprites dos 4 chefes** (`dev/test_bosses.js`, 62 verificações): corpo escuro com brilho de uma cor própria para cada chefe, paleta curta, fases, espelhamento exato do Guardião, íris que acompanha o jogador, clarão de dano e tinta de status, sombra no chão dos chefes voadores, cache de quadros limitado, tempo de geração e caixas de colisão intactas.
