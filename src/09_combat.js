@@ -89,6 +89,7 @@ function hitEnemy(e, h) {
   if (h.id !== undefined) { if (e.imm.has(h.id)) return null; e.imm.set(h.id, h.imm === undefined ? 1e9 : h.imm); }
   const sw = h.sword || null;
   if (sw && !h.noHooks) fxCall(sw, 'mod', P, e, h);
+  if (!h.gear) gearCall('mod', P, e, h);   /* acessórios/armaduras podem alterar o golpe */
   let base = h.dmg * (h.mult === undefined ? 1 : h.mult);
   const st = P.stats;
   if (h.src !== 'dot' && h.src !== 'raw') base += st.dmg * (h.fs === undefined ? (h.src === 'melee' ? 1 : .6) : h.fs);
@@ -98,10 +99,11 @@ function hitEnemy(e, h) {
   const cm = 1 + st.cm;           // multiplicador crítico base 1.0 (= x2) + acessórios
   // resistência (defesa do alvo)
   const def = (e.def || 0) * (e.st.compress ? .5 : 1);
-  const res = h.ignoreDef ? 1 : 60 / (60 + def);
+  const res = h.ignoreDef ? 1 : 60 / (60 + def * (1 - (st.pierce || 0)));
   let tm = 1; if (e.st.corrode) tm *= 1.25; if (e.st.curse) tm *= 1.2; if (e.st.compress) tm *= 1.2; if (e.st.mark) tm *= 1.15; if (e.dmgTakenMult) tm *= e.dmgTakenMult;
   let dmg = base * (crit ? 1 + cm : 1) * res * tm * rnd(.95, 1.05);
   if (h.pctMax) dmg += (e.isDummy ? 3000 : e.hpMax) * h.pctMax * (e.boss ? .25 : 1);
+  if (st.exec && !e.boss && e.hpMax && e.hp / e.hpMax < st.exec) dmg *= 1.5;   /* execução (armaduras/acessórios) */
   const bxh = e.bxh; if (bxh && bxh.hurt) { dmg = bxh.hurt(e.ai.x, e, dmg, h); if (!(dmg > 0)) { addText(ecx(e), e.y - 4, 'Imune', '#94a3b8', 12, .6); sfx('hit'); return { dmg: 0, crit: false, e, killed: false }; } }   /* chefes novos: mecânica própria de dano */
   dmg = Math.max(1, Math.round(dmg));
   e.hp -= dmg; e.hurtT = .12; e.flash = .1; e.lastHit = G.t; if (bxh && bxh.after) bxh.after(e.ai.x, e, dmg, h);
@@ -127,6 +129,7 @@ function hitEnemy(e, h) {
   if (st.steal > 0 && h.src !== 'dot') healPlayer(Math.max(1, Math.round(dmg * st.steal)), true);
   const res_ = { dmg, crit, e, killed: e.hp <= 0 };
   if (sw && !h.noHooks) fxCall(sw, 'onHit', P, e, h, res_);
+  if (!h.gear) gearCall('onHit', P, e, h, res_);
   if (e.hp <= 0) killEnemy(e, h);
   return res_;
 }
@@ -138,6 +141,7 @@ function killEnemy(e, h) {
   burst(ecx(e), ecy(e), 14, { col: e.blood || '#c0392b', spd: 150, g: 500, life: .6, size: 3 }); sfx('kill');
   if (!e.harmless) {
     if (h && h.sword && !h.noHooks) fxCall(h.sword, 'onKill', P, e, h);
+    if (!(h && h.gear)) gearCall('onKill', P, e, h);
     rollDrops(e, h);
     G.kills = (G.kills || 0) + 1;
   }
@@ -149,13 +153,28 @@ function hurtPlayer(dmg, fromX, kb, o) {
   if (!P || P.dead || P.inv_ > 0 || G.opts.god || P.buffs.invuln) return false;
   const front = fromX !== undefined && Math.sign(fromX - (P.x + P.w / 2)) === P.face;
   let m = 1; if (front && P.cb.blockT > 0) m *= 1 - P.cb.blockPct;
-  let d = Math.max(1, Math.round((dmg - (o.pierce ? 0 : P.stats.def * .5)) * m));
+  // acessórios/armaduras: esquiva e reduções
+  const info = { dmg, mult: 1, flat: 0, dodge: false };
+  if (!o.pierce && !o.noGear) {
+    if ((P.stats.dodge || 0) > 0 && Math.random() < P.stats.dodge) info.dodge = true;
+    if (P.buffs.evade && Math.random() < P.buffs.evade.amt) info.dodge = true;
+  }
+  if (!o.noGear) gearCall('incoming', P, info);
+  if (info.dodge) { addText(P.x + P.w / 2, P.y - 6, 'Esquiva', '#a7f3d0', 12, .8); burst(P.x + P.w / 2, P.y + P.h / 2, 4, { col: '#a7f3d0', spd: 70, life: .3 }); sfx('tick', .4); return false; }
+  let d = Math.max(1, Math.round((info.dmg * info.mult - (o.pierce ? 0 : P.stats.def * .5)) * m - info.flat));
   const sh = P.buffs.shield; if (sh && sh.hp > 0) { const ab = Math.min(sh.hp, d); sh.hp -= ab; d -= ab; addText(P.x + P.w / 2, P.y - 6, '-' + ab, '#fbbf24', 12); if (sh.hp <= 0) delete P.buffs.shield; }
   if (d > 0) { P.hp -= d; addText(P.x + P.w / 2, P.y - 6, '-' + d, '#f87171', 15, 1); }
   P.inv_ = o.inv || clamp(.55 + d / 220, .55, 1.1); P.flash = .2; sfx('hurt'); shake(5 + Math.min(8, d / 8));
   burst(P.x + P.w / 2, P.y + P.h / 2, 10, { col: ['#c0392b', '#e74c3c'], spd: 140, g: 450, life: .5 });
   if (kb && fromX !== undefined) { const s = Math.sign(P.x + P.w / 2 - fromX) || 1; P.vx = s * kb * (1 - P.stats.kbr); P.vy = -190 * (1 - P.stats.kbr * .5); P.kbT = .18; }
-  if (P.hp <= 0) killPlayer();
+  P.lastHurtT = G.t;
+  if ((P.stats.thorns || 0) > 0 && fromX !== undefined) {
+    const list = enemiesNear(P.x + P.w / 2, P.y + P.h / 2, 110);
+    for (const e of list) hitEnemy(e, { src: 'gear', gear: 1, dmg: Math.max(2, Math.round(d * P.stats.thorns)), kb: 2.4, fs: 0, fromX: P.x + P.w / 2, fromY: P.y + P.h / 2 });
+    if (list.length) burst(P.x + P.w / 2, P.y + P.h / 2, 8, { col: ['#a3e635', '#d9f99d'], spd: 110, life: .35 });
+  }
+  gearCall('onHurt', P, d, o);
+  if (P.hp <= 0) { gearCall('onLethal', P); if (P.hp > 0) { P.dead = false; } else killPlayer(); }
   return true;
 }
 function healPlayer(n, silent) {

@@ -1,13 +1,13 @@
 {
   "name": "120-espadas",
   "version": "1.0.0",
-  "description": "120 Espadas — sandbox 2D platformer em HTML5 (arquivo único, sem dependências em tempo de execução)",
+  "description": "101spas — sandbox 2D platformer em HTML5 (arquivo único, sem dependências em tempo de execução)",
   "private": true,
   "scripts": {
     "build": "node build.js",
     "serve": "node serve.js",
     "validate": "node dev/validate.js",
-    "test": "node dev/validate.js && node dev/reach.js && node dev/seeds.js && node dev/layouts.js && node dev/transfer.js",
+    "test": "node dev/validate.js && node dev/reach.js && node dev/seeds.js && node dev/layouts.js && node dev/transfer.js && node dev/test_gear.js",
     "test:browser": "node dev/test_worlds.js && node dev/test_device.js && node dev/test_gamepad.js && node dev/test_touch.js && node dev/test_skin.js && node dev/test_arsenal_clicks.js && node dev/test_enemies.js && node dev/test_bosses.js && node dev/test_bx_art.js && node dev/test_bx.js && node dev/soak.js && node dev/test_swords.js",
     "browsers": "playwright install chromium"
   },

@@ -129,7 +129,7 @@ function genTile(id, mask, v) {
     case 'brick': paintBricks(H, c0, c1, c2, false); break;
     case 'ore': {
       stoneFill(c0, c1, [154, 160, 168]);
-      const oc = hex2rgb(d.ore), gem = ['ruby', 'emerald', 'topaz', 'sapphire', 'amethyst', 'quartz', 'amber', 'frostcrystal'].includes(d.k);
+      const oc = hex2rgb(d.ore), gem = d.gem || ['ruby', 'emerald', 'topaz', 'sapphire', 'amethyst', 'quartz', 'amber', 'frostcrystal'].includes(d.k);
       const coal = d.k === 'coal', hell = d.k === 'hellstone';
       for (let k = 0; k < 4; k++) {
         const bx = 2 + (H(k, 1, 11) * 11 | 0), by = 2 + (H(k, 2, 11) * 11 | 0);

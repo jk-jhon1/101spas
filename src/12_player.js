@@ -5,7 +5,9 @@ const INV_N = 40, KEYS = {}, PLAYER_W = 12, PLAYER_H = 26;
 function newPlayer() {
   return {
     x: 0, y: 0, w: PLAYER_W, h: PLAYER_H, vx: 0, vy: 0, onGround: false, face: 1, hp: 100, maxHp: 100, crystals: 0, inv_: 0, inv: new Array(INV_N).fill(null), sel: 0,
-    equip: { armor: null, acc: [null, null, null] }, stats: { def: 0, dmg: 0, crit: 0, cm: 1, spd: 0, steal: 0, kbr: 0, hp: 0 },
+    equip: { armor: null, acc: [null, null, null, null] },
+    stats: { def: 0, dmg: 0, crit: 0, cm: 1, spd: 0, steal: 0, kbr: 0, hp: 0, dodge: 0, pierce: 0, thorns: 0, cdr: 0, dash: 0, dashAir: 0, glide: 0, lavaRes: 0, fallSafe: 0, atkspd: 0, exec: 0, swim: 0 },
+    gear: [], sets: [], setCount: {}, gearState: {}, setState: {}, dashCd: 0, dashBuf: 0, dashHeld: false, lastHurtT: -99,
     cb: { cd: 0, side: 1, count: 0, inst: [], sw: null, hits: 0, swingT: 0, blockT: 0, blockPct: 0, main: null, lastHitT: 0 },
     buffs: {}, mine: { x: -1, y: -1, p: 0, t: 0 }, anim: { walk: 0, arm: 0 }, coyote: 0, jbuf: 0, kbT: 0, flash: 0, dead: false, respawnT: 0,
     potionCd: 0, fallStart: 0, inWater: false, inLava: false, slowfall: 0, placeT: 0, dmgInv: 0, lavaT: 0, lastCrystalMsg: 0, atkAim: 0, jumpHeld: false,
@@ -65,12 +67,22 @@ function doCraft(r) {
 }
 
 // ---------- equipamentos / estatísticas ----------
+// garante 4 slots de acessório e descarta ids que não existem mais (saves antigos)
+function normalizeEquip(eq) {
+  const out = { armor: null, acc: [null, null, null, null] };
+  if (eq && eq.armor && IT[eq.armor.id] && IT[eq.armor.id].type === 'armor') out.armor = { id: eq.armor.id, n: 1 };
+  const a = (eq && Array.isArray(eq.acc)) ? eq.acc : [];
+  for (let i = 0; i < 4; i++) { const s = a[i]; if (s && IT[s.id] && IT[s.id].type === 'acc') out.acc[i] = { id: s.id, n: 1 }; }
+  return out;
+}
+
 function recalcStats() {
-  const P = G.P, st = { def: 0, dmg: 0, crit: 0, cm: 1, spd: 0, steal: 0, kbr: 0, hp: 0 };
+  const P = G.P, st = { def: 0, dmg: 0, crit: 0, cm: 1, spd: 0, steal: 0, kbr: 0, hp: 0, dodge: 0, pierce: 0, thorns: 0, cdr: 0, dash: 0, dashAir: 0, glide: 0, lavaRes: 0, fallSafe: 0, atkspd: 0, exec: 0, swim: 0 };
   const ar = P.equip.armor; if (ar) st.def += IT[ar.id].def;
-  for (const a of P.equip.acc) if (a) { const s = IT[a.id].acc; st.dmg += s.dmg || 0; st.crit += s.crit || 0; st.cm += s.cm || 0; st.spd += s.spd || 0; st.steal += s.steal || 0; st.def += s.def || 0; st.kbr += s.kbr || 0; st.hp += s.hp || 0; }
+  for (const a of P.equip.acc) if (a) { const s = IT[a.id].acc; if (!s) continue; st.dmg += s.dmg || 0; st.crit += s.crit || 0; st.cm += s.cm || 0; st.spd += s.spd || 0; st.steal += s.steal || 0; st.def += s.def || 0; st.kbr += s.kbr || 0; st.hp += s.hp || 0; }
   const sw = heldSword(); P.cb.sw = sw;
   if (sw) fxCall(sw, 'stats', P, st);
+  rebuildGear(P); gearCall('stats', P, st);   /* acessórios, armaduras e conjuntos */
   P.stats = st;
   const mh = Math.min(400, 100 + P.crystals * 20) + st.hp; P.maxHp = mh; if (P.hp > mh) P.hp = mh;
 }
@@ -184,7 +196,7 @@ function useHeldItem(P, dt, pressed) {
 function useConsumable(P, s, it) {
   const creative = G.mode === 'creative';
   const consume = () => { if (creative) return; s.n--; if (s.n <= 0) P.inv[P.sel] = null; invDirty(); };
-  if (it.use === 'heal') { if (P.buffs.curse) { toast('Maldição: você não consegue se curar!', '#c084fc'); return; } if (P.potionCd > 0) { toast('Poção em recarga (' + Math.ceil(P.potionCd) + 's)', '#fbbf24'); return; } if (P.hp >= P.maxHp) return; healPlayer(it.heal); P.potionCd = creative ? 2 : 30; sfx('heal'); burst(P.x + P.w / 2, P.y + P.h / 2, 14, { col: ['#4ade80', '#bbf7d0'], spd: 90, g: -60, glow: true, life: .6 }); consume(); }
+  if (it.use === 'heal') { if (P.buffs.curse) { toast('Maldição: você não consegue se curar!', '#c084fc'); return; } if (P.potionCd > 0) { toast('Poção em recarga (' + Math.ceil(P.potionCd) + 's)', '#fbbf24'); return; } if (P.hp >= P.maxHp) return; gearCall('onPotion', P); healPlayer(it.heal); P.potionCd = creative ? 2 : 30 * (1 - (P.stats.cdr || 0)); sfx('heal'); burst(P.x + P.w / 2, P.y + P.h / 2, 14, { col: ['#4ade80', '#bbf7d0'], spd: 90, g: -60, glow: true, life: .6 }); consume(); }
   else if (it.use === 'life') { if (P.crystals >= 15) { toast('Vida máxima já no limite.', '#fbbf24'); return; } P.crystals++; recalcStats(); P.hp = P.maxHp; sfx('heal'); toast('Vida máxima aumentada! (' + P.maxHp + ')', '#f472b6'); consume(); }
   else if (it.use.startsWith('boss_')) { if (summonBoss(it.use.slice(5))) consume(); }
 }
@@ -199,8 +211,8 @@ function updatePlayer(dt) {
   for (const n in P.buffs) { const b = P.buffs[n]; b.t -= dt; if (b.t <= 0) { delete P.buffs[n]; continue; } if (n === 'bleed') { b.acc = (b.acc || 0) + dt; if (b.acc >= .5) { b.acc -= .5; hurtPlayer(Math.round((b.dmg || 4) * (b.stacks || 1)), undefined, 0, { pierce: true, inv: .1 }); } } if (n === 'regen') { b.acc = (b.acc || 0) + (b.hps || 1) * dt; if (b.acc >= 1) { healPlayer(1, true); b.acc -= 1; } } }
   // ambiente
   const liq = liqOf(P); P.inWater = liq.water > .3 || liq.lava > .3; P.inLava = liq.lava > .25;
-  const wasWater = P._wasWater; if (P.inWater && !wasWater) { sfx('splash'); burst(P.x + P.w / 2, P.y + P.h, 12, { col: ['#60a5fa', '#bfdbfe'], spd: 120, g: 400, life: .5, ang: -PI / 2, spread: 2 }); } P._wasWater = P.inWater;
-  if (P.inLava) { P.lavaT -= dt; if (P.lavaT <= 0) { P.lavaT = .5; hurtPlayer(22 + Math.round(G.stage * 6), undefined, 0, { pierce: true, inv: .3 }); } }
+  const wasWater = P._wasWater; if (P.inWater && !wasWater) { gearCall('onWater', P); sfx('splash'); burst(P.x + P.w / 2, P.y + P.h, 12, { col: ['#60a5fa', '#bfdbfe'], spd: 120, g: 400, life: .5, ang: -PI / 2, spread: 2 }); } P._wasWater = P.inWater;
+  if (P.inLava) { P.lavaT -= dt; if (P.lavaT <= 0) { P.lavaT = .5; hurtPlayer(Math.max(3, Math.round((22 + Math.round(G.stage * 6)) * (1 - (P.stats.lavaRes || 0)))), undefined, 0, { pierce: true, inv: .3 }); } }
   // entrada horizontal
   let dir = (k.KeyD || k.ArrowRight || k.PadRight ? 1 : 0) - (k.KeyA || k.ArrowLeft || k.PadLeft ? 1 : 0);
   if (P.buffs.confuse) dir = -dir; if (P.buffs.stun) dir = 0;   /* debuffs dos chefes */
@@ -219,10 +231,11 @@ function updatePlayer(dt) {
     if (jumpKey) P.vy = approach(P.vy, -170, 1200 * dt); else P.vy = approach(P.vy, 70, 400 * dt);
     if (P.inLava) P.vy = Math.min(P.vy, 60);
   } else {
-    if (P.jbuf > 0 && P.coyote > 0 && !P.buffs.stun) { P.vy = -470; P.jbuf = 0; P.coyote = 0; sfx('jump'); }
+    if (P.jbuf > 0 && P.coyote > 0 && !P.buffs.stun) { P.vy = -470 * (1 + (P.stats.jump || 0)); P.jbuf = 0; P.coyote = 0; sfx('jump'); gearCall('onJump', P); }
     if (!jumpKey && P.vy < -180) P.vy *= Math.pow(.0008, dt);
     let g = P.vy < 0 ? GRAV : GRAV * 1.12, maxFall = MAXFALL;
     if (P.slowfall) { g *= 1 - P.slowfall * .8; maxFall *= 1 - P.slowfall; }
+    if (P.stats.glide && jumpKey && P.vy > 0) { g *= .22; maxFall *= .32; }
     if (P.buffs.floaty) { g *= .32; maxFall *= .4; }
     P.vy = Math.min(P.vy + g * dt, maxFall);
     if (P.buffs.gravflip) { P.vy -= g * dt * 1.85; P.vy = Math.max(P.vy, -240); if (P.y < 3 * TS) { P.y = 3 * TS; P.vy = Math.max(0, P.vy); } }
@@ -234,7 +247,8 @@ function updatePlayer(dt) {
   bodyMove(P, dt, { stepUp: true });
   if (P.onGround && !wasG) {
     const tiles = (P.y - P.fallStart) / TS;
-    if (P.fallStart > 0 && tiles > 24 && !P.inWater && G.mode !== 'creative') { const dmg = Math.round((tiles - 24) * 5); hurtPlayer(dmg, undefined, 0, { pierce: true, inv: .3 }); addText(P.x + 6, P.y - 12, 'Queda!', '#fca5a5', 11); }
+    gearCall('onLand', P, tiles);
+    if (P.fallStart > 0 && tiles > 24 && !P.inWater && G.mode !== 'creative' && !P.stats.fallSafe) { const dmg = Math.round((tiles - 24) * 5); hurtPlayer(dmg, undefined, 0, { pierce: true, inv: .3 }); addText(P.x + 6, P.y - 12, 'Queda!', '#fca5a5', 11); }
     if (oldVy > 300) burst(P.x + P.w / 2, P.y + P.h, 4, { col: ['#a89070', '#c8b090'], spd: 50, g: 200, life: .3, ang: -PI / 2, spread: 2 });
     P.fallStart = 0;
   }
@@ -247,6 +261,19 @@ function updatePlayer(dt) {
   // sword hooks (tick) e estatísticas
   const sw = heldSword(); if (sw !== P.cb.sw || P._statSel !== P.sel) { P._statSel = P.sel; recalcStats(); }
   if (P.cb.sw) fxCall(P.cb.sw, 'tick', P, dt);
+  gearCall('tick', P, dt);   /* acessórios e conjuntos */
+  // avanço (acessórios com dash)
+  P.dashCd = Math.max(0, (P.dashCd || 0) - dt);
+  const dashKey = k.ShiftLeft || k.ShiftRight || k.PadDash;
+  if (dashKey && !P.dashHeld) P.dashBuf = .12;
+  P.dashHeld = !!dashKey; P.dashBuf = Math.max(0, (P.dashBuf || 0) - dt);
+  if (P.dashBuf > 0 && P.dashCd <= 0 && P.stats.dash && !ui && !P.buffs.stun && !P.buffs.silence && (P.onGround || P.stats.dashAir)) {
+    const a = dir ? (dir > 0 ? 0 : PI) : (P.face > 0 ? 0 : PI);
+    P.vx = Math.cos(a) * 560; P.vy = P.onGround ? -80 : Math.min(P.vy, -40);
+    P.dashCd = 2.4 * (1 - (P.stats.cdr || 0)) * (P.stats.dashCd ? P.stats.dashCd : 1); P.dashBuf = 0; P.inv_ = Math.max(P.inv_, .16);
+    burst(pcx(P), pcy(P), 10, { col: ['#fde047', '#fbcfe8', '#fff'], spd: 130, life: .4, glow: true });
+    addText(pcx(P), P.y - 8, 'Avanço', '#fde047', 11, .6); sfx('jump', .7); gearCall('onDash', P);
+  }
   // usar item
   const lmb = mouse.down[0] && !ui;
   if (lmb && !P.buffs.silence && !P.buffs.stun) useHeldItem(P, dt, mouse.pressed[0]); else { P.mine.p = Math.max(0, P.mine.p - dt * 2); }

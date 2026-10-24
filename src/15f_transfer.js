@@ -156,8 +156,9 @@ function sanitizeSave(raw) {
   if (!Array.isArray(Pp.inv) || Pp.inv.length !== INV_N) return bad('inventário inválido');
   const inv = []; for (const s of Pp.inv) { const c = cleanSlot(s); if (c === undefined) return bad('item inválido no inventário'); inv.push(c); }
   const eq = isO(Pp.equip) ? Pp.equip : {}, armor = cleanSlot(eq.armor, 'armor'); if (armor === undefined) return bad('armadura inválida');
-  const accIn = Array.isArray(eq.acc) ? eq.acc : [null, null, null]; if (accIn.length !== 3) return bad('acessórios inválidos');
+  const accIn = Array.isArray(eq.acc) ? eq.acc : []; if (accIn.length !== 3 && accIn.length !== 4) return bad('acessórios inválidos');
   const acc = accIn.map(s => cleanSlot(s, 'acc')); if (acc.includes(undefined)) return bad('acessório inválido');
+  while (acc.length < 4) acc.push(null);   /* saves antigos tinham 3 slots */
   const ns = raw.npcs === undefined ? [] : raw.npcs, npcs = [];
   if (!Array.isArray(ns) || ns.length > 100) return bad('NPCs inválidos');
   for (const n of ns) {

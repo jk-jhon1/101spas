@@ -114,8 +114,14 @@ function part4(doc) {
     deps: '11_swords.js', used: 'README, consulta',
   });
   doc.fileCard({
-    name: 'docs/chefes_novos.md', lines: 60, tag: 'Gerado', role: 'Lista dos 50 chefes', color: COL.base,
-    summary: 'Nome, ato, atributos, mecânica única, condição de invocação e recompensas dos 50 chefes novos.',
+    name: 'docs/catalogo_equipamentos.md', lines: 361, tag: 'Gerado', role: 'Catálogo do equipamento', color: COL.base,
+    summary: 'As 10 famílias, com os 50 minérios (tier e picareta exigida), as 50 armaduras (defesa e passiva) e os 50 acessórios (de qual chefe vêm e o que fazem).',
+    what: 'Gerado pelo mesmo `CATALOGO=1 node dev/validate.js`, a partir de `11c_gear_x.js` e `10b_gear_fx.js`. Serve para comparar peças e para saber de qual chefe sai cada acessório sem abrir o jogo.',
+    deps: '11c_gear_x, 10b_gear_fx', used: 'README, consulta',
+  });
+  doc.fileCard({
+    name: 'docs/chefes_novos.md', lines: 83, tag: 'Gerado', role: 'Lista dos 50 chefes', color: COL.base,
+    summary: 'Nome, ato, atributos, mecânica única, acessório exclusivo, condição de invocação e recompensas dos 50 chefes novos.',
     what: 'É gerado pelo `validate.js` a partir dos dados de `13d..13g_bx_*.js`, então nunca fica desatualizado em relação ao jogo.',
     deps: '13c_bossx, 13d..13g', used: 'README, consulta',
   });
@@ -265,6 +271,8 @@ function appendix(doc) {
     ['10_fx.js', 276, 'Biblioteca de 101 efeitos de espada'],
     ['11_swords.js', 157, 'Catálogo das 120 primeiras espadas'],
     ['11b_swords_x.js', 425, 'Tiers 7–10: 80 espadas + 25 efeitos'],
+    ['10b_gear_fx.js', 499, 'Mecânicas de acessórios, armaduras e conjuntos'],
+    ['11c_gear_x.js', 256, '50 minérios, 50 armaduras, 50 acessórios, 5 picaretas'],
     ['12_player.js', 333, 'Jogador, inventário, criação, mineração'],
     ['13_enemies.js', 333, 'Inimigos, IA, spawn e drops'],
     ['13b_bosses.js', 78, 'Os 4 chefes clássicos'],

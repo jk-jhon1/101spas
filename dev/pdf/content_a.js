@@ -59,14 +59,16 @@ function part1(doc) {
 
   doc.h3('Números medidos no repositório');
   doc.table(['O quê', 'Quantidade', 'Onde vive'], [
-    ['Módulos JavaScript do jogo', '43 arquivos · 9.393 linhas', 'src/*.js'],
-    ['Folha de estilo e template', '272 + 132 linhas', 'src/style.css · src/template.html'],
+    ['Módulos JavaScript do jogo', '45 arquivos · 10.374 linhas', 'src/*.js'],
+    ['Folha de estilo e template', '270 + 133 linhas', 'src/style.css · src/template.html'],
     ['Espadas', '200 (20 por tier, 10 tiers)', 'src/11_swords.js · src/11b_swords_x.js'],
     ['Tipos de bloco e parede', '62 tiles · 10 paredes', 'src/01_data.js'],
-    ['Itens e receitas', '379 itens · 323 receitas', 'src/01_data.js'],
+    ['Itens e receitas', '584 itens · 433 receitas', 'src/01_data.js · src/11c_gear_x.js'],
     ['Inimigos comuns', '84 definições', 'src/13_enemies.js'],
     ['Chefes', '4 clássicos + 50 novos', 'src/13b_bosses.js · src/13c..13g'],
     ['Efeitos de espada', '101 em FX + 25 em FX2', 'src/10_fx.js · src/11b_swords_x.js'],
+    ['Equipamento novo', '50 minérios · 50 armaduras · 50 acessórios · 5 picaretas', 'src/11c_gear_x.js'],
+    ['Mecânicas de equipamento', '50 acessórios + 50 passivas + 10 conjuntos', 'src/10b_gear_fx.js'],
   ], [0.36, 0.32, 0.32]);
 
   doc.h2('2.  Como o projeto é montado', { mark: 's2', break: true });

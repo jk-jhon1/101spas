@@ -101,8 +101,34 @@ function part3b(doc) {
   });
 
   doc.fileCard({
+    name: 'src/10b_gear_fx.js', lines: 430, tag: 'Equipamento', role: 'Mecânicas dos acessórios, armaduras e conjuntos', color: COL.play,
+    summary: 'As 50 passivas de armadura (`ARM_FX`), as 50 mecânicas de acessório (`ACC_FX`) e os 10 bônus de conjunto (`SET_FX`), escritas como fábricas de ganchos.',
+    what: 'Cada peça devolve um objeto de ganchos que o motor chama em momentos fixos do jogo: `stats` (ao recalcular atributos), `tick` (a cada quadro), `mod` (antes do dano), `onHit`, `onKill`, `onHurt`, `incoming` (escolhe esquiva e reduções), `onLethal` (renascimento), `onJump`, `onLand`, `onWater`, `onPotion`, `onSwing` e `atkMult`. `rebuildGear` monta a lista ativa quando o equipamento muda e conta as famílias para ativar os conjuntos.',
+    how: [
+      'Um efeito nunca se chama de novo em reação a si mesmo: dano causado por acessório entra com `gear: 1`, e os ganchos ignoram esse marcador (sem isso os efeitos se multiplicariam sem fim).',
+      'Cada acessório tem o seu próprio estado (`P.gearState[id]`), então recargas e contadores não vazam entre peças.',
+      'Conjuntos contam armadura + acessórios da mesma família: 2 peças dão um bônus pequeno, 4 peças o bônus completo.',
+    ],
+    funcs: 'ACC_FX (50) · ARM_FX (50) · SET_FX (10) · rebuildGear · gearCall · gearAtkMult · gHit · gBoom · gProj',
+    deps: '01_data, 09_combat, 10_fx', used: '12_player, 09_combat, 09b_swing, 15_ui',
+  });
+
+  doc.fileCard({
+    name: 'src/11c_gear_x.js', lines: 260, tag: 'Conteúdo', role: '50 minérios, 50 armaduras, 50 acessórios e 5 picaretas', color: COL.play,
+    summary: 'Dez famílias (Braseiro, Geada, Corisco, Maré, Raiz, Véu, Alvorada, Relojoaria, Vazio e Origem), cada uma com 5 minérios, 5 armaduras e 5 acessórios.',
+    what: 'Os 50 minérios viram 50 telhados de minério no mundo (gerados por `gearPlaceOres`, chamada pelo gerador em `03_worldgen.js`) e 50 barras na Fornalha. As armaduras são forjadas com as barras da própria família, em Bigorna, Bigorna Avançada ou Forja Celeste. Os acessórios vêm de 45 chefes (um exclusivo por chefe, incluindo os 4 clássicos) e 5 são forjados.',
+    how: [
+      'A dureza dos minérios vai de 2 a 14 e usa as 5 picaretas novas (poder 10 a 14), forjadas na Forja Celeste.',
+      'Os minérios são distribuídos por profundidade: quanto mais fundo o tier, menor a oferta perto da superfície e maior no Inferno.',
+      '`gearSourceText` mostra no tooltip de onde vem cada peça: nome do chefe, estação ou dureza da picareta.',
+    ],
+    funcs: 'GFAM · GORES · GARMS · GACCS · GPICKS · BX_ACC · gearPlaceOres · gearSourceText',
+    deps: '01_data, 10b_gear_fx, 13c_bossx', used: '03_worldgen, 13_enemies, 13c_bossx, 15_ui',
+  });
+
+  doc.fileCard({
     name: 'src/12_player.js', lines: 333, tag: 'Conteúdo', role: 'Jogador, inventário e criação', color: COL.play,
-    summary: 'O corpo do jogador (12×26 px), os 40 espaços de inventário, equipamentos, estatísticas, criação, mineração, construção e desenho.',
+    summary: 'O corpo do jogador (12×26 px), os 40 espaços de inventário, os equipamentos (1 armadura + 4 acessórios), as estatísticas, a criação, a mineração, a construção e o desenho.',
     what: 'É o módulo mais “jogável” do projeto. Cuida do movimento com colisão, pulo, natação, i-frames, morte e renascimento; do inventário de 40 posições + armadura + três acessórios; da criação de itens com verificação de estação próxima; de quebrar e colocar blocos com alcance; de usar consumíveis; e de desenhar o boneco com as peças de 05b.',
     how: [
       '`recalcStats` soma os bônus de armadura e acessórios e chama o gancho `stats` da espada equipada.',

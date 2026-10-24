@@ -26,7 +26,7 @@ function part3(doc) {
 
   doc.fileCard({
     name: 'src/01_data.js', lines: 259, tag: 'Dados', role: 'Tiers, tiles, paredes, itens e receitas', color: COL.base,
-    summary: 'A “planilha” do jogo: 11 tiers de raridade, 62 blocos, 10 paredes, 379 itens e 323 receitas de criação.',
+    summary: 'A “planilha” do jogo: 11 tiers de raridade, 62 blocos, 10 paredes, 434 itens e 333 receitas de criação (os minérios, armaduras e acessórios novos ficam em `11c_gear_x.js`).',
     what: 'Declara os dados por meio de pequenas funções de registro (`tile`, `item`, `rec`, `ORE`) e monta as tabelas que o resto do motor consulta: `T` (id dos tiles), `TD` (dureza, drop, som, estação), `IT` (itens), `RECIPES` (receitas) e `STATION_NAME`/`STATION_SAT` (estações e o que cada uma libera).',
     how: [
       '`TIERS` guarda nome, cor e faixa de multiplicador de dano de cada tier — é o que colore slots, tooltips e o catálogo.',

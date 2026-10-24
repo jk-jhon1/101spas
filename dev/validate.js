@@ -3,12 +3,12 @@ const fs = require('fs'), vm = require('vm');
 const order = fs.readdirSync(__dirname + '/../src').filter(f => /^\d+.*\.js$/.test(f)).sort();
 const use = order.filter(f => !/^(1[4-9]|2\d)_/.test(f) && !/gamepad/.test(f));  // UI/main/controle (precisam de DOM) ficam de fora
 let code = use.map(f => fs.readFileSync(__dirname + '/../src/' + f, 'utf8')).join('\n;\n');
-code += `\n;globalThis.__api = { SWORDS, IT, RECIPES, TD, T, TIERS, FX, G, STATION_NAME, BXLIST, BX_ACTS, BXART, ED, BX_BIO, BX_LAY };`;
+code += `\n;globalThis.__api = { SWORDS, IT, RECIPES, TD, T, TIERS, FX, G, STATION_NAME, BXLIST, BX_ACTS, BXART, ED, BX_BIO, BX_LAY, GORES, GARMS, GACCS, GPICKS, BX_ACC, GFAM, GFAM_KEYS, ACC_FX, ARM_FX, SET_FX, GARM_ST, TD, T };`;
 const ctx = { console, Math, Date, Uint8Array, Int16Array, Float32Array, Uint8ClampedArray, Set, Map, Array, Object, String, Number, JSON, performance: { now: () => Date.now() },
   document: { createElement: () => ({ getContext: () => ({}), width: 0, height: 0 }) }, window: {}, ImageData: function () {} };
 ctx.globalThis = ctx; vm.createContext(ctx);
 try { vm.runInContext(code, ctx); } catch (e) { console.error('LOAD ERROR:', e.stack.split('\n').slice(0, 6).join('\n')); process.exit(1); }
-const { SWORDS, IT, RECIPES, TIERS, STATION_NAME, BXLIST, BX_ACTS, BXART, ED, BX_BIO, BX_LAY } = ctx.__api;
+const { SWORDS, IT, RECIPES, TIERS, STATION_NAME, BXLIST, BX_ACTS, BXART, ED, BX_BIO, BX_LAY, GORES, GARMS, GACCS, GPICKS, BX_ACC, GFAM, GFAM_KEYS, ACC_FX, ARM_FX, SET_FX, GARM_ST, TD, T } = ctx.__api;
 let errs = 0; const err = m => { console.log('  ✗', m); errs++; };
 console.log('files:', use.join(' '));
 console.log('swords:', SWORDS.length);
@@ -67,9 +67,75 @@ for (let a = 1; a <= 4; a++) {
   for (const d of BXLIST.filter(x => x.act === a)) {
     const rc = RECIPES.find(r => r.out === 'sg_' + d.id), ing = rc ? Object.keys(rc.ing).map(k => rc.ing[k] + '× ' + (IT[k] ? IT[k].n : k)).join(', ') : '';
     const c = d.cond || {}, ct = [c.night && 'à noite', c.day && 'de dia', c.layer && ('em ' + BX_LAY[c.layer]), c.biome && ('bioma ' + BX_BIO[c.biome])].filter(Boolean).join(', ') || '—';
-    bm += '| ' + String(d.i + 1).padStart(2, '0') + ' | **' + d.n + '** | ' + d.hp + ' | ' + d.dmg + ' | ' + d.mech.replace(/\|/g, '/') + ' | ' + ing + ' | ' + ct + ' | ' + String(d.sword).replace('s', '') + ' ' + (IT[d.sword] ? IT[d.sword].n : '') + ' |\n';
+    bm += '| ' + String(d.i + 1).padStart(2, '0') + ' | **' + d.n + '** | ' + d.hp + ' | ' + d.dmg + ' | ' + d.mech.replace(/\|/g, '/') + ' | ' + (BX_ACC[d.id] && IT[BX_ACC[d.id]] ? IT[BX_ACC[d.id]].n : '—') + ' | ' + ing + ' | ' + ct + ' | ' + String(d.sword).replace('s', '') + ' ' + (IT[d.sword] ? IT[d.sword].n : '') + ' |\n';
   }
   bm += '\n';
 }
 fs.writeFileSync(__dirname + '/../docs/chefes_novos.md', bm);
+// ---- 50 minérios, 50 armaduras, 50 acessórios e 5 picaretas ----
+console.log('minérios:', GORES.length, '| armaduras:', GARMS.length, '| acessórios:', GACCS.length, '| picaretas novas:', GPICKS.length);
+if (GORES.length !== 50) err('esperado 50 minérios');
+if (GARMS.length !== 50) err('esperado 50 armaduras');
+if (GACCS.length !== 50) err('esperado 50 acessórios');
+if (GPICKS.length !== 5) err('esperado 5 picaretas novas');
+for (const fam of GFAM_KEYS) {
+  if (GARMS.filter(a => a.fam === fam).length !== 5) err('armaduras da família ' + fam + ' ≠ 5');
+  if (GACCS.filter(a => a.fam === fam).length !== 5) err('acessórios da família ' + fam + ' ≠ 5');
+  if (GORES.filter(o => o.fam === fam).length !== 5) err('minérios da família ' + fam + ' ≠ 5');
+  if (!SET_FX[fam]) err('conjunto sem bônus: ' + fam);
+}
+const accMech = new Set(), armId = new Set();
+for (const a of GACCS) {
+  if (!IT[a.id] || IT[a.id].type !== 'acc') err('acessório sem item: ' + a.id);
+  if (!ACC_FX[IT[a.id].mech]) err('acessório sem mecânica: ' + a.id);
+  if (accMech.has(IT[a.id].mech)) err('mecânica repetida: ' + IT[a.id].mech); accMech.add(IT[a.id].mech);
+  if (a.fonte === 'craft') { if (!RECIPES.some(r => r.out === a.id)) err('acessório forjável sem receita: ' + a.id); }
+  else { const m = a.fonte.match(/^b:(.+)$/); if (!m || !BX_ACC[m[1]]) err('fonte do acessório inválida: ' + a.id); if (m && m[1] !== 'slime' && m[1] !== 'eye' && m[1] !== 'guardian' && m[1] !== 'colossus' && !BXLIST.some(d => d.id === m[1])) err('chefe inexistente: ' + m[1]); }
+}
+for (const a of GARMS) {
+  if (!IT[a.id] || IT[a.id].type !== 'armor') err('armadura sem item: ' + a.id);
+  if (!ARM_FX[a.fam + '_' + a.t]) err('armadura sem passiva: ' + a.id);
+  if (armId.has(a.id)) err('armadura duplicada: ' + a.id); armId.add(a.id);
+  const r = RECIPES.find(x => x.out === a.id);
+  if (!r) err('armadura sem receita: ' + a.id); else if (r.st !== GARM_ST[a.t]) err('estação errada: ' + a.id);
+}
+for (const o of GORES) {
+  if (!IT[o.key]) err('minério sem item: ' + o.key);
+  if (!IT[o.key + '_bar']) err('minério sem barra: ' + o.key);
+  if (!RECIPES.some(r => r.out === o.key + '_bar')) err('barra sem receita: ' + o.key);
+  if (!TD[T[o.key]] || TD[T[o.key]].h !== o.h) err('dureza errada no tile: ' + o.key);
+}
+const bossAcc = Object.keys(BX_ACC);
+if (bossAcc.length !== 45) err('chefes com acessório: esperado 45, veio ' + bossAcc.length);
+if (new Set(Object.values(BX_ACC)).size !== 45) err('acessório repetido entre chefes');
+const semAcc = BXLIST.filter(d => !BX_ACC[d.id]);
+if (semAcc.length !== 9) err('chefes sem acessório: esperado 9, veio ' + semAcc.length + ' (' + semAcc.map(d => d.id).join(', ') + ')');
+
+// documento gerado (só com CATALOGO=1)
+if (WRITE_DOCS) {
+  let gm = '# Catálogo de equipamentos — 50 minérios, 50 armaduras e 50 acessórios\n\n';
+  gm += '> Gerado automaticamente a partir de `src/11c_gear_x.js` e `src/10b_gear_fx.js`.\n';
+  gm += '> Cada família tem 5 minérios, 5 armaduras (com passiva própria) e 5 acessórios; usar armadura + acessórios da mesma família ativa o **bônus de conjunto** (2 e 4 peças).\n';
+  gm += '> Os acessórios vêm de **45 chefes** (um exclusivo por chefe) e **5 são forjados**.\n\n';
+  gm += '## Resumo\n\n| Família | Tema | Minérios | Armaduras | Acessórios |\n|---|---|---|---|---|\n';
+  for (const fam of GFAM_KEYS) gm += `| **${GFAM[fam].n}** | ${GFAM[fam].desc} | ${GORES.filter(o => o.fam === fam).length} | ${GARMS.filter(a => a.fam === fam).length} | ${GACCS.filter(a => a.fam === fam).length} |\n`;
+  gm += '\n';
+  for (const fam of GFAM_KEYS) {
+    gm += `## ${GFAM[fam].n} \`${GFAM[fam].col}\`\n\n${GFAM[fam].desc}.\n\n`;
+    gm += '### Minérios\n\n| Minério | Tier | Picareta | Barra |\n|---|---|---|---|\n';
+    for (const o of GORES.filter(x => x.fam === fam)) gm += `| ${IT[o.key].n} | T${IT[o.key].tier} | poder ${o.h} | ${IT[o.key + '_bar'].n} |\n`;
+    gm += '\n### Armaduras\n\n| Armadura | Tier | Defesa | Passiva | Estação |\n|---|---|---|---|---|\n';
+    for (const a of GARMS.filter(x => x.fam === fam)) gm += `| **${IT[a.id].n}** | T${IT[a.id].tier} | +${a.def} | ${IT[a.id].desc.replace(/ Conjunto.*$/, '')} | ${STATION_NAME[GARM_ST[a.t]]} |\n`;
+    gm += '\n### Acessórios\n\n| Acessório | Tier | Origem | Mecânica |\n|---|---|---|---|\n';
+    for (const a of GACCS.filter(x => x.fam === fam)) {
+      const m = a.fonte.match(/^b:(.+)$/);
+      let org = 'Forjado';
+      if (m) { const d = BXLIST.find(x => x.id === m[1]); org = d ? 'Chefe: ' + d.n : ({ slime: 'Rei Slime', eye: 'Olho Colossal', guardian: 'Guardião do Abismo', colossus: 'Colosso Estelar' }[m[1]] || m[1]); }
+      gm += `| **${IT[a.id].n}** | T${a.tier} | ${org} | ${a.txt} |\n`;
+    }
+    gm += '\n';
+  }
+  fs.writeFileSync(__dirname + '/../docs/catalogo_equipamentos.md', gm);
+  console.log('docs/catalogo_equipamentos.md atualizado');
+}
 console.log(errs ? ('ERROS: ' + errs) : 'CATÁLOGO OK');

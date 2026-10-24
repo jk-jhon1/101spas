@@ -106,6 +106,127 @@ function drawIconSpec(g, spec, it) {
       break;
     }
     case 'wood': { g.save(); g.translate(16, 16); g.rotate(-.5); rrect(g, -13, -6, 24, 12, 3, '#8a5c2c'); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(-12, -2, 22, 1.4); g.fillRect(-12, 2, 22, 1.4); ellipseFill(g, 11, 0, 4, 6, '#d0a060', '#7a4e2a'); g.strokeStyle = '#8a5c2c'; g.lineWidth = 1; g.beginPath(); g.ellipse(11, 0, 2, 3.5, 0, 0, TAU); g.stroke(); g.restore(); break; }
+    // ---------------- 50 minérios novos (11c_gear_x.js) ----------------
+    case 'ore2': {
+      const forma = spec[2] | 0, brilho = spec[3];
+      if (brilho) glowDot(g, 16, 16, 15, col, .5);
+      if (forma === 1) {           // agulhas de cristal
+        for (const [x, h, w] of [[9, 18, 3], [15, 24, 3.4], [21, 16, 3]]) {
+          poly(g, [[x, 28], [x - w, 14], [x, 28 - h], [x + w, 14]], md);
+          poly(g, [[x, 28], [x - w, 14], [x, 28 - h]], lt, false);
+        }
+        g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(14, 8, 1.4, 6);
+      } else if (forma === 2) {    // geodo aberto
+        poly(g, [[5, 20], [9, 9], [18, 5], [26, 10], [27, 22], [18, 27], [8, 26]], md);
+        poly(g, [[9, 9], [18, 5], [24, 9], [15, 14]], lt, false);
+        poly(g, [[18, 14], [26, 10], [27, 22], [20, 20]], dk, false);
+        g.fillStyle = 'rgba(255,255,255,.75)'; g.fillRect(12, 10, 2, 2); g.fillRect(19, 16, 2, 2); g.fillRect(11, 20, 1.6, 1.6);
+      } else {                     // lasca maciça com veios
+        poly(g, [[6, 19], [10, 8], [19, 5], [26, 11], [25, 23], [17, 27], [8, 25]], md);
+        poly(g, [[10, 8], [19, 5], [22, 10], [14, 13]], lt, false);
+        poly(g, [[19, 13], [26, 11], [25, 23], [19, 20]], dk, false);
+        g.strokeStyle = lt; g.lineWidth = 1.2; g.beginPath(); g.moveTo(9, 21); g.lineTo(15, 14); g.lineTo(21, 17); g.stroke();
+      }
+      break;
+    }
+    // ---------------- 50 armaduras novas ----------------
+    case 'armor2': {
+      const fam = spec[2] | 0, t = spec[3] | 0;
+      const crest = [ '#f97316', '#7dd3fc', '#fde047', '#38bdf8', '#84cc16', '#a855f7', '#fbbf24', '#f472b6', '#818cf8', '#f8fafc' ][fam] || col;
+      if (t >= 3) glowDot(g, 16, 16, 16, crest, .45);
+      // ombreiras e tronco
+      poly(g, [[4, 9], [11, 4], [16, 7], [21, 4], [28, 9], [26, 16], [22, 14], [23, 28], [9, 28], [10, 14], [6, 16]], md);
+      poly(g, [[11, 4], [16, 7], [21, 4], [16, 12]], lt, false);
+      poly(g, [[9, 28], [10, 14], [16, 12], [16, 28]], dk, false);
+      poly(g, [[4, 9], [11, 4], [16, 7], [21, 4], [28, 9], [26, 16], [22, 14], [23, 28], [9, 28], [10, 14], [6, 16]], null);
+      // brasão da família
+      g.fillStyle = crest;
+      if (fam % 3 === 0) { poly(g, [[16, 13], [20, 18], [16, 24], [12, 18]], crest); }
+      else if (fam % 3 === 1) { circ(g, 16, 18, 4.4, crest); g.fillStyle = 'rgba(0,0,0,.35)'; circ(g, 16, 18, 2, 'rgba(0,0,0,.35)', false); }
+      else { g.fillRect(14.5, 13, 3, 11); g.fillRect(12, 16, 8, 3); }
+      // detalhes por tier
+      if (t >= 1) { g.fillStyle = crest; g.fillRect(6, 20, 2, 5); g.fillRect(24, 20, 2, 5); }
+      if (t >= 2) { g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(11, 26, 10, 1.6); }
+      if (t >= 3) { for (const x of [11, 16, 21]) { poly(g, [[x, 6], [x + 1.6, 2], [x - 1.6, 2]], crest); } }
+      if (t >= 4) { g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = 1.2; g.beginPath(); g.arc(16, 17, 12.5, .6, TAU - .6); g.stroke(); }
+      break;
+    }
+    // ---------------- 50 acessórios novos ----------------
+    case 'acc2': {
+      const sh = spec[2], v = (spec[3] === undefined ? ((it && it.tier) || 0) : spec[3]);
+      const metal = '#d8dee9', dkm = '#6b7280';
+      if (sh === 'ring') {
+        g.strokeStyle = metal; g.lineWidth = 4; g.beginPath(); g.arc(16, 19, 8, 0, TAU); g.stroke();
+        g.strokeStyle = dkm; g.lineWidth = 1.2; g.beginPath(); g.arc(16, 19, 9.8, 0, TAU); g.stroke();
+        const pts = v % 3 === 0 ? [[16, 3], [22, 9], [16, 15], [10, 9]] : v % 3 === 1 ? [[16, 4], [21, 9], [16, 14], [11, 9]] : [[16, 3], [20, 7], [16, 13], [12, 7]];
+        poly(g, pts, col); poly(g, pts, null); g.fillStyle = 'rgba(255,255,255,.7)'; g.fillRect(15, 6, 1.6, 1.6);
+        if (v >= 3) { circ(g, 8, 19, 2, col); circ(g, 24, 19, 2, col); }
+      } else if (sh === 'amulet') {
+        g.strokeStyle = metal; g.lineWidth = 1.6; g.beginPath(); g.arc(16, 8, 10, .25, PI - .25); g.stroke();
+        if (v % 3 === 0) { poly(g, [[16, 12], [24, 19], [16, 28], [8, 19]], col); poly(g, [[16, 12], [24, 19], [16, 19]], '#fff', false); }
+        else if (v % 3 === 1) { circ(g, 16, 20, 7.5, col, dkm, 1.4); circ(g, 13.5, 17.5, 2.2, 'rgba(255,255,255,.65)', false); }
+        else { poly(g, [[16, 11], [22, 17], [19, 27], [13, 27], [10, 17]], col); g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(15, 15, 2, 6); }
+      } else if (sh === 'boots') {
+        poly(g, [[9, 4], [19, 4], [19, 17], [28, 21], [28, 28], [7, 28], [7, 18]], col);
+        g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(10, 5, 8, 3);
+        g.fillStyle = shade(col, -.35); g.fillRect(7, 25, 21, 3);
+        if (v >= 3) { g.fillStyle = '#fde047'; g.fillRect(11, 10, 6, 1.6); }
+      } else if (sh === 'gauntlet') {
+        poly(g, [[7, 28], [6, 14], [9, 8], [12, 6], [12, 12], [15, 5], [18, 5], [18, 12], [21, 6], [24, 7], [22, 14], [26, 16], [24, 28]], col);
+        g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(10, 15, 12, 2);
+        g.fillStyle = shade(col, -.4); g.fillRect(8, 24, 17, 3);
+        if (v >= 4) { g.fillStyle = '#fff'; g.fillRect(15, 17, 2, 2); }
+      } else if (sh === 'heart') {
+        glowDot(g, 16, 16, 14, col, .5);
+        g.beginPath(); g.moveTo(16, 28); g.bezierCurveTo(1, 17, 5, 3, 16, 10); g.bezierCurveTo(27, 3, 31, 17, 16, 28); g.closePath();
+        g.fillStyle = col; g.fill(); g.strokeStyle = shade(col, -.4); g.lineWidth = 1.4; g.stroke();
+        g.fillStyle = 'rgba(255,255,255,.55)'; g.beginPath(); g.ellipse(12, 13, 2.6, 3.6, -.5, 0, TAU); g.fill();
+      } else if (sh === 'shield') {
+        poly(g, [[5, 5], [27, 5], [27, 17], [16, 29], [5, 17]], col);
+        poly(g, [[16, 5], [27, 5], [27, 17], [16, 29]], shade(col, -.3), false);
+        poly(g, [[5, 5], [27, 5], [27, 9], [5, 9]], shade(col, .35), false);
+        g.fillStyle = 'rgba(255,255,255,.6)'; poly(g, [[16, 11], [19, 16], [16, 21], [13, 16]], 'rgba(255,255,255,.6)');
+      } else if (sh === 'cloak') {
+        poly(g, [[16, 3], [26, 11], [28, 28], [4, 28], [6, 11]], col);
+        poly(g, [[16, 3], [22, 10], [16, 15], [10, 10]], shade(col, -.35), false);
+        g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(16, 15, 1.6, 13);
+        g.fillStyle = shade(col, .5); g.fillRect(12, 5, 8, 1.6);
+        if (v >= 4) { g.fillStyle = '#fff'; g.fillRect(15, 8, 2, 2); }
+      } else if (sh === 'crown') {
+        glowDot(g, 16, 16, 15, col, .4);
+        poly(g, [[3, 24], [3, 9], [10, 16], [16, 5], [22, 16], [29, 9], [29, 24]], '#fbbf24');
+        g.fillStyle = '#b45309'; g.fillRect(3, 22, 26, 4);
+        circ(g, 16, 6, 2.2, col); circ(g, 6, 9, 1.8, col); circ(g, 26, 9, 1.8, col);
+        g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(9, 17, 2, 4); g.fillRect(21, 17, 2, 4);
+      } else if (sh === 'bellows') {
+        poly(g, [[4, 12], [20, 8], [22, 22], [6, 26]], '#8a5c2c');
+        g.fillStyle = '#6b4420'; for (let i = 0; i < 3; i++) g.fillRect(6 + i, 11 + i, 14, 1.6);
+        g.fillStyle = '#9aa0a8'; g.fillRect(21, 13, 6, 4);
+        glowDot(g, 28, 15, 7, '#ff7a1a', .7);
+        poly(g, [[25, 13], [31, 10], [31, 20], [25, 18]], '#ff7a1a');
+      } else if (sh === 'fin') {
+        poly(g, [[16, 3], [26, 16], [16, 24], [7, 16]], col);
+        poly(g, [[16, 3], [26, 16], [16, 24]], shade(col, -.35), false);
+        g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = 1.1; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(16, 3 + i * 5); g.lineTo(16 + i * 2.4, 12 + i * 4.4); g.stroke(); }
+        g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(14, 7, 1.6, 5);
+      } else if (sh === 'bubble') {
+        g.beginPath(); g.arc(16, 16, 11, 0, TAU); g.fillStyle = 'rgba(140,220,255,.45)'; g.fill();
+        g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.arc(16, 16, 11, 0, TAU); g.stroke();
+        g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 1.6; g.beginPath(); g.arc(13, 12, 4, 2.4, 4.4); g.stroke();
+        circ(g, 21, 21, 2, 'rgba(255,255,255,.6)', false);
+      } else if (sh === 'hourglass') {
+        g.fillStyle = '#b07a40'; g.fillRect(8, 3, 16, 3); g.fillRect(8, 26, 16, 3);
+        poly(g, [[10, 6], [22, 6], [16, 15]], col); poly(g, [[10, 26], [22, 26], [16, 17]], col);
+        g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(15, 14, 1.6, 4);
+        glowDot(g, 16, 16, 12, col, .35);
+      } else {   // 'void' e outros
+        glowDot(g, 16, 16, 16, col, .55);
+        circ(g, 16, 16, 9, '#14121c', col, 2);
+        g.strokeStyle = col; g.lineWidth = 1.4; g.beginPath(); g.ellipse(16, 16, 13, 5, .5, 0, TAU); g.stroke();
+        g.fillStyle = 'rgba(255,255,255,.8)'; g.fillRect(15, 15, 2, 2);
+      }
+      break;
+    }
     default: circ(g, 16, 16, 9, md);
   }
 }
