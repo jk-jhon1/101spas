@@ -1,5 +1,5 @@
 'use strict';
-// Arte dos 50 chefes novos (05f..05j_bxart*.js): cada um tem sprite próprio (silhueta diferente de todos os outros), corpo escuro com brilho
+// Arte dos 90 chefes novos (05f..05l_bxart*.js): cada um tem sprite próprio (silhueta diferente de todos os outros), corpo escuro com brilho
 // emissivo, paleta curta, caixa de colisão dentro do desenho, mecânica descrita e dados completos. Uso: node dev/test_bx_art.js
 const { launch, INDEX_URL, run, startWorld, collectErrors } = require('./lib');
 let total = 0, fails = 0;
@@ -23,14 +23,14 @@ run(async () => {
     }
     for (let i = 0; i < sigs.length; i++) for (let j = i + 1; j < sigs.length; j++) { let df = 0; for (let k = 0; k < 400; k++) if (sigs[i][1][k] !== sigs[j][1][k]) df++; const ar = Math.abs(Math.log(sigs[i][2] / sigs[j][2])); if (df < 36 && ar < .12) out.dup.push([sigs[i][0], sigs[j][0], df]); }
     out.n = BXLIST.length; out.accents = new Set(BXLIST.map(d => d.acc)).size; out.swords = new Set(BXLIST.map(d => d.sword)).size; out.names = new Set(BXLIST.map(d => d.n)).size;
-    out.mechs = new Set(BXLIST.map(d => d.mech)).size; out.acts = [1, 2, 3, 4].map(a => BXLIST.filter(d => d.act === a).length); out.cache = BOSSART.cache.size;
+    out.mechs = new Set(BXLIST.map(d => d.mech)).size; out.acts = BX_ACTS.slice(1).map((_, i) => BXLIST.filter(d => d.act === i + 1).length); out.cache = BOSSART.cache.size;
     out.hpOrder = BXLIST.every((d, i) => i === 0 || d.act > BXLIST[i - 1].act || d.hp >= BXLIST[i - 1].hp * .6);
     return out;
   });
-  ok(r.n === 50, '50 chefes novos cadastrados  -> ' + r.n);
-  ok(JSON.stringify(r.acts) === '[8,14,16,12]', 'chefes por ato 8/14/16/12  -> ' + JSON.stringify(r.acts));
-  ok(r.names === 50 && r.mechs === 50 && r.swords === 50, 'nomes, mecânicas e espadas todos diferentes  -> ' + [r.names, r.mechs, r.swords].join('/'));
-  ok(r.accents >= 36, 'pelo menos 36 cores de brilho diferentes entre os 50  -> ' + r.accents);
+  ok(r.n === 90, '90 chefes novos cadastrados  -> ' + r.n);
+  ok(JSON.stringify(r.acts) === '[8,14,16,12,20,20]', 'chefes por ato 8/14/16/12/20/20  -> ' + JSON.stringify(r.acts));
+  ok(r.names === 90 && r.mechs === 90 && r.swords === 90, 'nomes, mecânicas e espadas todos diferentes  -> ' + [r.names, r.mechs, r.swords].join('/'));
+  ok(r.accents >= 55, 'pelo menos 55 cores de brilho diferentes entre os 90  -> ' + r.accents);
   for (const w of r.rows) {
     ok(w.art, w.id + ': tem arte');
     if (!w.art) continue;

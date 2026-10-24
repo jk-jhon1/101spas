@@ -1,5 +1,5 @@
 /* ============================================================
-   05f_bxart: infraestrutura da arte dos 50 chefes novos (pintores em 05g..05j_bxart*.js)
+   05f_bxart: infraestrutura da arte dos 90 chefes novos (pintores em 05g..05l_bxart*.js)
    Mesmo visual dos chefes anteriores (05d/05e): corpo escuro em poucos tons, luz de cima-esquerda, borda escura,
    e um brilho de UMA cor por chefe (núcleo claro, borda escura, halo semitransparente, pixels emissivos).
    Cada pintor desenha em coordenadas relativas ao centro da caixa de colisão (cx,cy) com as ajudas de bxH().

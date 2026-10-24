@@ -165,16 +165,18 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/13c_bossx.js', lines: 306, tag: 'Conteúdo', role: 'Motor dos 50 chefes novos', color: COL.play,
+    name: 'src/13c_bossx.js', lines: 312, tag: 'Conteúdo', role: 'Motor dos 90 chefes novos', color: COL.play,
     summary: 'Registro `BX`, condições de invocação, sigilos, repertório de golpes escritos como geradores e um kit de peças reutilizáveis (zonas, feixes, projéteis, lacaios, teleporte).',
     what: 'Cada chefe novo se declara com `bx(id, { ... })`: atributos, ato, condição (bioma, item, horário), mecânica única descrita em texto, e um conjunto de golpes escritos como `function*` — `yield 0.5` espera meio segundo e `yield` sozinho espera um quadro. O motor executa esses geradores, cuida das três fases, das zonas de perigo, dos projéteis telegrafados, dos lacaios e dos debuffs no jogador.',
     how: [
       'Peças: `bxZone` (lentidão, veneno, vento, explosão com aviso), `bxBeam`, `bxShot`, `bxFan`, `bxRing`, `bxRain`, `bxCol`, `bxTele`, `bxBoom`, `bxMin`, `bxBuff`.',
       '`bxUpdate` roda os golpes, `bxDraw` desenha e `bxOverlay` aplica escurecimentos e avisos de tela.',
+      '`d.phase(c)` permite mais de três fases (a Apoteose usa quatro, uma por quarto de vida) e `d.onPhase` troca o modo de movimento — é assim que a Apoteose sai do chão e passa a voar.',
+      'Chefes do Ato V/VI guardam as espadas T9/T10: essas 40 espadas não têm receita (`dropOnly`) e caem do chefe que as protege.',
       'A derrota dá loot, conta para `bxDefeatedCount` e libera os próximos atos.',
     ],
     funcs: 'bx() · summonBossX · bxUpdate · bxDraw · bxZone · bxBeam · bxFan · bxRing · bxRain · bxMinionAI · bxLoco',
-    deps: '09_combat, 08_phys, 05f_bxart, 13_enemies', used: '13d..13g_bx_*, 14b_draw_bx, 16_main',
+    deps: '09_combat, 08_phys, 05f_bxart, 13_enemies', used: '13d..13i_bx_*, 14b_draw_bx, 16_main',
   });
 
   doc.fileCard({
@@ -203,6 +205,21 @@ function part3b(doc) {
   });
 
   doc.fileCard({
+    name: 'src/13h_bx_a5.js', lines: 433, tag: 'Conteúdo', role: 'Chefes novos do Ato V (20)', color: COL.play,
+    summary: 'Os 20 chefes do Julgamento (espadas 161–180), cada um com uma mecânica inédita que muda como o jogador luta.',
+    what: 'Serafim que segura o veredito, dois raios girando em sentidos opostos, a espada selada no círculo (bater fora dela quase não faz dano), a gema imune do cetro, o coro dos querubins que corta o dano, o cálice que enche e cura, os sete selos, a lanterna que apaga no sexto acerto, o fênix que renasce de um ovo e o trono protegido por quatro pilares.',
+    how: ['Cada chefe usa `passive`, `hurt`, `after` ou `lethal` para implementar a própria regra.', 'Lacaios com `tag` (coro, mão, selo, pilar) alimentam as condições da mecânica.'],
+    deps: '13c_bossx', used: '13c, 14b',
+  });
+  doc.fileCard({
+    name: 'src/13i_bx_a6.js', lines: 442, tag: 'Conteúdo', role: 'Chefes novos do Ato VI (20) — inclui a Apoteose', color: COL.play,
+    summary: 'Os 20 chefes do Fim de Tudo (espadas 181–200), do primeiro raio de luz ao combate final de quatro estágios.',
+    what: 'Aqui cada chefe muda uma regra do combate: luz que apaga o corpo, cicatrizes de vazio no chão, um buraco branco que empurra tudo, planetas que absorvem dano, quadrantes de um teorema, o nome escrito que torna os tiros perseguidores, o relógio que compara o seu dano com o dele, o axioma que devolve metade do golpe, a maré que sobe e desce. A Apoteose fecha o jogo com 260 mil de vida, quatro estágios (terra, terra, céu, céu) e um repertório próprio por estágio.',
+    how: ['`phase(c)` devolve 1..4 por quarto de vida; `onPhase` cria os selos, liga asas e o voo sem colisão.', 'No estágio IV quatro raios giram em volta e o golpe final cobre a arena de colunas.'],
+    deps: '13c_bossx', used: '13c, 14b',
+  });
+
+  doc.fileCard({
     name: 'src/14_draw_enemies.js', lines: 236, tag: 'Desenho', role: 'Desenho de inimigos e chefes', color: COL.art,
     summary: 'Desenha cada tipo de inimigo proceduralmente, aplica tinta de status e organiza as camadas dos chefes (corpo, partes, sombra, brilho).',
     what: 'Os inimigos comuns são desenhados por formas simples com a cor do indivíduo (que muda com status: queimando, congelado, envenenado, amaldiçoado…). Os chefes clássicos usam o sprite pintado de 05e mais camadas móveis. O registro `BOSSDRAW` permite que módulos posteriores acrescentem desenhos sem tocar neste arquivo.',
@@ -215,9 +232,9 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/14b_draw_bx.js', lines: 36, tag: 'Desenho', role: 'Desenho dos 50 chefes novos', color: COL.art,
+    name: 'src/14b_draw_bx.js', lines: 36, tag: 'Desenho', role: 'Desenho dos 90 chefes novos', color: COL.art,
     summary: 'Liga o sprite pintado de cada chefe novo ao motor de desenho, com sombra no chão e camadas móveis opcionais.',
-    what: 'É um arquivo curto de propósito: só registra `BOSSDRAW.bx` (corpo + camadas `under`/`over`) e `BOSSDRAW.bxm` (lacaios). Toda a arte está em 05f–05j; toda a lógica em 13c. Assim, acrescentar um chefe novo não exige mexer no desenho nem no motor.',
+    what: 'É um arquivo curto de propósito: só registra `BOSSDRAW.bx` (corpo + camadas `under`/`over`) e `BOSSDRAW.bxm` (lacaios). Toda a arte está em 05f–05l; toda a lógica em 13c. Assim, acrescentar um chefe novo não exige mexer no desenho nem no motor.',
     funcs: 'BOSSDRAW.bx · BOSSDRAW.bxm · bxGroundShadow',
     deps: '05f_bxart, 14_draw_enemies', used: '16_main (bxDraw)',
   });

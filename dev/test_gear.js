@@ -76,9 +76,9 @@ for (const a of A.GACCS) {
 }
 for (const p of A.GPICKS) { const it = A.IT[p[0]]; ok(!!it && it.type === 'pick', 'picareta ausente: ' + p[0]); ok(A.RECIPES.some(r => r.out === p[0]), 'picareta sem receita: ' + p[0]); }
 ok(crafts === 5, 'acessórios forjáveis: esperado 5, veio ' + crafts);
-// todos os 45 chefes com acessório existem de verdade
+// todos os chefes com acessório existem de verdade
 const bossIds = Object.keys(A.BX);
-ok(bossIds.length === 50, 'chefes novos: esperado 50, veio ' + bossIds.length);
+ok(bossIds.length === 90, 'chefes novos: esperado 90, veio ' + bossIds.length);
 let bossAcc = 0;
 for (const b of bossIds) if (A.BX_ACC[b]) bossAcc++;
 ok(bossAcc === 41, 'chefes novos com acessório: esperado 41, veio ' + bossAcc);

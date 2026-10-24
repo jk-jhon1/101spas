@@ -1,7 +1,7 @@
-# Chefes novos — 50 (Atos I a IV)
+# Chefes novos — 90 (Atos I a VI)
 
-> Gerado automaticamente a partir dos dados do jogo (`src/13d..13g_bx_*.js`). Cada chefe tem **visual próprio** (pintado em `src/05g..05j_bxart*.js`, mesmo estilo dos 4 chefes anteriores: corpo escuro, brilho de uma cor, halo) e **uma mecânica única**.
-> **Como invocar:** no Criativo, Arsenal → *Inimigos & Chefes*; no modo Aventura, crie o **Sigilo** do chefe (receita abaixo) e use-o (a condição, quando houver, é o local/hora). **Espada:** cada chefe larga uma espada garantida (continua podendo ser forjada).
+> Gerado automaticamente a partir dos dados do jogo (`src/13d..13i_bx_*.js`). Cada chefe tem **visual próprio** (pintado em `src/05g..05l_bxart*.js`, mesmo estilo dos 4 chefes anteriores: corpo escuro, brilho de uma cor, halo) e **uma mecânica única**.
+> **Como invocar:** no Criativo, Arsenal → *Inimigos & Chefes*; no modo Aventura, crie o **Sigilo** do chefe (receita abaixo) e use-o (a condição, quando houver, é o local/hora). **Espada:** cada chefe larga a sua espada garantida. As dos Atos I a IV também podem ser forjadas; as dos **Atos V e VI (Tiers 9 e 10) só caem do chefe**.
 
 ## Ato I · Despertar (8)
 
@@ -80,4 +80,58 @@ Estação do Sigilo: **Forja Celeste** · estágio do mundo mínimo: 3
 | 48 | **Arquiteto Celestial** | 33000 | 98 | ergue uma jaula de projéteis em volta de você, que se fecha girando com uma brecha móvel; é preciso sair pela abertura. | — | 10× Barra de Celeste, 8× Essência de Terra, 6× Essência do Tempo | — | 113 Lâmina da Criação |
 | 49 | **Coração da Galáxia** | 40000 | 108 | dois jatos de luz giram como num pulsar, enquanto ondas de choque no chão batem no ritmo do coração: é preciso pular. | Manopla Condutora | 12× Barra de Celeste, 8× Essência de Luz, 8× Essência de Raio, 6× Essência do Tempo | — | 119 Origem do Cosmos |
 | 50 | **Mestre Forjador** | 42000 | 112 | aprende a resistir à espada que você mais usa: cada golpe da mesma lâmina enfraquece o seguinte. É preciso trocar de espada. | — | 14× Barra de Celeste, 2× Núcleo Mítico, 10× Essência de Fogo | — | 120 Gênesis Primordial |
+
+## Ato V · Além do Firmamento (20)
+
+Estação do Sigilo: **Forja Celeste** · estágio do mundo mínimo: 3
+
+| # | Chefe | Vida | Dano | Mecânica única | Sigilo (receita) | Condição | Espada |
+|---|---|---|---|---|---|---|---|
+| 51 | **Serafim da Balança** | 46000 | 126 | marca você com o veredito CULPADO: se você acertar o chefe antes do selo fechar, a sentença é anulada — se não, um pilar de luz desce sobre você. | — | 8× Barra de Celeste, 10× Essência de Luz, 2× Essência do Tempo | — | 161 Julgamento Seráfico |
+| 52 | **Aurora do Amanhecer** | 48000 | 128 | abre dois raios de aurora que varrem a arena girando em sentidos opostos: o vão entre eles é o único lugar seguro. | — | 8× Barra de Celeste, 12× Essência de Luz, 4× Essência de Fogo | — | 162 Asas do Amanhecer |
+| 53 | **Lei do Silêncio** | 44000 | 124 | o sino do silêncio: dentro do círculo dele a sua espada é selada por 1,1 s e liberada por 1,1 s; fora do círculo ele quase não sente os golpes. | — | 8× Barra de Celeste, 10× Essência de Sombra, 3× Essência do Tempo | — | 163 Lei do Silêncio |
+| 54 | **Cetro do Sol Nascente** | 50000 | 132 | a gema do cetro sobe e desce: no alto ele fica quase imune e chove fogo; quando ela desce, ele fica exposto por 3 s. | — | 9× Barra de Celeste, 10× Essência de Fogo, 8× Essência de Luz | — | 164 Cetro do Sol Nascente |
+| 55 | **Arqueiro da Constelação** | 47000 | 130 | acende estrelas no chão em sequência; quando a última acende, uma lança de luz atravessa todas de uma vez. | — | 8× Barra de Celeste, 8× Essência de Luz, 6× Essência de Raio | — | 165 Lança da Constelação |
+| 56 | **Veredito Celeste** | 54000 | 136 | o martelo marca a sua sombra no chão e a sombra cresce a cada golpe; quem estiver dentro dela é esmagado. | — | 10× Barra de Celeste, 10× Essência de Luz, 8× Essência de Terra | — | 166 Veredito Celeste |
+| 57 | **Coro dos Querubins** | 46000 | 124 | três querubins cantam em rodízio: enquanto o coro está completo ele quase não leva dano — mate um cantor para abrir a guarda. | — | 8× Barra de Celeste, 10× Essência de Luz, 4× Essência de Sangue | — | 167 Hino dos Querubins |
+| 58 | **Domínio do Trovão** | 52000 | 134 | carrega as bordas da arena: colunas elétricas avançam dos dois lados para o centro e só recuam quando ele leva um golpe. | — | 9× Barra de Celeste, 14× Essência de Raio, 4× Essência de Gelo | — | 168 Domínio do Trovão |
+| 59 | **Dragão da Aurora** | 50000 | 130 | voa deixando um rastro de ouro que endurece atrás dele: o corredor aperta a cada passada. | — | 9× Barra de Celeste, 8× Essência de Luz, 8× Essência de Fogo | — | 169 Aurora Dourada |
+| 60 | **Cálice da Eternidade** | 56000 | 132 | cada golpe enche a taça; quando transborda, ele se cura e despeja uma onda de luz — é preciso parar de bater antes do transbordamento. | — | 10× Barra de Celeste, 10× Essência de Água, 8× Essência de Luz | — | 170 Cálice da Eternidade |
+| 61 | **Coroa da Criação** | 52000 | 128 | cria servos com o seu próprio dano: a cada 20% de vida perdida nasce uma mão de luz que persegue você. | — | 9× Barra de Celeste, 10× Essência de Luz, 6× Essência de Terra | — | 171 Coroa da Criação |
+| 62 | **Selo do Juízo Final** | 58000 | 136 | sete selos giram em volta dele e absorvem um golpe cada; romper os sete abre uma janela de 5 s — depois os selos voltam. | — | 10× Barra de Celeste, 10× Essência de Sombra, 8× Essência de Sangue | — | 172 Selo do Juízo Final |
+| 63 | **Lâmina do Tempo Zero** | 55000 | 138 | zera o relógio: quando o ponteiro fecha a volta, todos os seus bônus e escudos somem e as lâminas paradas no ar voltam de uma vez. | — | 9× Barra de Celeste, 12× Essência do Tempo, 4× Essência de Raio | — | 173 Lâmina do Tempo Zero |
+| 64 | **Arauto da Luz** | 47000 | 126 | a lanterna acesa mira em você; acertá-lo seis vezes apaga a chama e ele atira às cegas por 4 s (mais tiros, sem mira). | — | 8× Barra de Celeste, 12× Essência de Luz, 6× Essência de Fogo | — | 174 Arauto da Luz |
+| 65 | **Sinfonia dos Céus** | 49000 | 127 | a pauta sobe: cinco linhas de música varrem a tela de baixo para cima e só as frestas entre elas são seguras. | — | 9× Barra de Celeste, 8× Essência de Luz, 4× Essência do Tempo | — | 175 Sinfonia dos Céus |
+| 66 | **Fênix Imortal** | 50000 | 130 | ao cair vira um ovo de cinzas por 6 s: se o ovo sobreviver, ela renasce com mais vida — quebre o ovo para acabar com ela de vez. | — | 9× Barra de Celeste, 12× Essência de Fogo, 6× Essência de Luz | — | 176 Fênix Imortal |
+| 67 | **Escudo do Firmamento** | 60000 | 134 | levanta a muralha: projéteis e magias não passam — só o golpe de perto, na fenda do olho, fere o corpo lá atrás. | — | 10× Barra de Celeste, 10× Essência de Terra, 8× Essência de Luz | — | 177 Escudo do Firmamento |
+| 68 | **Chama Sagrada** | 45000 | 122 | o fogo sagrado persegue quem para: ficar parado incendeia você aos poucos; correndo, a chama se apaga. | — | 8× Barra de Celeste, 14× Essência de Fogo, 6× Essência de Luz | — | 178 Chama Sagrada |
+| 69 | **Nexo do Infinito** | 57000 | 135 | guarda cada golpe que você dá e devolve o eco 3 s depois: acertar de novo antes disso redireciona o eco. | — | 10× Barra de Celeste, 12× Essência de Sombra, 5× Essência do Tempo | — | 179 Nexo do Infinito |
+| 70 | **Trono de Ouro** | 62000 | 138 | o trono é a armadura: enquanto os quatro pilares estiverem de pé ele quase não leva dano — derrube os pilares para ele levantar. | — | 10× Barra de Celeste, 10× Essência de Luz, 8× Essência de Terra | — | 180 Trono de Ouro |
+
+## Ato VI · Fim de Tudo (20)
+
+Estação do Sigilo: **Forja Celeste** · estágio do mundo mínimo: 3
+
+| # | Chefe | Vida | Dano | Mecânica única | Sigilo (receita) | Condição | Espada |
+|---|---|---|---|---|---|---|---|
+| 71 | **Primeira Luz** | 78000 | 168 | enquanto apagado ele é quase intocável; cada golpe dele acende a arena por 4 s — e na luz o seu dano sobe 15%. | — | 1× Núcleo Mítico, 12× Barra de Celeste, 14× Essência de Luz | — | 181 Primeira Luz |
+| 72 | **Fim de Tudo** | 82000 | 172 | apaga pedaços do chão: cada marca vira uma cicatriz de vazio que queima por 30 s — a arena vai ficando sem lugar seguro. | — | 1× Núcleo Mítico, 12× Barra de Celeste, 14× Essência de Sombra | — | 182 Fim de Tudo |
+| 73 | **Buraco Branco** | 84000 | 170 | um buraco branco: tudo é empurrado para longe dele, inclusive você e os seus projéteis — é preciso lutar contra a correnteza. | — | 1× Núcleo Mítico, 12× Barra de Celeste, 12× Essência de Luz | — | 183 Buraco Branco |
+| 74 | **Cosmos Vivo** | 86000 | 168 | quatro planetas giram em volta e absorvem os golpes: cada planeta vivo corta o seu dano pela metade de novo — destruí-los enfraquece o núcleo, mas eles renascem. | — | 1× Núcleo Mítico, 12× Barra de Celeste, 10× Essência de Sombra, 8× Essência de Luz | — | 184 Cosmos Vivo |
+| 75 | **Teorema Final** | 80000 | 170 | enuncia um teorema: quatro quadrantes acendem e só o que corresponde à resposta é seguro — os outros três explodem. | — | 1× Núcleo Mítico, 12× Barra de Celeste, 8× Essência do Tempo, 8× Essência de Luz | — | 185 Teorema Final |
+| 76 | **O Último Nome** | 88000 | 172 | escreve o seu nome no livro: enquanto estiver escrito, todos os tiros te perseguem — três golpes apagam o nome. | — | 1× Núcleo Mítico, 12× Barra de Celeste, 10× Essência de Sombra, 6× Essência de Sangue | — | 186 O Último Nome |
+| 77 | **Origem do Vazio** | 90000 | 176 | o horizonte do vazio puxa você para o centro: dentro dele o chefe é intocável e longe demais ele quase não sente — o lugar certo é a borda. | — | 1× Núcleo Mítico, 12× Barra de Celeste, 14× Essência de Sombra | — | 187 Origem do Vazio |
+| 78 | **Relógio do Universo** | 92000 | 174 | cada 10 s ele compara o seu dano com o dele: se você bateu pouco, ele se cura e dispara mais rápido; se bateu muito, ele cambaleia. | — | 1× Núcleo Mítico, 12× Barra de Celeste, 14× Essência do Tempo | — | 188 Relógio do Universo |
+| 79 | **Semente Cósmica** | 85000 | 168 | lança raízes pelo chão: se cinco raízes sobreviverem, ela floresce, se cura e chama a floresta — corte as raízes. | — | 1× Núcleo Mítico, 12× Barra de Celeste, 10× Essência de Terra, 8× Essência de Veneno | — | 189 Semente Cósmica |
+| 80 | **Axioma** | 90000 | 176 | declara um axioma: por 4 s, quem atacar recebe metade do próprio dano de volta — é preciso parar de bater quando a pedra acender. | — | 1× Núcleo Mítico, 12× Barra de Celeste, 8× Essência de Luz, 8× Essência de Terra | — | 190 Axioma |
+| 81 | **Convergência Final** | 95000 | 178 | abre portais nas bordas da tela e traz tudo para o centro: os projéteis convergem em você, de todas as direções ao mesmo tempo. | — | 2× Núcleo Mítico, 12× Barra de Celeste, 8× Essência de Raio, 6× Essência do Tempo | — | 191 Convergência Final |
+| 82 | **Espada do Autor** | 98000 | 180 | escreve uma palavra no chão: cada letra é uma coluna que cai em sequência, e a última letra é a mais forte de todas. | — | 2× Núcleo Mítico, 14× Barra de Celeste, 10× Essência de Luz, 8× Essência do Tempo | — | 192 Espada do Autor |
+| 83 | **Nada Eterno** | 96000 | 176 | apaga o excesso: por 4 s nenhum golpe seu passa de 40 de dano — o dano vem do tempo certo, não da força. | — | 2× Núcleo Mítico, 12× Barra de Celeste, 14× Essência de Sombra | — | 193 Nada Eterno |
+| 84 | **Tudo de Uma Vez** | 100000 | 178 | tudo de uma vez: cada golpe dele é uma mecânica de outro ato — gravidade invertida, muralha, confusão e enxame. | — | 2× Núcleo Mítico, 14× Barra de Celeste, 8× Essência de Luz, 8× Essência de Sombra | — | 194 Tudo de Uma Vez |
+| 85 | **Ponto Zero** | 92000 | 180 | colapsa num ponto: puxa tudo para o centro; perto dele você flutua sem conseguir pular e leva dano contínuo. | — | 2× Núcleo Mítico, 12× Barra de Celeste, 10× Essência do Tempo, 8× Essência de Raio | — | 195 Ponto Zero |
+| 86 | **Coração do Multiverso** | 97000 | 178 | a cada batida o mundo troca: a gravidade inverte e os tiros mudam de cor e de padrão — é preciso reaprender a andar no ar. | — | 2× Núcleo Mítico, 12× Barra de Celeste, 10× Essência de Sangue, 6× Essência de Luz | — | 196 Coração do Multiverso |
+| 87 | **Lâmina Absoluta** | 100000 | 182 | a lâmina absoluta corta tudo: ele só pode ser ferido no instante em que a própria lâmina dele está cortando — o resto do tempo, quica. | — | 2× Núcleo Mítico, 14× Barra de Celeste, 10× Essência de Luz, 8× Essência de Raio | — | 197 Lâmina Absoluta |
+| 88 | **Maré Cósmica** | 99000 | 180 | a maré sobe e desce: quando sobe você flutua e ondas varrem o chão; quando desce, o chão queima por onde ela passou. | — | 2× Núcleo Mítico, 13× Barra de Celeste, 12× Essência de Água, 6× Essência de Gelo | — | 198 Maré Cósmica |
+| 89 | **Brado do Infinito** | 102000 | 184 | grita: o grito vai e volta 1,5 s depois pelo lado oposto — é preciso trocar de lado antes do eco. | — | 2× Núcleo Mítico, 14× Barra de Celeste, 10× Essência de Luz, 8× Essência de Raio | — | 199 Brado do Infinito |
+| 90 | **Apoteose** | 260000 | 232 | quatro estágios de vida: I julgamento e martelo, II selos que o blindam, III asas com raios girando e IV a apoteose final — nos dois primeiros ele anda no chão, nos dois últimos voa. | — | 4× Núcleo Mítico, 20× Barra de Celeste, 20× Essência de Luz, 14× Essência do Tempo | — | 200 Apoteose |
 

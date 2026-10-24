@@ -26,7 +26,7 @@ function S(num, name, d, v, k, look, fx, txt, rec, o) {
   const ing = {}; rec.split(',').forEach(p => { const [a, b] = p.split(':'); ing[a] = +b; });
   SWORDS.push(sw); SWORD_BY_NUM[num] = sw;
   IT[id] = { id, n: name, type: 'sword', tier: t, stack: 1, sw, ic: ['sword', sw], desc: txt };
-  RECIPES.push({ out: id, n: 1, ing, st: sw.station });
+  if (o.noRecipe) sw.dropOnly = true; else RECIPES.push({ out: id, n: 1, ing, st: sw.station });
   return sw;
 }
 // ======================= TIER 1 — INÍCIO DE JOGO & BÁSICO (001–020) [PDF] =======================

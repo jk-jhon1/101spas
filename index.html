@@ -2655,7 +2655,7 @@ function bossWarm(kind) {   // gera UM quadro que ainda falta por chamada (evita
 ;
 /* ===== 05f_bxart.js ===== */
 /* ============================================================
-   05f_bxart: infraestrutura da arte dos 50 chefes novos (pintores em 05g..05j_bxart*.js)
+   05f_bxart: infraestrutura da arte dos 90 chefes novos (pintores em 05g..05l_bxart*.js)
    Mesmo visual dos chefes anteriores (05d/05e): corpo escuro em poucos tons, luz de cima-esquerda, borda escura,
    e um brilho de UMA cor por chefe (núcleo claro, borda escura, halo semitransparente, pixels emissivos).
    Cada pintor desenha em coordenadas relativas ao centro da caixa de colisão (cx,cy) com as ajudas de bxH().
@@ -3534,6 +3534,653 @@ bxArt('forjador', 260, 260, 130, 140, 4, (h, fr) => {
   for (const [x, y] of [[-30, -20], [26, -14], [-26, 14], [30, 12]]) h.G(h.S(x, y, x + 6, y + 8, 1.4), { hr: 1, ha: 60, top: 4.6, edge: 2 });
   for (let i = 0; i < 12; i++) h.put(40 + hash2(i, 3, fr) * 60, -60 + hash2(i, 4, fr) * 70, [255, 200, 120], 200);
 }, { acc: '#ff8a3d', acc2: '#1a0e06', fps: 5 });
+
+;
+/* ===== 05k_bxart5.js ===== */
+/* ============================================================
+   05k_bxart5: peças compartilhadas + sprites dos 20 chefes do Ato V (Tier 9)
+   Mesmo estilo dos outros chefes (05f): corpo escuro em poucos tons, luz de cima-esquerda,
+   borda escura e UM brilho por chefe. As peças abaixo são reutilizadas pelos dois atos finais.
+   Nada aqui toca o DOM ao carregar.
+   ============================================================ */
+// ---------- peças ----------
+function bxRingGlow(h, o) {   // anel fino de luz (halo, órbita)
+  o = o || {}; const a = h.E(o.x || 0, o.y || -60, o.rx || 26, o.ry || 7), b = h.E(o.x || 0, o.y || -60, (o.rx || 26) - (o.w || 4), (o.ry || 7) - (o.w || 4) * .38);
+  const r = h.N(a, b); h.G(r, { hr: o.hr || 2, ha: o.ha || 120, top: 5 }); return r;
+}
+function bxWingShape(h, s, o) {   // uma asa de penas (s = -1 esquerda / 1 direita)
+  o = o || {}; const L = o.len || 46, H0 = o.h || 34, y = o.y || -6, ph = o.ph || 0;
+  const m = h.P([[s * 4, y], [s * L * .5, y - H0 * .55 + ph], [s * L, y - H0 + ph * 1.4], [s * L * .96, y - H0 * .45 + ph], [s * L * .7, y - H0 * .12 + ph], [s * L * .46, y + H0 * .14], [s * 6, y + 10]]);
+  h.F(m, o.ramp || h.R.bone, o.t || 1.3, { hi: 1.1, lo: 1.2, ol: 0, noise: .2 });
+  if (o.edge !== false) for (let i = 1; i <= 3; i++) h.L(s * L * .26, y - H0 * .42 + ph + i * 5, s * L * (i === 1 ? .9 : .72), y - H0 * .68 + ph * 1.2 + i * 6, o.ramp || h.R.bone, .55);
+  return m;
+}
+function bxSpikeRow(h, o) {   // coroa de espinhos/pontas
+  o = o || {}; const n = o.n || 5, w = o.w || 26, y = o.y || -40, hh = o.h || 12, s = o.s || 1;
+  const pts = []; for (let i = 0; i < n; i++) { const x = -w + i * (w * 2 / (n - 1)); pts.push([x, y], [x + w * .5 / (n - 1), y - hh * (i % 2 ? .72 : 1) * s]); }
+  pts.push([w, y + 4], [-w, y + 4]);
+  const m = h.P(pts); h.F(m, o.ramp || h.R.gold, o.t || 2.2, { hi: 1.1, lo: .8, ol: 0 }); return m;
+}
+function bxOrbCore(h, x, y, r, o) {   // núcleo redondo que brilha
+  o = o || {}; const m = h.E(x, y, r, r * (o.ry || 1)); h.F(m, o.ramp || h.R.shade, 1.05, { hi: .6, lo: .6, ol: 0 }); h.G(m, { hr: o.hr || 3, ha: o.ha || 130, top: 5.4, p: .9 }); return m;
+}
+function bxRobeShape(h, o) {   // manto/corpo em sino (base larga)
+  o = o || {}; const w = o.w || 26, y0 = o.y0 || -34, y1 = o.y1 || 40, m = h.P([[-w * .5, y0], [-w * .62, y0 + (y1 - y0) * .45], [-w, y1 - 6], [-w * .8, y1], [w * .8, y1], [w, y1 - 6], [w * .62, y0 + (y1 - y0) * .45], [w * .5, y0]]);
+  h.F(m, o.ramp || h.R.cloth, o.t || 1.3, { hi: 1.2, lo: 1.3, ol: 0, noise: .3, r2: true }); return m;
+}
+function bxBeadRing(h, o) {   // colar/rosário de contas
+  o = o || {}; const n = o.n || 10, rx = o.rx || 26, ry = o.ry || 9, y = o.y || 10;
+  for (let i = 0; i < n; i++) { const a = i / n * TAU + (o.off || 0); h.F(h.E(Math.cos(a) * rx, y + Math.sin(a) * ry, o.r || 2, o.r || 2), o.ramp || h.R.bone, 1.6, { ol: 0 }); }
+}
+function bxChainLine(h, x0, y0, x1, y1, n, r) {   // corrente de elos
+  for (let i = 0; i <= n; i++) { const t = i / n; h.F(h.E(lerp(x0, x1, t), lerp(y0, y1, t), r, r * .8), h.R.steel, 1.4, { ol: 0 }); }
+}
+function bxFlameBody(h, o) {   // chama (lágrima) com núcleo claro
+  o = o || {}; const w = o.w || 18, hh = o.h || 46, y = o.y || 0, m = h.P([[0, y - hh], [w * .5, y - hh * .45], [w * .62, y - hh * .05], [w * .34, y + hh * .2], [0, y + hh * .28], [-w * .34, y + hh * .2], [-w * .62, y - hh * .05], [-w * .5, y - hh * .45]]);
+  h.F(m, o.ramp || h.R.ember, 1.6, { hi: 1.3, lo: 1.2, ol: 0, noise: .4 }); h.G(h.P([[0, y - hh * .8], [w * .28, y - hh * .25], [0, y + hh * .12], [-w * .28, y - hh * .25]]), { hr: 3, ha: 150 }); return m;
+}
+
+// ============================================================
+// ATO V — 20 chefes do Tier 9
+// ============================================================
+// 1. Serafim da Balança: seis asas, corpo esguio, halo e a balança do juízo
+bxArt('serafim', 240, 214, 120, 120, 4, (h, fr) => {
+  const R = h.R, fl = Math.sin(fr / 4 * TAU) * 5;
+  for (const [k, s] of [[1, -1], [1, 1], [.74, -1], [.74, 1], [.48, -1], [.48, 1]]) bxWingShape(h, s, { len: 96 * k, h: 52 * k, y: -26, ph: fl * k, t: 1.5 });
+  bxRingGlow(h, { y: -78, rx: 30, ry: 9, w: 5 });
+  h.F(h.P([[-13, -46], [13, -46], [18, -14], [14, 26], [6, 40], [-6, 40], [-14, 26], [-18, -14]]), R.steel, 1.45, { hi: 1.1, lo: 1.2, ol: 0, noise: .22 });
+  for (const y of [-24, -6, 12]) h.L(-12, y, 12, y, R.gold, .8);
+  h.F(h.E(0, -58, 12, 13), R.bone, 1.6, { ol: 0, noise: .2 }); h.F(h.P([[-11, -66], [-4, -78], [0, -70], [4, -78], [11, -66]]), R.gold, 2.4, { ol: 0 });
+  h.G(h.S(-9, -58, 9, -58, 2), { hr: 2, ha: 120, top: 5 }); h.eye(-5, -61, 2, 2.4); h.eye(5, -61, 2, 2.4);
+  for (const s of [-1, 1]) { h.F(h.C([[s * 16, -18], [s * 30, -4], [s * 34, 14]], 4, 2.6, 4), R.steel, 1.2, { ol: 0 }); }
+  h.F(h.S(-46, 16, -46, 30, 2), R.gold, 1.8, {}); h.F(h.C([[-46, 16], [-40, 10], [-34, 16]], 1.2, 1.2, 4), R.gold, 2, { ol: 0 }); h.F(h.C([[-46, 16], [-52, 10], [-58, 16]], 1.2, 1.2, 4), R.gold, 2, { ol: 0 });
+  h.F(h.E(-46, 10, 3, 3), R.gold, 2.2, { ol: 0 }); h.F(h.E(-58, 18, 4, 2.4), R.brass, 1.6, { ol: 0 }); h.F(h.E(-34, 18, 4, 2.4), R.brass, 1.6, { ol: 0 });
+  h.star(14, 3, -70, -70, 70, 30);
+}, { acc: '#fde68a', acc2: '#2a2416', fps: 5 });
+
+// 2. Aurora do Amanhecer: pássaro colossal com leque de cauda e disco solar
+bxArt('aurora', 250, 220, 125, 118, 4, (h, fr) => {
+  const R = h.R, fl = Math.sin(fr / 4 * TAU) * 4;
+  for (let i = 0; i < 7; i++) { const a = -1.9 + i * .28, m = h.P([[0, 26], [Math.cos(a) * 96, 26 + Math.sin(a) * 74 + fl], [Math.cos(a) * 104, 40 + Math.sin(a) * 78 + fl], [Math.cos(a) * 58, 46 + Math.sin(a) * 40]]); h.F(m, i % 2 ? R.ember : R.gold, 1.5 + i * .12, { hi: 1.2, lo: 1.1, ol: 0, noise: .3 }); h.G(h.I(m, h.P([[-2, 30], [2, 30], [2, 60], [-2, 60]])), { hr: 1, ha: 60 }); }
+  bxWingShape(h, -1, { len: 86, h: 56, y: -18, ph: fl }); bxWingShape(h, 1, { len: 86, h: 56, y: -18, ph: -fl });
+  h.F(h.P([[-22, -30], [0, -46], [22, -30], [26, 4], [14, 34], [-14, 34], [-26, 4]]), R.ember, 1.7, { hi: 1.3, lo: 1.2, ol: 0, noise: .25 });
+  h.D(h.P([[-22, -10], [22, -10], [20, 30], [-20, 30]]), R.gold, 1.4, .18, 8);
+  h.F(h.E(0, -50, 15, 13), R.gold, 1.9, { ol: 0 });
+  for (let i = -2; i <= 2; i++) h.F(h.P([[i * 4, -60], [i * 4 + 3, -78 - Math.abs(i) * 4], [i * 4 + 6, -60]]), R.ember, 2.4, { ol: 0 });
+  h.G(h.S(-7, -52, 7, -52, 2), { hr: 2, ha: 110, top: 5 }); h.eye(-5, -54, 2, 2.2); h.eye(5, -54, 2, 2.2);
+  h.F(h.P([[-4, -40], [4, -38], [2, -26], [-2, -26]]), R.ochre, 2.2, { ol: 0 });
+  h.star(18, 5, -80, -80, 80, 60);
+}, { acc: '#fbbf24', acc2: '#3a2408', fps: 5 });
+
+// 3. Lei do Silêncio: monge flutuante, manto em sino, máscara sem boca e o dedo no silêncio
+bxArt('silencio', 190, 200, 95, 116, 3, (h, fr) => {
+  const R = h.R, sw = Math.sin(fr / 3 * TAU) * 2;
+  bxBeadRing(h, { n: 12, rx: 34, ry: 10, y: 4 + sw, r: 2.2 });
+  bxRobeShape(h, { w: 40, y0: -30, y1: 56, ramp: R.cloth, t: 1.2 });
+  for (let i = -2; i <= 2; i++) h.L(i * 12, -18, i * 17, 52, R.ink, .5);
+  h.F(h.E(0, -42, 16, 18), R.bone, 1.5, { ol: 0, noise: .15 });
+  h.F(h.P([[-16, -46], [-12, -60], [0, -64], [12, -60], [16, -46], [10, -36], [-10, -36]]), R.ink, 1.2, { ol: 0 });
+  h.G(h.P([[-16, -52], [16, -52], [15, -46], [-15, -46]]), { hr: 1.6, ha: 90, top: 4.6 });
+  h.F(h.P([[-4, -30], [4, -30], [3, -18], [-3, -18]]), R.bone, 1.4, {});
+  h.F(h.C([[6, -14], [14, -30], [10, -44]], 2.4, 1.6, 4), R.bone, 1.6, { ol: 0 }); h.F(h.E(10, -46, 2.6, 3.4), R.bone, 1.8, { ol: 0 });
+  h.F(h.C([[-10, 8], [-26, 18], [-22, 34]], 4, 3, 4), R.cloth, 1.1, { ol: 0 });
+  for (const s of [-1, 1]) h.F(h.E(s * 30, 6, 5, 4), R.cloth, 1.2, { ol: 0 });
+  h.G(h.E(0, 20, 4, 4), { hr: 2, ha: 70 });
+}, { acc: '#c4b5fd', acc2: '#171528', fps: 4 });
+
+// 4. Cetro do Sol Nascente: bastão vivo, gema-sol no topo, anéis em órbita
+bxArt('cetro', 190, 216, 95, 118, 4, (h, fr) => {
+  const R = h.R, sp = fr / 4 * TAU;
+  h.F(h.P([[-26, 96], [-16, 40], [16, 40], [26, 96]]), R.wine, 1.2, { hi: 1.1, lo: 1.2, ol: 0, noise: .3 });
+  h.F(h.P([[-7, 44], [7, 44], [5, -34], [-5, -34]]), R.gold, 1.5, { hi: 1.2, lo: 1.6, ol: 0 });
+  for (let i = -4; i <= 4; i++) h.L(-5, i * 9 + 44, 5, i * 9 + 42, R.ochre, .4);
+  for (const s of [-1, 1]) { h.F(h.C([[s * 6, 10], [s * 18, 24], [s * 10, 36]], 4, 3, 4), R.gold, 1.4, { ol: 0 }); h.F(h.E(s * 18, 26, 4, 4), R.bone, 1.6, { ol: 0 }); }
+  for (let i = 0; i < 8; i++) { const a = sp + i / 8 * TAU; h.F(h.P([[Math.cos(a) * 12, -52 + Math.sin(a) * 12], [Math.cos(a) * 30, -52 + Math.sin(a) * 30], [Math.cos(a + .35) * 9, -52 + Math.sin(a + .35) * 9]]), R.ochre, 2.4, { ol: 0 }); }
+  bxOrbCore(h, 0, -52, 15, { hr: 4, ha: 160 });
+  bxRingGlow(h, { y: -52, rx: 34, ry: 12, w: 4 }); bxRingGlow(h, { y: -52, rx: 46, ry: 17, w: 5 });
+  h.F(h.P([[-14, 44], [-24, 62], [-10, 58], [0, 48], [10, 58], [24, 62], [14, 44]]), R.wine, 1.9, { ol: 0 });
+  h.star(10, 2, -60, -90, 60, -20);
+}, { acc: '#f59e0b', acc2: '#301a04', fps: 5 });
+
+// 5. Lança da Constelação: arqueiro de estrelas ligadas por fios de luz
+bxArt('constelacao', 230, 200, 115, 108, 4, (h, fr) => {
+  const R = h.R, tw = .72 + Math.sin(fr / 4 * TAU) * .28;
+  h.A(h.P([[-70, -10], [-40, -40], [-10, -50], [20, -34], [46, -6], [34, 34], [0, 46], [-34, 30]]), [120, 150, 220], 40);
+  const st = [[-62, -6], [-42, -36], [-14, -48], [16, -36], [40, -10], [30, 26], [0, 40], [-28, 26], [0, -6], [0, 20]];
+  for (let i = 0; i < st.length; i++) { const a = st[i], b = st[(i + 1) % st.length]; h.L(a[0], a[1], b[0], b[1], [180, 200, 255], .5); }
+  for (const [x, y] of st) { h.F(h.E(x, y, 3, 3), R.ice, 2.6 * tw, { ol: 0 }); h.G(h.E(x, y, 2.2, 2.2), { hr: 2, ha: 150 }); }
+  h.star(16, 7, -80, -70, 80, 60);
+  h.F(h.S(-46, -18, 34, -34, 2.2), R.ice, 1.6, {}); h.L(-46, -18, 34, -34, R.sky, .7);
+  h.F(h.E(-46, -18, 5, 5), R.ice, 2, { ol: 0 }); h.F(h.E(34, -34, 4, 4), R.ice, 2.4, { ol: 0 });
+  h.P([[10, -30], [22, -28], [16, -18]]); h.G(h.P([[12, -28], [20, -27], [16, -21]]), { hr: 2, ha: 120 });
+}, { acc: '#a5b4fc', acc2: '#101430', fps: 6 });
+
+// 6. Veredito Celeste: titã de pedra com martelo de juiz e balanças penduradas
+bxArt('veredito', 230, 210, 115, 114, 3, (h, fr) => {
+  const R = h.R, sw = Math.round(Math.sin(fr / 3 * TAU) * 2);
+  bxRobeShape(h, { w: 48, y0: -20, y1: 62, ramp: R.stone, t: 1.1 });
+  h.F(h.P([[-26, -44], [26, -44], [30, -14], [18, 2], [-18, 2], [-30, -14]]), R.slate, 1.5, { hi: 1.2, lo: 1.2, ol: 0, noise: .2 });
+  h.F(h.P([[-24, -66], [24, -66], [30, -44], [-30, -44]]), R.stone, 1.7, { hi: 1.2, lo: 1.3, ol: 0, noise: .18 });
+  h.G(h.S(-18, -56, 18, -56 + sw, 2.2), { hr: 2, ha: 110, top: 5 }); h.eye(-9, -55, 2.6, 2); h.eye(9, -55, 2.6, 2);
+  for (const s of [-1, 1]) h.F(h.P([[s * 30, -40], [s * 40, -30], [s * 38, 6], [s * 28, 0]]), R.slate, 1.2, { ol: 0 });
+  h.F(h.C([[36, -34], [62, -46], [74, -34]], 3, 2.4, 4), R.wood, 1.2, { ol: 0 });
+  h.F(h.P([[60, -50], [88, -50], [88, -34], [60, -34]]), R.iron, 1.8, { hi: 1.4, lo: 1.3, ol: 0 });
+  h.F(h.C([[-34, -18], [-54, -6], [-58, 14]], 1.2, 1, 4), R.brass, 1.6, { ol: 0 });
+  h.F(h.P([[-76, 14], [-40, 14], [-50, 26], [-66, 26]]), R.brass, 1.5, { ol: 0 }); h.F(h.E(-58, 10, 9, 2), R.brass, 1.8, { ol: 0 });
+  bxChainLine(h, -84, -6, -70, 10, 3, 1.6); bxChainLine(h, -32, -6, -46, 10, 3, 1.6);
+  h.D(h.P([[-30, 20], [30, 20], [26, 60], [-26, 60]]), R.stone, .5, .12, 4);
+}, { acc: '#fbbf24', acc2: '#241d12', fps: 3 });
+
+// 7. Hino dos Querubins: três cabeças aladas em volta de um coração-coro
+bxArt('querubins', 210, 190, 105, 100, 4, (h, fr) => {
+  const R = h.R, bob = Math.sin(fr / 4 * TAU) * 3;
+  for (const [dx, dy] of [[0, -34 + bob], [-46, -6 - bob], [46, -6 + bob]]) {
+    bxWingShape(h, -1, { len: 30, h: 22, y: dy + 2, ph: 0, t: 1.2, ramp: R.bone });
+    bxWingShape(h, 1, { len: 30, h: 22, y: dy + 2, ph: 0, t: 1.2, ramp: R.bone });
+    h.F(h.E(dx, dy, 13, 13), R.bone, 1.5, { ol: 0, noise: .12 });
+    h.F(h.E(dx, dy - 3, 13, 9), R.bone, 1.3, { ol: 0 });
+    h.F(h.P([[dx - 12, dy - 8], [dx - 6, dy - 16], [dx, dy - 8]]), R.gold, 2.2, { ol: 0 });
+    for (const s of [-1, 1]) h.eye(dx + s * 5, dy - 1, 1.8, 2.2);
+    h.F(h.E(dx, dy + 3, 1.6, 1.2), R.pink, 1.6, { ol: 0 });
+  }
+  h.F(h.P([[0, -6], [12, -16], [24, -6], [22, 10], [0, 26], [-22, 10], [-24, -6], [-12, -16]]), R.coral, 1.7, { hi: 1.3, lo: 1.2, ol: 0, noise: .25 });
+  bxOrbCore(h, 0, 6, 9, { hr: 3, ha: 140 });
+  h.star(12, 9, -60, -50, 60, 40);
+}, { acc: '#fda4af', acc2: '#2a1218', fps: 6 });
+
+// 8. Domínio do Trovão: pilar de nuvem com tridente e estilhaços de raio
+bxArt('trovao', 210, 210, 105, 112, 4, (h, fr) => {
+  const R = h.R, sp = fr / 4 * TAU;
+  for (let i = 0; i < 5; i++) { const x = -56 + i * 28, y = 56 + Math.sin(sp + i) * 4; h.F(h.E(x, y, 22, 12), R.slate, 1.1 + i * .05, { ol: 0, noise: .5, r2: true }); }
+  h.F(h.P([[-20, 50], [-12, -20], [-18, -40], [-6, -34], [0, -52], [8, -32], [18, -40], [12, -16], [20, 50]]), R.night, 1.3, { hi: 1.1, lo: 1.1, ol: 0, noise: .35 });
+  for (let i = 0; i < 4; i++) { const a = sp * .6 + i * TAU / 4; h.F(h.P([[Math.cos(a) * 40, -18 + Math.sin(a) * 40], [Math.cos(a) * 46 - 6, -18 + Math.sin(a) * 46], [Math.cos(a) * 52, -18 + Math.sin(a) * 52 + 8]]), R.ice, 2.6, { ol: 0 }); h.G(h.P([[Math.cos(a) * 44, -20 + Math.sin(a) * 44], [Math.cos(a) * 48, -18 + Math.sin(a) * 48]]), { hr: 2, ha: 120 }); }
+  h.F(h.S(-2, -46, 2, 48, 3), R.steel, 1.6, {});
+  for (const s of [-1, 1]) { h.F(h.P([[s * 2, -46], [s * 10, -56], [s * 12, -44]]), R.steel, 2.2, { ol: 0 }); h.F(h.P([[s * 2, -40], [s * 9, -48], [s * 10, -38]]), R.steel, 2, { ol: 0 }); }
+  h.F(h.P([[-6, -52], [0, -74], [6, -52]]), R.steel, 2.4, { ol: 0 });
+  h.G(h.S(-2, -50, 2, 40, 1.6), { hr: 2, ha: 120 });
+  h.eye(-5, -26, 2.4, 3); h.eye(5, -26, 2.4, 3);
+}, { acc: '#67e8f9', acc2: '#0d1b2a', fps: 7 });
+
+// 9. Aurora Dourada: dragão-fita oriental que serpenteia
+bxArt('aurora_dourada', 250, 200, 125, 100, 5, (h, fr) => {
+  const R = h.R, t = fr / 5 * TAU;
+  const spine = []; for (let i = 0; i <= 8; i++) { const k = i / 8; spine.push([-96 + k * 190, Math.sin(k * 4.4 + t) * 22 + 18 * k]); }
+  for (let i = 0; i < 8; i++) { const a = spine[i], b = spine[i + 1]; h.F(h.C([a, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 - 6], b], 13 - i * 1.1, 10 - i, 4), i > 5 ? R.gold : R.amberr, 1.5, { hi: 1.3, lo: 1.2, ol: 0, noise: .25 }); }
+  const hd = spine[8];
+  h.F(h.P([[hd[0] - 8, hd[1] - 8], [hd[0] + 6, hd[1] - 16], [hd[0] + 22, hd[1] - 10], [hd[0] + 26, hd[1] + 2], [hd[0] + 12, hd[1] + 10], [hd[0] - 6, hd[1] + 6]]), R.gold, 1.8, { hi: 1.3, lo: 1.2, ol: 0, noise: .2 });
+  for (const s of [-1, 1]) { h.F(h.C([[hd[0] + 2, hd[1] - 12], [hd[0] - 6 * s, hd[1] - 30], [hd[0] + 2 * s, hd[1] - 36]], 2.4, 1.4, 4), R.gold, 2.4, { ol: 0 }); h.F(h.C([[hd[0] + 20, hd[1] - 2], [hd[0] + 40, hd[1] - 10 * s]], 1.4, .8, 4), R.amberr, 1.6, { ol: 0 }); }
+  h.eye(hd[0] + 14, hd[1] - 4, 2.6, 2.6);
+  h.G(h.E(hd[0] + 24, hd[1] + 2, 3, 3), { hr: 3, ha: 150 });
+  for (let i = 1; i < 8; i += 2) h.F(h.P([[spine[i][0], spine[i][1] - 12], [spine[i][0] + 6, spine[i][1] - 20], [spine[i][0] + 10, spine[i][1] - 8]]), R.gold, 2.2, { ol: 0 });
+  h.star(10, 4, -100, -40, 100, 60);
+}, { acc: '#f59e0b', acc2: '#33230a', fps: 6 });
+
+// 10. Cálice da Eternidade: taça colossal com licor de luz e figura encapuzada
+bxArt('calice', 200, 210, 100, 116, 4, (h, fr) => {
+  const R = h.R, bub = Math.sin(fr / 4 * TAU) * 3;
+  h.F(h.P([[-34, 92], [-20, 74], [20, 74], [34, 92]]), R.brass, 1.3, { hi: 1.2, lo: 1.2, ol: 0 });
+  h.F(h.P([[-12, 74], [-8, 26], [8, 26], [12, 74]]), R.gold, 1.4, { hi: 1.2, lo: 1.4, ol: 0 });
+  h.F(h.P([[-44, 24], [-56, -20], [-40, -44], [0, -52], [40, -44], [56, -20], [44, 24], [20, 34], [0, 36], [-20, 34]]), R.brass, 1.6, { hi: 1.3, lo: 1.3, ol: 0, noise: .2 });
+  for (const s of [-1, 1]) { h.F(h.C([[s * 46, 8], [s * 62, 6], [s * 56, -12]], 5, 4, 4), R.gold, 1.5, { ol: 0 }); h.F(h.E(s * 60, -4, 4, 6), R.gold, 1.2, { ol: 0 }); }
+  h.G(h.P([[-38, -30], [38, -30], [34, 18], [0, 26], [-34, 18]]), { hr: 3, ha: 130, top: 5 });
+  for (let i = -2; i <= 2; i++) h.F(h.E(i * 12, -10 + bub * (i % 2 ? 1 : -1), 3, 3), R.ice, 2, { ol: 0 });
+  h.F(h.P([[-14, -30], [-18, -62], [0, -78], [18, -62], [14, -30], [0, -22]]), R.cloth, 1.2, { hi: 1.1, lo: 1.1, ol: 0, noise: .3 });
+  h.F(h.E(0, -58, 9, 10), R.shade, 1, {}); h.eye(-3, -60, 1.8, 2); h.eye(3, -60, 1.8, 2);
+  h.F(h.P([[-26, -44], [-18, -52], [-8, -44]]), R.cloth, 1.1, { ol: 0 }); h.F(h.P([[26, -44], [18, -52], [8, -44]]), R.cloth, 1.1, { ol: 0 });
+  h.star(8, 6, -40, -80, 40, 10);
+}, { acc: '#fde68a', acc2: '#2e2210', fps: 5 });
+
+// 11. Coroa da Criação: coroa flutuante com mãos de luz e redemoinho de estrelas
+bxArt('coroa', 220, 200, 110, 104, 4, (h, fr) => {
+  const R = h.R, sp = fr / 4 * TAU;
+  h.A(h.E(0, 6, 62, 62), [90, 70, 160], 40);
+  for (let i = 0; i < 10; i++) { const a = sp + i / 10 * TAU, r = 40 + i % 3 * 8; h.F(h.E(Math.cos(a) * r, 6 + Math.sin(a) * r * .7, 2.4, 2.4), R.ice, 2.4, { ol: 0 }); h.G(h.E(Math.cos(a) * r, 6 + Math.sin(a) * r * .7, 1.8, 1.8), { hr: 1, ha: 90 }); }
+  for (let i = 0; i < 5; i++) { const x = -52 + i * 26; h.F(h.P([[x - 8, -18], [x, -62 - (i % 2 ? 8 : 0)], [x + 8, -18]]), R.gold, 2.2, { hi: 1.2, lo: 1, ol: 0 }); h.F(h.E(x, -66 - (i % 2 ? 8 : 0), 3, 3), R.ice, 2.4, { ol: 0 }); h.G(h.E(x, -66 - (i % 2 ? 8 : 0), 2.6, 2.6), { hr: 2, ha: 120 }); }
+  h.F(h.P([[-62, -16], [62, -16], [58, 14], [30, 22], [0, 12], [-30, 22], [-58, 14]]), R.gold, 1.8, { hi: 1.3, lo: 1.2, ol: 0, noise: .18 });
+  for (const x of [-38, -14, 14, 38]) h.F(h.E(x, 0, 5, 5), R.ice, 2.2, { ol: 0 });
+  for (let i = 0; i < 4; i++) { const x = -34 + i * 22, y = 40 + Math.sin(sp + i) * 4; h.F(h.C([[x, 24], [x + 2, 34], [x - 4, 44]], 3.4, 2.4, 4), R.bone, 1.4, { ol: 0 }); h.F(h.E(x - 4, 46 + Math.sin(sp + i) * 2, 4, 5), R.bone, 1.6, { ol: 0 }); }
+  h.star(14, 11, -80, -70, 80, 60);
+}, { acc: '#fde68a', acc2: '#2b2310', fps: 6 });
+
+// 12. Selo do Juízo Final: disco de cera com sete selos menores em órbita
+bxArt('selo', 210, 200, 105, 100, 4, (h, fr) => {
+  const R = h.R, sp = fr / 4 * TAU;
+  h.F(h.E(0, 0, 56, 56), R.wine, 1.6, { hi: 1.25, lo: 1.3, ol: 0, noise: .22, r2: true });
+  const inner = h.E(0, 0, 44, 44); h.F(inner, R.blood, 1.2, { hi: 1.1, lo: 1.1, ol: 0 });
+  h.F(h.E(0, 0, 34, 34), R.wine, 1.5, { ol: 0 });
+  h.G(h.P([[-14, -8], [14, -8], [10, 12], [0, 20], [-10, 12]]), { hr: 2, ha: 110 });
+  h.eye(-6, -2, 2.4, 2); h.eye(6, -2, 2.4, 2);
+  for (let i = 0; i < 7; i++) { const a = sp + i / 7 * TAU, x = Math.cos(a) * 76, y = Math.sin(a) * 70; h.F(h.E(x, y, 7, 7), R.brass, 1.6, { ol: 0 }); h.F(h.E(x, y, 3.4, 3.4), R.wine, 1.2, { ol: 0 }); if (i % 2) h.G(h.E(x, y, 4, 4), { hr: 1, ha: 70 }); }
+  h.F(h.C([[46, 12], [70, 18], [66, 36]], 5, 3, 4), R.bone, 1.3, { ol: 0 });
+  for (let i = -1; i <= 1; i++) h.F(h.C([[66, 36], [70 + i * 8, 48], [68 + i * 10, 56]], 2.4, 1.4, 4), R.bone, 1.5, { ol: 0 });
+  h.D(h.E(0, 0, 50, 50), R.wine, 2.4, .06, 17);
+}, { acc: '#f87171', acc2: '#2a0c0c', fps: 4 });
+
+// 13. Lâmina do Tempo Zero: relógio-pêndulo com lâminas paradas no tempo
+bxArt('tempo_zero', 200, 220, 100, 112, 5, (h, fr) => {
+  const R = h.R, sp = fr / 5 * TAU;
+  h.F(h.S(0, -20, 0, 74, 3), R.steel, 1.5, {});
+  for (const s of [-1, 1]) h.F(h.C([[0, 70], [s * 22, 80], [s * 30, 92]], 2.4, 1.6, 4), R.brass, 1.5, { ol: 0 });
+  h.F(h.E(0, 78, 14, 5), R.brass, 1.4, { ol: 0 });
+  h.F(h.E(0, -46, 40, 40), R.brass, 1.6, { hi: 1.3, lo: 1.3, ol: 0, noise: .16 });
+  h.F(h.E(0, -46, 33, 33), R.ice, 1.2, { hi: 1.1, lo: 1.2, ol: 0, noise: .1 });
+  for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; h.F(h.S(Math.cos(a) * 38, -46 + Math.sin(a) * 38, Math.cos(a) * 30, -46 + Math.sin(a) * 30, i % 3 ? 1 : 2), i % 3 ? R.brass : R.ice, 2, {}); }
+  const a1 = -PI / 2 + .9, a2 = sp * .35;
+  h.F(h.S(0, -46, Math.cos(a1) * 26, -46 + Math.sin(a1) * 26, 2.6), R.ink, 1, {});
+  h.F(h.S(0, -46, Math.cos(a2) * 20, -46 + Math.sin(a2) * 20, 1.8), R.ink, 1, {});
+  h.G(h.E(0, -46, 3, 3), { hr: 2, ha: 100 });
+  for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + .3, r = 62; h.F(h.P([[Math.cos(a) * r, -46 + Math.sin(a) * r], [Math.cos(a) * r + 5, -46 + Math.sin(a) * r + 10], [Math.cos(a) * r - 4, -46 + Math.sin(a) * r + 9]]), R.ice, 2.4, { ol: 0 }); }
+  h.star(8, 13, -70, -100, 70, 20);
+}, { acc: '#67e8f9', acc2: '#101c24', fps: 6 });
+
+// 14. Arauto da Luz: lanterna-farol viva sobre um manto, com cone de luz
+bxArt('arauto_luz', 200, 216, 100, 112, 4, (h, fr) => {
+  const R = h.R, sw = Math.sin(fr / 4 * TAU) * 3;
+  h.A(h.P([[-16, -30], [16, -30], [46, 96], [-46, 96]]), [255, 240, 190], 34);
+  bxRobeShape(h, { w: 34, y0: -16, y1: 76, ramp: R.cloth, t: 1.1 });
+  for (let i = -2; i <= 2; i++) h.L(i * 10, 0, i * 15, 72, R.gold, .4);
+  h.F(h.P([[-22, -34], [22, -34], [26, -80], [16, -96], [-16, -96], [-26, -80]]), R.brass, 1.5, { hi: 1.2, lo: 1.2, ol: 0, noise: .18 });
+  h.F(h.P([[-16, -40], [16, -40], [19, -78], [12, -90], [-12, -90], [-19, -78]]), R.ink, 1, {});
+  h.G(h.E(0, -64 + sw, 11, 13), { hr: 4, ha: 160, top: 5.6 });
+  h.F(h.P([[-2, -78], [2, -78], [3, -50], [-3, -50]]), R.ice, 2.2, { ol: 0 });
+  for (const x of [-20, -8, 8, 20]) h.F(h.S(x, -40, x, -86, 1.2), R.brass, 1.6, {});
+  for (const s of [-1, 1]) { h.F(h.P([[s * 26, -30], [s * 44, -18], [s * 42, -6], [s * 24, -12]]), R.gold, 2.2, { ol: 0 }); h.F(h.E(s * 44, -14, 3, 3), R.brass, 1.4, { ol: 0 }); }
+  h.F(h.P([[-12, -108], [12, -108], [8, -96], [-8, -96]]), R.brass, 1.4, { ol: 0 });
+  h.star(12, 15, -50, -90, 50, 40);
+}, { acc: '#fde047', acc2: '#2a2208', fps: 5 });
+
+// 15. Sinfonia dos Céus: corpo de pauta musical, costelas de harpa e notas nas mãos
+bxArt('sinfonia', 220, 200, 110, 104, 5, (h, fr) => {
+  const R = h.R, sp = fr / 5 * TAU;
+  for (let i = 0; i < 5; i++) h.L(-84, -34 + i * 13, 84, -30 + i * 13, R.ink, .6);
+  h.F(h.P([[-34, -22], [-22, -46], [0, -54], [22, -46], [34, -22], [26, 22], [8, 34], [-8, 34], [-26, 22]]), R.ink, 1.1, { hi: .9, lo: 1, ol: 0, noise: .2 });
+  for (let i = 0; i < 4; i++) h.F(h.C([[-24 + i * 16, -34], [-26 + i * 16, -4], [-20 + i * 16, 22]], 2, 1.4, 4), R.bone, 1.6, { ol: 0 });
+  h.F(h.C([[-30, -30], [-46, -44], [-56, -30], [-48, -12]], 3, 2.2, 4), R.bone, 1.4, { ol: 0 });
+  h.F(h.C([[30, -30], [46, -44], [56, -30], [48, -12]], 3, 2.2, 4), R.bone, 1.4, { ol: 0 });
+  for (let i = 0; i < 5; i++) { const a = sp + i / 5 * TAU, x = Math.cos(a) * 62, y = -4 + Math.sin(a) * 44; h.F(h.S(x, y, x, y - 12, 1.6), R.bone, 1.8, {}); h.F(h.E(x + 4, y, 4, 3), R.bone, 1.8, { ol: 0 }); h.G(h.E(x + 4, y, 3, 2.6), { hr: 1, ha: 70 }); }
+  h.eye(-8, -34, 2.4, 2.6); h.eye(8, -34, 2.4, 2.6);
+  h.G(h.S(-12, -16, 12, -16, 1.4), { hr: 1.4, ha: 90, top: 5 });
+}, { acc: '#f0abfc', acc2: '#1d1226', fps: 6 });
+
+// 16. Fênix Imortal: pássaro de cinzas com ovo incandescente no peito
+bxArt('fenix', 230, 210, 115, 108, 5, (h, fr) => {
+  const R = h.R, fl = Math.sin(fr / 5 * TAU) * 5;
+  for (let i = -3; i <= 3; i++) h.F(h.P([[i * 4, 40], [i * 14 + 6, 84 + Math.abs(i) * 6 + fl], [i * 14 - 6, 86 + Math.abs(i) * 4]]), R.ember, 2 + Math.abs(i) * .1, { ol: 0 });
+  bxWingShape(h, -1, { len: 92, h: 58, y: -8, ph: fl, ramp: R.rust }); bxWingShape(h, 1, { len: 92, h: 58, y: -8, ph: -fl, ramp: R.rust });
+  h.F(h.P([[-26, -26], [0, -44], [26, -26], [30, 10], [14, 40], [-14, 40], [-30, 10]]), R.rust, 1.5, { hi: 1.2, lo: 1.2, ol: 0, noise: .35 });
+  h.D(h.P([[-26, -20], [26, -20], [24, 34], [-24, 34]]), R.ink, .8, .16, 22);
+  bxOrbCore(h, 0, 4, 12, { hr: 3, ha: 150, ramp: R.ember });
+  h.F(h.E(0, -50, 13, 11), R.rust, 1.6, { ol: 0 });
+  h.F(h.P([[-10, -58], [-6, -78], [0, -64], [6, -78], [10, -58]]), R.ember, 2.4, { ol: 0 });
+  h.F(h.P([[8, -50], [26, -46], [22, -40], [6, -44]]), R.gold, 2.2, { ol: 0 });
+  h.eye(-4, -52, 2, 2.4); h.eye(4, -52, 2, 2.4);
+  h.star(16, 21, -90, -80, 90, 60);
+}, { acc: '#fb923c', acc2: '#2a1206', fps: 6 });
+
+// 17. Escudo do Firmamento: muralha viva com fenda de olho e espinhos
+bxArt('escudo', 210, 200, 105, 100, 3, (h, fr) => {
+  const R = h.R, gl = Math.sin(fr / 3 * TAU) * 2;
+  h.F(h.P([[-60, -66], [60, -66], [64, -10], [46, 40], [0, 62], [-46, 40], [-64, -10]]), R.slate, 1.5, { hi: 1.25, lo: 1.3, ol: 0, noise: .2 });
+  h.F(h.P([[-52, -58], [52, -58], [55, -12], [40, 32], [0, 52], [-40, 32], [-55, -12]]), R.steel, 1.2, { hi: 1.1, lo: 1.1, ol: 0, noise: .15 });
+  for (let i = -2; i <= 2; i++) h.F(h.P([[i * 20 - 6, -56], [i * 20 + 6, -56], [i * 20, -38]]), R.slate, 2, { ol: 0 });
+  h.F(h.P([[-38, -14], [38, -14], [30, 4], [-30, 4]]), R.ink, 1, {});
+  h.G(h.E(0, -5 + gl, 26, 8), { hr: 2, ha: 120, top: 5 });
+  h.eye(0, -5 + gl, 6, 4);
+  for (const s of [-1, 1]) { h.F(h.P([[s * 62, -34], [s * 84, -20], [s * 80, 6], [s * 60, -2]]), R.slate, 1.4, { ol: 0 }); h.F(h.P([[s * 50, 40], [s * 66, 54], [s * 56, 66], [s * 42, 52]]), R.slate, 1.2, { ol: 0 }); }
+  for (let i = 0; i < 4; i++) h.F(h.E(-26 + i * 17, 30, 4, 4), R.steel, 1.6, { ol: 0 });
+  h.D(h.P([[-52, -58], [52, -58], [55, -12], [40, 32], [0, 52], [-40, 32], [-55, -12]]), R.slate, .6, .1, 5);
+}, { acc: '#93c5fd', acc2: '#141b2a', fps: 3 });
+
+// 18. Chama Sagrada: vela viva com chama em lágrima e cera derretida
+bxArt('chama', 180, 210, 90, 110, 5, (h, fr) => {
+  const R = h.R, fl = Math.sin(fr / 5 * TAU) * 4;
+  h.F(h.P([[-30, 96], [-24, 20], [24, 20], [30, 96]]), R.bone, 1.2, { hi: 1.1, lo: 1.2, ol: 0, noise: .18 });
+  for (const s of [-1, 1]) h.F(h.C([[s * 26, 30], [s * 34, 48], [s * 28, 62]], 3, 1.6, 4), R.bone, 1.1, { ol: 0 });
+  h.F(h.E(0, 18, 26, 6), R.ochre, 1.2, { ol: 0 });
+  h.F(h.S(0, 18, 0, 4, 2), R.ink, 1, {});
+  bxFlameBody(h, { w: 30, h: 84, y: -26, ramp: R.ember });
+  h.G(h.P([[0, -96], [10, -70], [0, -52], [-10, -70]]), { hr: 4, ha: 170, top: 5.8 });
+  h.eye(-7, -54, 2.2, 2.6); h.eye(7, -54, 2.2, 2.6);
+  h.G(h.S(-10, -40, 10, -40, 1.4), { hr: 1.4, ha: 90, top: 5 });
+  for (let i = 0; i < 6; i++) { const a = i / 6 * TAU, r = 44 + (i % 2) * 8; h.F(h.E(Math.cos(a) * r, -40 + Math.sin(a) * r, 2, 2), R.gold, 2, { ol: 0 }); }
+  h.star(10, 23, -40, -110, 40, -30);
+}, { acc: '#fbbf24', acc2: '#2e1c04', fps: 7 });
+
+// 19. Nexo do Infinito: dois anéis enlaçados com um núcleo e satélites
+bxArt('nexo', 210, 200, 105, 100, 5, (h, fr) => {
+  const R = h.R, sp = fr / 5 * TAU;
+  const r1 = h.E(0, 0, 62, 30), r1i = h.E(0, 0, 50, 19);
+  h.F(h.N(r1, r1i), R.indigo || R.night, 1.3, { hi: 1.1, lo: 1.1, ol: 0 });
+  const r2 = h.E(0, 0, 30, 62), r2i = h.E(0, 0, 19, 50);
+  h.F(h.N(r2, r2i), R.violet, 1.4, { hi: 1.15, lo: 1.15, ol: 0 });
+  h.F(h.E(0, 0, 20, 20), R.night, 1, {});
+  bxOrbCore(h, 0, 0, 12, { hr: 4, ha: 170 });
+  for (let i = 0; i < 6; i++) { const a = sp + i / 6 * TAU; h.F(h.E(Math.cos(a) * 72, Math.sin(a) * 34, 3, 3), R.violet, 2.2, { ol: 0 }); h.G(h.E(Math.cos(a) * 72, Math.sin(a) * 34, 2.4, 2.4), { hr: 1, ha: 80 }); }
+  for (const s of [-1, 1]) h.F(h.C([[s * 44, -22], [s * 58, -6], [s * 46, 12]], 2.6, 1.4, 4), R.violet, 1.6, { ol: 0 });
+  for (let i = 0; i < 8; i++) { const a = -sp * 1.4 + i / 8 * TAU; h.F(h.E(Math.cos(a) * 40, Math.sin(a) * 40, 1.6, 1.6), R.ice, 2.4, { ol: 0 }); }
+  h.star(10, 25, -70, -60, 70, 60);
+}, { acc: '#c084fc', acc2: '#180d24', fps: 8 });
+
+// 20. Trono de Ouro: trono colossal com o soberano sentado
+bxArt('trono', 220, 214, 110, 112, 3, (h, fr) => {
+  const R = h.R, sw = Math.sin(fr / 3 * TAU) * 2;
+  h.F(h.P([[-70, -50], [70, -50], [76, 76], [56, 84], [-56, 84], [-76, 76]]), R.gold, 1.3, { hi: 1.2, lo: 1.2, ol: 0, noise: .2 });
+  h.F(h.P([[-58, -60], [58, -60], [60, -86], [40, -96], [0, -88], [-40, -96], [-60, -86]]), R.brass, 1.6, { hi: 1.2, lo: 1.1, ol: 0 });
+  h.F(h.P([[-44, -44], [44, -44], [48, 50], [30, 60], [-30, 60], [-48, 50]]), R.wine, 1.2, { hi: 1.1, lo: 1.1, ol: 0, noise: .25 });
+  for (const s of [-1, 1]) h.F(h.P([[s * 46, 30], [s * 74, 30], [s * 74, 46], [s * 46, 46]]), R.brass, 1.5, { ol: 0 });
+  for (let i = -2; i <= 2; i++) h.F(h.P([[i * 22 - 6, -88], [i * 22 + 6, -88], [i * 22, -108 - (i % 2 ? 6 : 0)]]), R.gold, 2.4, { ol: 0 });
+  h.F(h.P([[-18, -36], [-14, -58], [0, -66], [14, -58], [18, -36], [14, 20], [0, 28], [-14, 20]]), R.bone, 1.4, { ol: 0, noise: .2 });
+  h.F(h.E(0, -56, 10, 11), R.bone, 1.5, { ol: 0 });
+  h.F(h.P([[-11, -64], [-6, -76], [0, -68], [6, -76], [11, -64]]), R.gold, 2.6, { ol: 0 });
+  h.eye(-4, -58, 1.8, 2); h.eye(4, -58, 1.8, 2);
+  h.F(h.S(24, -30 + sw, 24, 30, 2), R.gold, 2, {}); h.F(h.E(24, -34 + sw, 4, 4), R.ice, 2.4, { ol: 0 }); h.G(h.E(24, -34 + sw, 3.4, 3.4), { hr: 2, ha: 120 });
+  h.D(h.P([[-44, -44], [44, -44], [48, 50], [30, 60], [-30, 60], [-48, 50]]), R.wine, 2.2, .05, 33);
+}, { acc: '#f59e0b', acc2: '#2a1c06', fps: 4 });
+
+;
+/* ===== 05l_bxart6.js ===== */
+/* ============================================================
+   05l_bxart6: sprites dos 20 chefes do Ato VI (Tier 10) — usa as peças de 05k_bxart5.js
+   Cada chefe tem silhueta própria; o último (Apoteose) tem 4 variantes, uma por estágio.
+   Nada aqui toca o DOM ao carregar.
+   ============================================================ */
+// 1. Primeira Luz: núcleo recém-nascido dentro de um manto escuro, raios curtos
+bxArt('luz_primeira', 220, 210, 110, 108, 4, (h, fr) => {
+  const R = h.R, sp = fr / 4 * TAU, pul = .85 + Math.sin(sp) * .15;
+  for (let i = 0; i < 14; i++) { const a = i / 14 * TAU + sp * .2; h.A(h.P([[Math.cos(a) * 20, Math.sin(a) * 20], [Math.cos(a + .07) * 92 * pul, Math.sin(a + .07) * 92 * pul], [Math.cos(a - .07) * 92 * pul, Math.sin(a - .07) * 92 * pul]]), [255, 245, 200], 60); }
+  h.F(h.P([[-52, 40], [-40, -30], [-18, -60], [18, -60], [40, -30], [52, 40], [30, 64], [-30, 64]]), R.shade, 1.1, { hi: .8, lo: .8, ol: 0, noise: .3 });
+  h.F(h.P([[-34, 30], [-24, -26], [0, -44], [24, -26], [34, 30], [0, 52]]), R.ink, 1, { hi: .7, lo: .7, ol: 0 });
+  bxOrbCore(h, 0, -6, 17 * pul, { hr: 5, ha: 180 });
+  h.G(h.E(0, -6, 9 * pul, 9 * pul), { hr: 3, ha: 170, top: 5.8 });
+  for (const s of [-1, 1]) h.F(h.C([[s * 30, 26], [s * 46, 40], [s * 40, 56]], 4, 3, 4), R.shade, 1.2, { ol: 0 });
+  h.star(20, 31, -80, -80, 80, 70);
+}, { acc: '#fff7c2', acc2: '#1a1708', fps: 6 });
+
+// 2. Fim de Tudo: silhueta com pedaços faltando (buraco no próprio corpo)
+bxArt('fim', 220, 220, 110, 112, 4, (h, fr) => {
+  const R = h.R, sp = fr / 4 * TAU;
+  const body = h.P([[-46, 60], [-56, -10], [-40, -58], [-12, -78], [16, -74], [44, -50], [56, -6], [46, 60], [18, 76], [-18, 76]]);
+  h.F(body, R.shade, 1, { hi: .7, lo: .7, ol: 0, noise: .2 });
+  for (let i = 0; i < 9; i++) { const a = i / 9 * TAU + sp * .3, x = Math.cos(a) * 34, y = Math.sin(a) * 30; h.N(body, h.E(x, y, 9 + (i % 3) * 4, 8 + (i % 2) * 5)); }
+  h.F(h.N(body, h.E(-14, 44, 13, 11)), R.ink, 1, { ol: 0 });
+  h.G(h.E(-16, -36, 6, 7), { hr: 3, ha: 150 }); h.G(h.E(16, -36, 6, 7), { hr: 3, ha: 150 });
+  h.F(h.P([[-22, -20], [0, -8], [22, -20]]), R.ink, 1, { ol: 0 });
+  for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + sp; h.A(h.P([[Math.cos(a) * 60, 10 + Math.sin(a) * 60], [Math.cos(a) * 78, 10 + Math.sin(a) * 78], [Math.cos(a + .12) * 70, 10 + Math.sin(a + .12) * 70]]), [200, 220, 255], 70); }
+  h.star(12, 33, -90, -90, 90, 80);
+}, { acc: '#e0e7ff', acc2: '#0a0a14', fps: 4 });
+
+// 3. Buraco Branco: disco branco ofuscante com jatos polares e anel de detritos
+bxArt('buraco_branco', 230, 210, 115, 106, 5, (h, fr) => {
+  const sp = fr / 5 * TAU;
+  h.A(h.E(0, 0, 96, 22), [220, 235, 255], 70);
+  for (const s of [-1, 1]) { h.A(h.P([[-8, s * 12], [10, s * 12], [26, s * 86], [-26, s * 86]]), [255, 255, 255], 60); h.G(h.P([[-4, s * 14], [5, s * 14], [12, s * 80], [-12, s * 80]]), { hr: 3, ha: 150 }); }
+  h.F(h.E(0, 0, 52, 52), h.R.ice, 1.4, { hi: 1.4, lo: 1.4, ol: 0, noise: .1 });
+  h.G(h.E(0, 0, 40, 40), { hr: 5, ha: 175, top: 6 });
+  h.G(h.E(0, 0, 18, 18), { hr: 4, ha: 200, top: 6.4 });
+  for (let i = 0; i < 16; i++) { const a = i / 16 * TAU + sp * .5, r = 66 + (i % 4) * 10; h.F(h.E(Math.cos(a) * r, Math.sin(a) * r * .55, 3 + i % 3, 2 + i % 2), h.R.ice, 2.2, { ol: 0 }); }
+  h.star(22, 35, -100, -80, 100, 80);
+}, { acc: '#ffffff', acc2: '#dfe9ff', fps: 8 });
+
+// 4. Cosmos Vivo: galáxia espiral com um olho no núcleo
+bxArt('cosmos', 240, 220, 120, 110, 5, (h, fr) => {
+  const R = h.R, sp = fr / 5 * TAU;
+  for (let arm = 0; arm < 2; arm++) for (let i = 0; i < 26; i++) { const t = i / 26, a = arm * PI + t * 3.4 + sp * .5, r = 14 + t * 92; h.F(h.E(Math.cos(a) * r, 16 + Math.sin(a) * r * .62, 4.2 - t * 2, 3.4 - t * 1.6), i % 5 ? R.violet : R.ice, 1.8 + (1 - t) * 1.2, { ol: 0 }); }
+  h.F(h.E(0, 16, 30, 26), R.night, 1, { ol: 0 });
+  h.eye(0, 12, 15, 12, { px: 0 });
+  h.G(h.E(0, 12, 7, 6), { hr: 4, ha: 180, top: 5.8 });
+  for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + sp; h.F(h.E(Math.cos(a) * 108, 16 + Math.sin(a) * 66, 3, 3), R.pink, 2.4, { ol: 0 }); }
+  h.star(18, 37, -100, -70, 100, 80);
+}, { acc: '#c084fc', acc2: '#150a24', fps: 7 });
+
+// 5. Teorema Final: poliedro flutuante com faixas de símbolos
+bxArt('teorema', 200, 200, 100, 100, 4, (h, fr) => {
+  const R = h.R, sp = fr / 4 * TAU;
+  const hex = h.P([[0, -62], [46, -32], [52, 22], [18, 58], [-18, 58], [-52, 22], [-46, -32]]);
+  const cut = h.P([[-30, -34], [30, -34], [40, 0], [0, 24], [-40, 0]]);
+  h.F(hex, R.slate, 1.2, { hi: 1.15, lo: 1.15, ol: 0, noise: .18 });
+  h.F(cut, R.ink, 1, { ol: 0 });
+  h.G(h.I(hex, h.N(cut, h.P([[-24, -28], [24, -28], [30, -2], [0, 16], [-30, -2]]))), { hr: 2, ha: 110, top: 5 });
+  for (let i = 0; i < 3; i++) { const a = sp + i / 3 * TAU; h.G(h.S(Math.cos(a) * 34, 6 + Math.sin(a) * 34, Math.cos(a) * 44, 6 + Math.sin(a) * 44, 2), { hr: 2, ha: 120 }); }
+  for (let i = 0; i < 7; i++) { const a = i / 7 * TAU - sp * .6; h.F(h.E(Math.cos(a) * 66, 6 + Math.sin(a) * 56, 3.4, 3.4), R.ice, 2, { ol: 0 }); }
+  h.eye(0, 2, 9, 7);
+  for (let i = -3; i <= 3; i++) h.L(-42, -46 + i * 5, 42, -48 + i * 5, R.ice, .35);
+  h.star(10, 39, -70, -80, 70, 70);
+}, { acc: '#67e8f9', acc2: '#0e1a1e', fps: 5 });
+
+// 6. O Último Nome: escriba encapuzado com livro gigante e pena
+bxArt('ultimo_nome', 210, 210, 105, 108, 3, (h, fr) => {
+  const R = h.R, sw = Math.sin(fr / 3 * TAU) * 3;
+  bxRobeShape(h, { w: 36, y0: -20, y1: 66, ramp: R.ink, t: 1.1 });
+  h.F(h.P([[-18, -26], [-22, -58], [0, -72], [22, -58], [18, -26], [0, -18]]), R.shade, 1.1, { hi: .8, lo: .8, ol: 0, noise: .3 });
+  h.eye(-6, -46, 2.4, 2.8); h.eye(6, -46, 2.4, 2.8);
+  h.F(h.P([[-44, -4], [44, -4], [40, 40], [-40, 40]]), R.bone, 1.2, { hi: 1.2, lo: 1.2, ol: 0, noise: .12 });
+  h.F(h.S(0, -4, 0, 40, 2), R.ink, 1, {});
+  for (let i = 0; i < 5; i++) { h.L(-34, 4 + i * 7, -6, 4 + i * 7, R.ink, .4); h.L(8, 4 + i * 7, 34, 4 + i * 7, R.ink, .4); }
+  h.F(h.C([[52, 30], [70, -10 + sw], [64, -48]], 3.4, 1.6, 4), R.bone, 1.5, { ol: 0 });
+  h.F(h.P([[60, -54], [62, -66], [68, -56]]), h.R.ac ? R.bone : R.bone, 2.4, { ol: 0 });
+  h.G(h.P([[58, -62], [66, -58], [62, -50]]), { hr: 2, ha: 110 });
+  for (const [x, y, t] of [[-64, -40, 'A'], [-58, -20, 'N'], [-66, 0, 'O'], [-56, 18, 'M'], [-64, 36, 'E']]) { h.G(h.E(x, y, 5, 6), { hr: 1, ha: 60 }); }
+  h.star(8, 41, -70, -70, 70, 50);
+}, { acc: '#fde68a', acc2: '#14121c', fps: 4 });
+
+// 7. Origem do Vazio: anel oco com núcleo escuro e tentáculos
+bxArt('origem', 230, 220, 115, 110, 4, (h, fr) => {
+  const R = h.R, sp = fr / 4 * TAU;
+  for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + sp * .3; h.F(h.C([[Math.cos(a) * 40, 10 + Math.sin(a) * 40], [Math.cos(a) * 78, 10 + Math.sin(a) * 78], [Math.cos(a + .3) * 96, 10 + Math.sin(a + .3) * 96]], 6, 2, 4), R.night, 1.1, { hi: .8, lo: .8, ol: 0 }); }
+  const ring = h.E(0, 10, 62, 58), hole = h.E(0, 10, 40, 37);
+  h.F(h.N(ring, hole), R.violet, 1.5, { hi: 1.2, lo: 1.2, ol: 0, noise: .3 });
+  h.F(hole, R.shade, .6, { hi: .4, lo: .4, ol: 0 });
+  h.G(h.N(ring, h.E(0, 10, 52, 48)), { hr: 2, ha: 120, top: 5 });
+  h.G(h.E(0, 10, 6, 6), { hr: 4, ha: 180 });
+  for (let i = 0; i < 10; i++) { const a = i / 10 * TAU; h.F(h.E(Math.cos(a) * 70, 10 + Math.sin(a) * 66, 2.4, 2.4), R.pink, 2, { ol: 0 }); }
+  h.star(12, 43, -90, -80, 90, 90);
+}, { acc: '#a855f7', acc2: '#0d0714', fps: 5 });
+
+// 8. Relógio do Universo: mostrador astronômico com saia de engrenagens
+bxArt('relogio', 220, 220, 110, 108, 5, (h, fr) => {
+  const R = h.R, sp = fr / 5 * TAU;
+  for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + sp * .2; h.F(h.P([[Math.cos(a) * 46, 40 + Math.sin(a) * 40], [Math.cos(a + .3) * 62, 40 + Math.sin(a + .3) * 62], [Math.cos(a + .45) * 46, 40 + Math.sin(a + .45) * 40]]), R.brass, 1.6, { ol: 0 }); }
+  h.F(h.E(0, -18, 58, 58), R.gold, 1.5, { hi: 1.2, lo: 1.2, ol: 0, noise: .15 });
+  h.F(h.E(0, -18, 47, 47), R.night, 1, { ol: 0 });
+  for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; h.F(h.S(Math.cos(a) * 44, -18 + Math.sin(a) * 44, Math.cos(a) * 36, -18 + Math.sin(a) * 36, i % 3 ? 1 : 2), i % 3 ? R.brass : R.ice, 2, {}); }
+  h.F(h.S(0, -18, 0, -58, 3), R.ice, 1.6, {}); h.F(h.S(0, -18, 26, -2, 2), R.ice, 1.4, {});
+  h.G(h.E(0, -18, 5, 5), { hr: 3, ha: 150 });
+  for (let i = 0; i < 4; i++) { const a = sp + i / 4 * TAU; h.F(h.E(Math.cos(a) * 18, -18 + Math.sin(a) * 18, 4, 4), R.ice, 1.8, { ol: 0 }); }
+  h.star(12, 45, -80, -70, 80, 80);
+}, { acc: '#67e8f9', acc2: '#16120a', fps: 8 });
+
+// 9. Semente Cósmica: vagem segmentada com raízes e broto
+bxArt('semente', 210, 220, 105, 112, 4, (h, fr) => {
+  const R = h.R, sw = Math.sin(fr / 4 * TAU) * 4;
+  for (let i = -2; i <= 2; i++) h.F(h.C([[i * 14, 30], [i * 24, 62], [i * 34, 78 + Math.abs(i) * 4]], 5, 2.4, 4), R.bark, 1.1, { hi: .9, lo: .9, ol: 0 });
+  const pod = h.P([[0, -66], [34, -40], [44, 4], [24, 44], [-24, 44], [-44, 4], [-34, -40]]);
+  h.F(pod, R.jade, 1.3, { hi: 1.2, lo: 1.2, ol: 0, noise: .3 });
+  for (let i = 0; i < 5; i++) h.F(h.I(pod, h.P([[-46, -50 + i * 22], [46, -58 + i * 22], [46, -46 + i * 22], [-46, -38 + i * 22]])), R.moss, .7, { ol: 0 });
+  h.G(h.I(pod, h.P([[-6, -60], [6, -60], [8, 44], [-8, 44]])), { hr: 2, ha: 100 });
+  h.F(h.E(0, -2, 13, 15), R.ice, 2, { ol: 0 }); h.G(h.E(0, -2, 9, 10), { hr: 3, ha: 150 });
+  h.F(h.C([[0, -66], [-6, -86], [8, -96 + sw]], 3, 1.6, 4), R.leaf, 1.4, { ol: 0 });
+  for (const s of [-1, 1]) h.F(h.E(s * 16 + sw * .4, -88, 11, 6), R.leaf, 1.5, { ol: 0 });
+  h.star(10, 47, -70, -90, 70, 40);
+}, { acc: '#a3e635', acc2: '#0c1a08', fps: 5 });
+
+// 10. Axioma: monólito flutuante com inscrições e correntes
+bxArt('axioma', 210, 220, 105, 112, 3, (h, fr) => {
+  const R = h.R, gi = Math.sin(fr / 3 * TAU) * 2;
+  h.F(h.P([[-40, 78], [-46, -34], [-30, -66], [30, -66], [46, -34], [40, 78]]), R.stone, 1.25, { hi: 1.2, lo: 1.2, ol: 0, noise: .2 });
+  h.F(h.P([[-30, 66], [-34, -30], [-22, -54], [22, -54], [34, -30], [30, 66]]), R.slate, 1, { ol: 0, noise: .15 });
+  for (let i = 0; i < 6; i++) { h.L(-22, -44 + i * 20, 22, -46 + i * 20, R.stone, .7); }
+  h.G(h.P([[-14, -18], [0, -8], [14, -18], [0, 8]]), { hr: 2, ha: 120, top: 5 });
+  h.eye(0, -4, 6, 5);
+  for (const s of [-1, 1]) { h.F(h.C([[s * 40, -40], [s * 66, -20 + gi], [s * 58, 26]], 2.4, 1.8, 4), R.steel, 1.6, { ol: 0 }); for (let i = 0; i < 3; i++) h.F(h.E(s * (62 - i * 2), -14 + i * 16, 3, 4), R.steel, 1.4, { ol: 0 }); }
+  h.star(8, 49, -60, -70, 60, 50);
+}, { acc: '#a5b4fc', acc2: '#12141c', fps: 3 });
+
+// 11. Convergência Final: vórtice de lâminas apontando para o centro
+bxArt('convergencia', 240, 220, 120, 108, 5, (h, fr) => {
+  const R = h.R, sp = fr / 5 * TAU;
+  for (let i = 0; i < 14; i++) { const a = i / 14 * TAU + sp * .4, r = 58 + (i % 3) * 22; h.F(h.P([[Math.cos(a) * r, Math.sin(a) * r], [Math.cos(a + .1) * (r + 26), Math.sin(a + .1) * (r + 26)], [Math.cos(a + .16) * r, Math.sin(a + .16) * r]]), i % 2 ? R.steel : R.ice, 1.8, { ol: 0 }); }
+  for (let i = 0; i < 4; i++) { const a = sp * .8 + i / 4 * TAU; h.F(h.C([[Math.cos(a) * 96, Math.sin(a) * 96], [Math.cos(a) * 60, Math.sin(a) * 60], [Math.cos(a) * 28, Math.sin(a) * 28]], 4, 1.6, 4), R.steel, 1.4, { ol: 0 }); }
+  bxOrbCore(h, 0, 0, 18, { hr: 4, ha: 170 });
+  h.G(h.E(0, 0, 9, 9), { hr: 3, ha: 190, top: 6 });
+  h.star(14, 51, -100, -90, 100, 90);
+}, { acc: '#fde68a', acc2: '#1a1a22', fps: 9 });
+
+// 12. Espada do Autor: mão gigante com pena; metade do corpo só esboçada
+bxArt('autor', 230, 220, 115, 112, 3, (h, fr) => {
+  const R = h.R, sw = Math.sin(fr / 3 * TAU) * 3;
+  for (let i = 0; i < 9; i++) { const y = -80 + i * 18; h.L(-64, y, -8 - (i % 3) * 6, y + 3, R.ice, .55); }
+  h.F(h.P([[0, -70], [46, -60], [62, 6], [34, 60], [-6, 66], [-26, 10], [-20, -50]]), R.bone, 1.15, { hi: 1.2, lo: 1.2, ol: 0, noise: .2 });
+  h.F(h.I(h.P([[-20, -60], [64, -56], [64, 60], [-16, 64]]), h.P([[-20, -60], [10, -56], [12, 64], [-16, 64]])), R.bone, .55, { ol: 0, noise: .1 });
+  h.F(h.C([[62, -10], [88, -46 + sw], [104, -60 + sw]], 12, 7, 4), R.bone, 1.3, { ol: 0 });
+  for (let i = 0; i < 4; i++) h.F(h.C([[70 + i * 4, -22 - i * 4], [86 + i * 3, -48 - i * 5], [96 + i * 3, -56 - i * 5]], 3.4, 2, 4), R.bone, 1.2, { ol: 0 });
+  h.F(h.P([[100, -52 + sw], [110, -74 + sw], [116, -52 + sw], [108, -40 + sw]]), R.bone, 2.4, { ol: 0 });
+  h.G(h.P([[104, -66 + sw], [110, -70 + sw], [112, -56 + sw]]), { hr: 2, ha: 130 });
+  h.eye(22, -46, 5, 4);
+  h.star(10, 53, -70, -90, 90, 30);
+}, { acc: '#fbbf24', acc2: '#141210', fps: 4 });
+
+// 13. Nada Eterno: corpo-vazio com ruído branco nas bordas
+bxArt('nada', 220, 220, 110, 110, 4, (h, fr) => {
+  const R = h.R, sp = fr / 4 * TAU;
+  const body = h.P([[-38, 66], [-52, 0], [-34, -54], [0, -70], [34, -54], [52, 0], [38, 66], [0, 78]]);
+  h.F(body, R.shade, .5, { hi: .3, lo: .3, ol: 0 });
+  h.D(body, R.bone, 3, .28, 5 + (fr & 3));
+  h.F(h.I(body, h.E(0, 0, 40, 40)), R.ink, .4, { ol: 0 });
+  h.G(h.P([[-16, -34], [-4, -26], [-16, -18]]), { hr: 2, ha: 120 }); h.G(h.P([[16, -34], [4, -26], [16, -18]]), { hr: 2, ha: 120 });
+  h.F(h.S(-2, 30, 2, 50, 1.6), R.bone, 1.4, {});
+  for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + sp * .5; h.F(h.E(Math.cos(a) * 74, 6 + Math.sin(a) * 74, 2, 2), R.bone, 2, { ol: 0 }); }
+  h.star(6, 55, -90, -80, 90, 80);
+}, { acc: '#e2e8f0', acc2: '#0a0a10', fps: 7 });
+
+// 14. Tudo de Uma Vez: coluna de máscaras sobrepostas
+bxArt('tudo', 200, 230, 100, 118, 4, (h, fr) => {
+  const R = h.R, sw = Math.sin(fr / 4 * TAU) * 2;
+  const cols = [[R.bone, -4], [R.stone, 0], [R.gold, 0], [R.ink, 0]];
+  for (let i = 0; i < 4; i++) {
+    const y = -66 + i * 40 + sw * (i % 2 ? 1 : -1), c = cols[i][0];
+    h.F(h.P([[-26, y - 16], [26, y - 16], [30, y + 6], [0, y + 22], [-30, y + 6]]), c, 1.3 + i * .1, { hi: 1.2, lo: 1.2, ol: 0, noise: .2 });
+    h.F(h.E(-10, y - 2, 4, 4), R.ink, .8, { ol: 0 }); h.F(h.E(10, y - 2, 4, 4), R.ink, .8, { ol: 0 });
+    h.F(h.P([[-8, y + 8], [8, y + 8], [0, y + 14]]), R.ink, .7, { ol: 0 });
+  }
+  for (const s of [-1, 1]) h.F(h.C([[s * 30, -40], [s * 54, -20 + sw], [s * 48, 24]], 4, 2.4, 4), R.cloth, 1.1, { ol: 0 });
+  h.G(h.E(0, 78, 8, 8), { hr: 3, ha: 130 });
+  h.star(10, 57, -70, -90, 70, 90);
+}, { acc: '#fde68a', acc2: '#121018', fps: 6 });
+
+// 15. Ponto Zero: um ponto com anéis e raios finíssimos
+bxArt('ponto', 220, 200, 110, 96, 5, (h, fr) => {
+  const sp = fr / 5 * TAU;
+  for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + sp * .2; h.A(h.P([[Math.cos(a) * 8, Math.sin(a) * 8], [Math.cos(a + .02) * 98, Math.sin(a + .02) * 98], [Math.cos(a - .02) * 98, Math.sin(a - .02) * 98]]), [255, 250, 230], 70); }
+  for (let r = 24; r <= 72; r += 16) { h.G(h.N(h.E(0, 0, r, r), h.E(0, 0, r - 2.4, r - 2.4)), { hr: 2, ha: 120, top: 5 }); }
+  h.F(h.E(0, 0, 9, 9), h.R.gold, 2.4, { ol: 0 });
+  h.G(h.E(0, 0, 5, 5), { hr: 4, ha: 200 });
+  h.star(10, 59, -90, -70, 90, 70);
+}, { acc: '#fde047', acc2: '#1c1808', fps: 10 });
+
+// 16. Coração do Multiverso: coração com janelas para outros mundos
+bxArt('coracao', 220, 210, 110, 106, 5, (h, fr) => {
+  const R = h.R, beat = 1 + Math.sin(fr / 5 * TAU) * .07;
+  const hs = h.P([[0, 30 * beat], [-22, 4], [-34 * beat, -22], [-18, -40], [0, -26], [18, -40], [34 * beat, -22], [22, 4]]);
+  h.F(hs, R.blood, 1.5, { hi: 1.3, lo: 1.2, ol: 0, noise: .25 });
+  const wins = [[-12, -14], [8, -16], [-2, 4], [16, 6], [-20, -2]];
+  for (let i = 0; i < wins.length; i++) {
+    const [x, y] = wins[i], m = h.P([[x - 7, y - 6], [x + 7, y - 6], [x + 7, y + 6], [x - 7, y + 6]]);
+    h.F(m, i % 2 ? R.night : R.ink, 1, { ol: 0 }); h.star(3, 61 + i, x - 6, y - 5, x + 6, y + 5);
+  }
+  for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; h.G(h.S(Math.cos(a) * 40, 14 + Math.sin(a) * 40, Math.cos(a) * 60, 14 + Math.sin(a) * 60, 2.2), { hr: 2, ha: 90 }); }
+  h.star(14, 63, -90, -70, 90, 80);
+}, { acc: '#f43f5e', acc2: '#1a0508', fps: 9 });
+
+// 17. Lâmina Absoluta: espada colossal com olho na guarda
+bxArt('lamina', 220, 240, 110, 124, 4, (h, fr) => {
+  const R = h.R, gl = Math.sin(fr / 4 * TAU) * 2;
+  h.F(h.P([[-14, -108], [14, -108], [10, 6], [0, 26], [-10, 6]]), R.ice, 1.6, { hi: 1.35, lo: 1.3, ol: 0, noise: .12 });
+  h.G(h.S(0, -102, 0, 2, 3), { hr: 2, ha: 120, top: 5.6 });
+  h.F(h.P([[-64, 8], [64, 8], [58, 26], [-58, 26]]), R.steel, 1.4, { hi: 1.2, lo: 1.2, ol: 0 });
+  for (const s of [-1, 1]) h.F(h.P([[s * 60, 12], [s * 74, 2 + gl], [s * 72, 26]]), R.steel, 1.6, { ol: 0 });
+  h.eye(0, 17, 12, 7);
+  h.F(h.P([[-9, 26], [9, 26], [7, 66], [-7, 66]]), R.cloth, 1.2, { ol: 0, noise: .3 });
+  for (let i = 0; i < 3; i++) h.F(h.P([[-10, 34 + i * 10], [10, 34 + i * 10], [10, 40 + i * 10], [-10, 40 + i * 10]]), R.gold, 1.6, { ol: 0 });
+  h.F(h.E(0, 76, 12, 12), R.gold, 1.8, { ol: 0 }); h.G(h.E(0, 76, 7, 7), { hr: 3, ha: 140 });
+  h.star(12, 65, -60, -110, 60, 60);
+}, { acc: '#a5f3fc', acc2: '#0f1a1e', fps: 5 });
+
+// 18. Maré Cósmica: onda gigante com tridente
+bxArt('mare', 240, 210, 120, 112, 5, (h, fr) => {
+  const R = h.R, sp = fr / 5 * TAU;
+  h.F(h.P([[-110, 74], [-110, 20], [-70, -20], [-20, -44], [30, -40], [70, -8], [96, 30], [110, 74]]), R.teal, 1.3, { hi: 1.2, lo: 1.2, ol: 0, noise: .3 });
+  for (let i = 0; i < 5; i++) { const x = -70 + i * 34; h.F(h.E(x, -34 - (i % 2) * 10 + Math.sin(sp + i) * 3, 16, 12), R.ice, 1.3, { ol: 0 }); }
+  for (let i = 0; i < 7; i++) { const a = i / 7; h.L(-100 + a * 200, 60, -94 + a * 200, 40, R.ice, .6); }
+  for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + sp; h.F(h.E(Math.cos(a) * 76, -10 + Math.sin(a) * 50, 2.4, 2.4), R.ice, 2, { ol: 0 }); }
+  for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + sp * .5; h.G(h.E(Math.cos(a) * 66, -22 + Math.sin(a) * 40, 5, 5), { hr: 3, ha: 130 }); }
+  h.G(h.E(96, -66, 9, 9), { hr: 4, ha: 170 });
+  h.F(h.S(88, -84, 88, 66, 3), R.gold, 1.8, {}); h.F(h.P([[70, -92], [106, -92], [106, -76], [70, -76]]), R.gold, 1.8, { ol: 0 });
+  for (const x of [76, 88, 100]) h.F(h.P([[x - 4, -92], [x + 4, -92], [x, -112]]), R.gold, 2.4, { ol: 0 });
+  h.star(12, 67, -100, -80, 100, 60);
+}, { acc: '#2dd4bf', acc2: '#06201e', fps: 7 });
+
+// 19. Brado do Infinito: trompa/boca colossal com anéis de som
+bxArt('brado', 230, 210, 115, 108, 5, (h, fr) => {
+  const R = h.R, sp = fr / 5 * TAU;
+  for (let i = 0; i < 4; i++) { const r = 60 + i * 22 + (sp * 20) % 22; h.G(h.N(h.E(-10, 0, r, r * .82), h.E(-10, 0, r - 3, r * .82 - 3)), { hr: 2, ha: 100, top: 5 }); }
+  h.F(h.P([[60, -34], [96, -44], [112, 0], [96, 44], [60, 34], [44, 0]]), R.brass, 1.5, { hi: 1.2, lo: 1.2, ol: 0, noise: .2 });
+  h.F(h.P([[66, -22], [96, -28], [102, 0], [96, 28], [66, 22]]), R.ink, 1, {});
+  h.F(h.E(80, 0, 16, 22), R.ink, .6, { hi: .4, lo: .4, ol: 0 });
+  for (let i = -2; i <= 2; i++) h.F(h.P([[76 + Math.abs(i) * 3, i * 7], [92, i * 9], [88, i * 9 + 4], [74 + Math.abs(i) * 3, i * 7 + 4]]), R.bone, 1.6, { ol: 0 });
+  for (const y of [-30, 0, 30]) h.F(h.C([[58, y], [30, y * 1.4], [-6, y * 1.5]], 6, 3, 4), R.brass, 1.3, { ol: 0 });
+  h.G(h.E(84, -6, 5, 5), { hr: 3, ha: 150 });
+  h.star(10, 69, -60, -80, 110, 80);
+}, { acc: '#fbbf24', acc2: '#1e1608', fps: 9 });
+
+// 20. APOTEOSE — 4 variantes, uma por estágio (0-1 terrestre, 2-3 voador)
+bxArt('apoteose', 260, 250, 130, 136, 5, (h, fr, v) => {
+  const R = h.R, sp = fr / 5 * TAU, fly = v >= 2;
+  const body = R.bone, trim = v >= 2 ? R.gold : R.brass;
+  if (v >= 2) {   // asas nas fases aéreas
+    for (const s of [-1, 1]) {
+      for (let k = 0; k < 3; k++) {
+        const L = 92 - k * 16, yy = -24 + k * 12, ph = Math.sin(sp + k) * 6;
+        h.A(h.P([[s * 14, yy], [s * L * .5, yy - 54 + ph], [s * L, yy - 20 + ph * 1.4], [s * L * .8, yy - 2 + ph], [s * 16, yy + 12]]), v === 3 ? [255, 246, 206] : [230, 216, 168], v === 3 ? 120 : 96);
+      }
+    }
+  }
+  // manto / corpo
+  h.F(h.P([[-30, -40], [-24, 10], [-42, 96], [0, 110], [42, 96], [24, 10], [30, -40]]), v >= 3 ? R.bone : R.cloth, 1.2, { hi: 1.15, lo: 1.15, ol: 0, noise: .25 });
+  h.F(h.P([[-20, -48], [-16, 4], [-24, 92], [0, 100], [24, 92], [16, 4], [20, -48]]), body, 1.3, { hi: 1.2, lo: 1.2, ol: 0, noise: .18 });
+  for (const y of [-24, 0, 24, 48]) h.F(h.P([[-18, y], [18, y], [16, y + 7], [-16, y + 7]]), trim, 1.5, { ol: 0 });
+  // cabeça e coroa
+  h.F(h.E(0, -66, 18, 19), body, 1.4, { ol: 0, noise: .12 });
+  h.G(h.S(-11, -68, 11, -68, 2.4), { hr: 2, ha: 130, top: 5.4 });
+  if (v >= 1) for (let i = -2; i <= 2; i++) h.F(h.P([[i * 9 - 4, -80], [i * 9 + 4, -80], [i * 9, -100 - (i % 2 ? 6 : 0)]]), trim, 2.4, { ol: 0 });
+  if (v >= 2) { h.G(h.E(0, -96, 14, 14), { hr: 4, ha: 160 }); h.G(h.N(h.E(0, -96, 26, 26), h.E(0, -96, 22, 22)), { hr: 2, ha: 140 }); }
+  // braços: 2 na fase 1, 4 na fase 2+
+  for (const s of [-1, 1]) {
+    h.F(h.C([[s * 26, -34], [s * 48, -6], [s * 44, 34]], 7, 4.4, 4), body, 1.3, { ol: 0 });
+    h.F(h.E(s * 44, 38, 6, 7), body, 1.5, { ol: 0 });
+    if (v >= 1) { h.F(h.C([[s * 20, -18], [s * 44, -44], [s * 62, -34]], 6, 3.4, 4), body, 1.2, { ol: 0 }); h.F(h.E(s * 64, -32, 5, 5), trim, 1.8, { ol: 0 }); }
+  }
+  // lâmina na mão direita (todas as fases)
+  h.F(h.P([[-2, -110], [10, -110], [8, -18], [0, -6], [-6, -18]]), R.ice, 1.5, { hi: 1.3, lo: 1.3, ol: 0 });
+  h.G(h.S(3, -104, 3, -24, 2.4), { hr: 2, ha: 130, top: 5.6 });
+  // detalhes por estágio
+  if (v === 1) { h.D(h.P([[-24, -30], [24, -30], [22, 90], [-22, 90]]), R.ember, 2.2, .08, 71); h.G(h.E(0, 30, 10, 10), { hr: 3, ha: 150 }); }
+  if (v === 3) {
+    for (let i = 0; i < 8; i++) {   // raios da auréola
+      const a = i / 8 * TAU + sp * .25, c = Math.cos(a), s2 = Math.sin(a);
+      h.F(h.P([[c * 30 - s2 * 3, -96 + s2 * 30 + c * 3], [c * 30 + s2 * 3, -96 + s2 * 30 - c * 3], [c * 56, -96 + s2 * 56]]), R.gold, 1.6, { ol: 0 });
+    }
+    for (let i = 0; i < 4; i++) {   // quatro lâminas em órbita
+      const a = i / 4 * TAU + sp * .5, c = Math.cos(a), s2 = Math.sin(a), x = c * 88, y = -6 + s2 * 74;
+      h.F(h.P([[x - c * 10, y - s2 * 10], [x + c * 26, y + s2 * 26], [x + c * 26 + s2 * 4, y + s2 * 26 - c * 4], [x - c * 10 + s2 * 4, y - s2 * 10 - c * 4]]), R.ice, 1.8, { hi: 1.3, lo: 1.3, ol: 0 });
+      h.G(h.E(x, y, 5, 5), { hr: 3, ha: 150 });
+    }
+    for (let i = 0; i < 5; i++) { const a = i / 5 * TAU - sp * .4; h.star(2, 73 + i, -40 + Math.cos(a) * 40, -40 + Math.sin(a) * 40, 6, 6); }
+    h.G(h.E(0, 30, 16, 16), { hr: 4, ha: 170 });
+  }
+  if (!fly) { for (const s of [-1, 1]) h.F(h.P([[s * 24, 96], [s * 40, 118], [s * 22, 124], [s * 10, 110]]), trim, 1.4, { ol: 0 }); }
+  else { h.A(h.P([[-34, 84], [0, 96], [34, 84], [24, 120], [0, 132], [-24, 120]]), [255, 240, 190], 60); }
+  h.star(v >= 2 ? 18 : 10, 75 + v, -100, -120, 100, 100);
+}, { acc: '#fde68a', acc2: '#2a2410', fps: 6, vars: 4 });
 
 ;
 /* ===== 06_icons.js ===== */
@@ -6755,7 +7402,7 @@ function S(num, name, d, v, k, look, fx, txt, rec, o) {
   const ing = {}; rec.split(',').forEach(p => { const [a, b] = p.split(':'); ing[a] = +b; });
   SWORDS.push(sw); SWORD_BY_NUM[num] = sw;
   IT[id] = { id, n: name, type: 'sword', tier: t, stack: 1, sw, ic: ['sword', sw], desc: txt };
-  RECIPES.push({ out: id, n: 1, ing, st: sw.station });
+  if (o.noRecipe) sw.dropOnly = true; else RECIPES.push({ out: id, n: 1, ing, st: sw.station });
   return sw;
 }
 // ======================= TIER 1 — INÍCIO DE JOGO & BÁSICO (001–020) [PDF] =======================
@@ -7213,7 +7860,7 @@ function S2(num, name, d, v, k, look, fx, txt, rec, o) {
   o = Object.assign({}, o || {}); o.st = o.st || TIER7_ST[Math.ceil(num / 20)];
   const sw = S(num, name, d, v, k, look, fx, txt, rec, o);
   sw.src = 'novo'; sw.kind = 'ext'; sw.station = o.st;
-  const r = RECIPES[RECIPES.length - 1]; r.st = o.st;
+  if (!o.noRecipe) { const r = RECIPES[RECIPES.length - 1]; r.st = o.st; }
   return sw;
 }
 
@@ -8356,7 +9003,7 @@ function bossAI(e, dt, sm) {
 ;
 /* ===== 13c_bossx.js ===== */
 /* ============================================================
-   13c_bossx: motor dos 50 chefes novos (dados em 13d..13g_bx_*.js, arte em 05f..05j_bxart*.js)
+   13c_bossx: motor dos 90 chefes novos (dados em 13d..13i_bx_*.js, arte em 05f..05l_bxart*.js)
    Cada chefe é um objeto em BX (registro bx(id, def)): atributos, sigilo de invocação, receita, loot,
    uma "mecânica única" (hooks: init, passive, hurt, after, lethal, death, draw) e um repertório de golpes
    escritos como geradores (function*): `yield 0.5` espera meio segundo, `yield` sozinho espera um quadro.
@@ -8371,6 +9018,8 @@ const BX_ACTS = [null,
   { n: 'Ato II · Pós-Olho', st: 'anvil', stage: 1, mat: [['platinum_bar', 6, 10], ['vamp_tooth', 2, 4]], pot: 'potion1' },
   { n: 'Ato III · Hardmode', st: 'advanvil', stage: 2, mat: [['hell_bar', 6, 10], ['celestial_frag', 5, 9]], pot: 'potion2' },
   { n: 'Ato IV · Além do Colosso', st: 'forge', stage: 3, mat: [['celestial_frag', 10, 18], ['e_time', 1, 2]], pot: 'potion3' },
+  { n: 'Ato V · Além do Firmamento', st: 'forge', stage: 3, mat: [['celestial_bar', 4, 8], ['e_light', 5, 9]], pot: 'potion3' },
+  { n: 'Ato VI · Fim de Tudo', st: 'forge', stage: 3, mat: [['celestial_bar', 6, 10], ['mythic_core', 1, 2]], pot: 'potion3' },
 ];
 const BX_BIO = { ocean: 'oceano', desert: 'deserto', forest: 'floresta', jungle: 'selva', snow: 'neve' };
 const BX_LAY = { sky: 'as ilhas do céu', surface: 'a superfície', cave: 'as cavernas', deep: 'as cavernas profundas', hell: 'o Inferno' };
@@ -8379,6 +9028,10 @@ function bx(id, d) {
   d.id = id; d.i = BXLIST.length; BX[id] = d; BXLIST.push(d); if (!d.acc && BXART[id]) d.acc = BXART[id].acc; if (!d.acc2 && BXART[id]) d.acc2 = BXART[id].acc2;
   d.glow = d.glow || d.acc; d.shot = d.shot || 'orb';
   enemy('bx_' + id, { n: d.n, kind: 'bx', draw: 'bx', boss: 1, bx: d, fly: d.fly ? 1 : 0, noclip: (d.noclip === undefined ? d.fly : d.noclip) ? 1 : 0, w: d.w, h: d.h, hp: d.hp, dmg: d.dmg, def: d.def || 0, spd: d.spd || 150, kbr: 1, mass: 10, col: d.acc2 || '#222', col2: d.acc, blood: d.acc, drops: [], coins: d.coin, glowc: d.glow });
+  if (d.sword && IT[d.sword] && IT[d.sword].sw) {   /* Tier 9/10: a espada não se forja, cai só do chefe */
+    const sw = IT[d.sword].sw; if (sw.tierLevel >= 9) { const k = RECIPES.findIndex(r => r.out === sw.id); if (k >= 0) RECIPES.splice(k, 1); sw.dropOnly = true; }
+    if (sw.dropOnly) { sw.dropFrom = id; sw.dropFromName = d.n; }
+  }
   const cond = d.cond ? ' Condição: ' + bxCondText(d) + '.' : '';
   item('sg_' + id, 'Sigilo: ' + (d.sigil || d.n), { type: 'use', tier: d.act + 1, stack: 20, ic: ['sigil', d.acc, d.i], use: 'boss_x:' + id, desc: 'Invoca ' + d.n + '.' + cond + ' Mecânica: ' + d.mech });
   rec('sg_' + id, 1, d.rec, d.st || BX_ACTS[d.act].st);
@@ -9514,6 +10167,887 @@ bx('forjador', {
 });
 
 ;
+/* ===== 13h_bx_a5.js ===== */
+/* ============================================================
+   13h_bx_a5: chefes novos do Ato V · Além do Firmamento (20) — Tier 9
+   Cada um guarda UMA das espadas 161–180: essas espadas não são forjadas, caem do chefe.
+   Motor em 13c_bossx.js; arte em 05k_bxart5.js. Mecânica única por chefe (nada repetido dos Atos I–IV).
+   ============================================================ */
+// querubim do coro (Ato V · 7)
+function bxCherub(c) {
+  return bxMin(c, { x: c.cx + rnd(-70, 70), y: c.cy - 20, look: 'bell', w: 16, h: 18, hp: 900, fly: 1, tag: 'ch', name: 'Querubim', col: '#fda4af', dm: .3,
+    mf: (s) => { const a = G.t * 1.2 + s.y * .02; s.vx = Math.cos(a) * 70; s.vy = Math.sin(a) * 44 - 16; } });
+}
+
+// ---- 161. Serafim da Balança: o veredito que só se anula atacando ----
+bx('serafim', {
+  n: 'Serafim da Balança', act: 5, w: 74, h: 86, hp: 46000, dmg: 126, def: 26, spd: 150, coin: [900, 1300], fly: 1, sword: 's161', rec: 'celestial_bar:8,e_light:10,e_time:2',
+  mech: 'marca você com o veredito CULPADO: se você acertar o chefe antes do selo fechar, a sentença é anulada — se não, um pilar de luz desce sobre você.',
+  shot: 'orb', loco: ['hover', { h: -140, sx: 130, spd: 150 }], kit: [['feathers', 'pierce'], ['feathers', 'judge'], ['judge', 'pierce', 'feathers', 'judge']], cds: [1.35, 1.05, .8], bob: 3,
+  init(c) { c.S.t = 4.5; c.S.j = null; },
+  passive(c, e) {
+    if (c.S.j) return; c.S.t -= c.dt; if (c.S.t > 0) return;
+    c.S.t = c.ph > 2 ? 5 : 7;
+    const z = bxTele(c, { follow: G.P, x: 0, y: 0, r: 38, tel: 3.2, col: '#fde68a' });
+    z.onEnd = () => {
+      c.S.j = null;
+      if (z.ok) { addText(pcx(G.P), G.P.y - 30, 'INOCENTE', '#86efac', 14, 1.2); ringFx(pcx(G.P), pcy(G.P), 54, '#86efac', .4, 3); sfx('heal', .4); }
+      else { addText(pcx(G.P), G.P.y - 30, 'CULPADO', '#fbbf24', 14, 1.2); bxCol(c, pcx(G.P), { w: 56, h: 420, tel: .3, dm: 1.15, col: '#fde68a' }); shake(5); }
+    };
+    c.S.j = z; addText(c.cx, e.y - 24, 'JULGAMENTO', '#fde68a', 14, 1.3); sfx('boss', .4);
+  },
+  after(c) { if (c && c.S.j) c.S.j.ok = true; },
+  moves: {
+    *feathers(c) { c.free = true; for (let k = 0; k < 3; k++) { bxFan(c, 5, .17, { speed: 300, r: 7, shape: 'blade', col: '#fde68a', col2: '#fff', dm: .5, life: 3 }); yield .55; } },
+    *pierce(c) { c.free = true; yield .25; bxBeam(c, { follow: true, aim: true, ang: 0, len: 400, w: 12, tel: .85, t: .5, dmg: Math.round(c.e.dmg * .8), col: '#fde68a', col2: '#ffffff' }); yield 1.5; },
+    *judge(c) { c.free = true; for (let k = 0; k < 3; k++) { bxCol(c, c.px + (k - 1) * 64, { w: 34, h: 380, tel: .6, dm: .7, col: '#fde68a' }); } yield 1.1; },
+  },
+});
+
+// ---- 162. Aurora do Amanhecer: dois raios gêmeos girando em sentidos opostos ----
+bx('aurora', {
+  n: 'Aurora do Amanhecer', act: 5, w: 84, h: 74, hp: 48000, dmg: 128, def: 25, spd: 165, coin: [900, 1350], fly: 1, sword: 's162', rec: 'celestial_bar:8,e_light:12,e_fire:4',
+  mech: 'abre dois raios de aurora que varrem a arena girando em sentidos opostos: o vão entre eles é o único lugar seguro.',
+  shot: 'fire', loco: ['orbit', { r: 250, h: -150, spd: 165, w: .6 }], kit: [['beams'], ['beams', 'wings'], ['wings', 'beams', 'rays']], cds: [1.4, 1.1, .85], bob: 3,
+  moves: {
+    *beams(c) {
+      c.free = true; const dm = Math.round(c.e.dmg * .7);
+      bxBeam(c, { x: c.cx, y: c.cy - 20, ang: .4, spin: .8, len: 620, w: 10, tel: .8, t: 5.6, dmg: dm, col: '#fbbf24', col2: '#fff7c2' });
+      bxBeam(c, { x: c.cx, y: c.cy - 20, ang: PI + .4, spin: -.8, len: 620, w: 10, tel: .8, t: 5.6, dmg: dm, col: '#fb923c', col2: '#ffedd5' });
+      yield 6;
+    },
+    *wings(c) { c.free = true; for (let k = 0; k < 3; k++) { bxFan(c, 7, .13, { speed: 260, r: 7, shape: 'feather', col: '#fbbf24', col2: '#fff7c2', dm: .45, life: 3, spin: 5 }); yield .6; } },
+    *rays(c) { c.free = true; for (let k = 0; k < 6; k++) { bxCol(c, c.px + rnd(-180, 180), { w: 28, h: 380, tel: .75, dm: .65, col: '#fbbf24' }); yield .3; } yield .9; },
+  },
+});
+
+// ---- 163. Lei do Silêncio: dentro do círculo a espada é selada em pulsos ----
+bx('silencio', {
+  n: 'Lei do Silêncio', act: 5, w: 62, h: 84, hp: 44000, dmg: 124, def: 24, spd: 120, coin: [880, 1250], sword: 's163', rec: 'celestial_bar:8,e_shadow:10,e_time:3',
+  mech: 'o sino do silêncio: dentro do círculo dele a sua espada é selada por 1,1 s e liberada por 1,1 s; fora do círculo ele quase não sente os golpes.',
+  shot: 'orb', loco: ['walk', { spd: 74, jump: 460 }], kit: [['bell', 'wave'], ['bell', 'seal', 'wave'], ['seal', 'bell', 'wave', 'bell']], cds: [1.3, 1, .78],
+  init(c) { c.S.s = 2.2; c.S.open = false; },
+  passive(c, e) {
+    c.S.s -= c.dt;
+    if (c.S.s <= 0) { c.S.s = 2.2; c.S.open = !c.S.open; ringFx(c.cx, c.cy, 170, '#c4b5fd', .4, 1); sfx('tick', .5); }
+    const d = Math.hypot(c.dx, c.dy);
+    if (d < 175 && !c.S.open) bxBuff('silence', .4);
+  },
+  hurt(c, e, dmg) { return c && Math.hypot(c.dx, c.dy) > 175 ? dmg * .12 : dmg; },
+  moves: {
+    *bell(c) { c.free = true; for (let k = 0; k < 2; k++) { bxRing(c, 12, { speed: 200, r: 8, shape: 'orb', col: '#c4b5fd', col2: '#ede9fe', dm: .5, life: 3, off: k * .26 }); yield .8; } },
+    *seal(c) { c.free = true; for (let k = 0; k < 3; k++) { bxCol(c, c.px + rnd(-140, 140), { w: 30, h: 360, tel: .9, dm: .7, col: '#c4b5fd', buff: 'stun', bt: .6 }); yield .3; } yield 1; },
+    *wave(c) { c.free = true; yield .4; bxWave(c, 1, { col: '#c4b5fd', hh: 12 }); bxWave(c, -1, { col: '#c4b5fd', hh: 12 }); yield 1; },
+  },
+});
+
+// ---- 164. Cetro do Sol Nascente: a gema sobe (imune) e desce (exposta) ----
+bx('cetro', {
+  n: 'Cetro do Sol Nascente', act: 5, w: 66, h: 96, hp: 50000, dmg: 132, def: 27, spd: 130, coin: [950, 1400], fly: 1, sword: 's164', rec: 'celestial_bar:9,e_fire:10,e_light:8',
+  mech: 'a gema do cetro sobe e desce: no alto ele fica quase imune e chove fogo; quando ela desce, ele fica exposto por 3 s.',
+  shot: 'fire', loco: ['float', { r: 150, h: -110, spd: 130 }], kit: [['rain', 'flare'], ['rain', 'flare', 'orbit'], ['flare', 'orbit', 'rain', 'flare']], cds: [1.3, 1, .78], bob: 2,
+  init(c) { c.S.up = true; c.S.t = 4; },
+  passive(c, e) {
+    c.S.t -= c.dt;
+    if (c.S.t <= 0) { c.S.up = !c.S.up; c.S.t = c.S.up ? 3.4 : 4.6; addText(c.cx, e.y - 20, c.S.up ? 'A gema sobe' : 'A gema desce', '#f59e0b', 13, 1); ringFx(c.cx, c.cy, c.S.up ? 80 : 40, '#f59e0b', .4, 2); sfx('portal', .4); }
+    if (c.S.up) { c.S.r = (c.S.r || 0) - c.dt; if (c.S.r <= 0) { c.S.r = 1.1; bxRain(c, 1, { speed: 320, r: 10, shape: 'fire', col: '#fb923c', col2: '#fde68a', dm: .45, life: 4, spread: 200 }); } }
+  },
+  hurt(c, e, dmg) { return c && c.S.up ? dmg * .04 : dmg; },
+  moves: {
+    *rain(c) { c.free = true; for (let k = 0; k < 4; k++) { bxRain(c, 2, { speed: 330, r: 10, shape: 'fire', col: '#fb923c', col2: '#fde68a', dm: .5, life: 4, spread: 220 }); yield .5; } },
+    *flare(c) { c.free = true; bxRing(c, 16, { speed: 230, r: 8, shape: 'orb', col: '#f59e0b', col2: '#fef3c7', glow: '#fbbf24', dm: .5, life: 3 }); yield 1; },
+    *orbit(c) { c.free = true; for (let k = 0; k < 3; k++) { const p = bxShot(c, { y: c.cy - 40, speed: 250, r: 9, shape: 'orb', col: '#fbbf24', col2: '#fff7c2', dm: .55, life: 3.4, spin: 8 }); bxBack(c, p, .9, 280); yield .8; } yield .8; },
+  },
+});
+
+// ---- 165. Arqueiro da Constelação: estrelas acendem em sequência e viram lança ----
+bx('constelacao', {
+  n: 'Arqueiro da Constelação', act: 5, w: 70, h: 78, hp: 47000, dmg: 130, def: 25, spd: 170, coin: [920, 1350], fly: 1, sword: 's165', rec: 'celestial_bar:8,e_light:8,e_lightning:6',
+  mech: 'acende estrelas no chão em sequência; quando a última acende, uma lança de luz atravessa todas de uma vez.',
+  shot: 'orb', loco: ['hover', { h: -160, sx: 150, spd: 170 }], kit: [['stars', 'shot'], ['stars', 'shot', 'rain'], ['rain', 'stars', 'shot', 'stars']], cds: [1.35, 1.05, .8], bob: 3,
+  moves: {
+    *stars(c) {
+      c.free = true; const n = 6, x0 = c.px - 150, y = c.py - 10;
+      for (let i = 0; i < n; i++) {
+        bxZone(c, { x: x0 + i * 60 - 12, y: y - 150, w: 24, h: 150, tel: .45 + i * .2, kind: 'dmg', dmg: Math.round(c.e.dmg * .45), col: '#a5b4fc', flash: .2 });
+        yield .2;
+      }
+      yield .6;
+      bxBeam(c, { x: x0 - 50, y: y - 60, ang: 0, len: 460, w: 11, tel: .2, t: .6, dmg: Math.round(c.e.dmg * .85), col: '#a5b4fc', col2: '#eef2ff' });
+      shake(4); yield 1;
+    },
+    *shot(c) { c.free = true; for (let k = 0; k < 3; k++) { bxFan(c, 3, .18, { speed: 420, r: 6, shape: 'blade', col: '#c7d2fe', col2: '#fff', dm: .5, life: 2.4, trail: '#a5b4fc' }); yield .45; } },
+    *rain(c) { c.free = true; bxRain(c, 7, { speed: 400, r: 6, shape: 'star', col: '#c7d2fe', col2: '#fff', dm: .45, life: 3.5, spread: 240 }); yield 1.2; },
+  },
+});
+
+// ---- 166. Veredito Celeste: martelo que marca a sua sombra ----
+bx('veredito', {
+  n: 'Veredito Celeste', act: 5, w: 84, h: 96, hp: 54000, dmg: 136, def: 29, spd: 96, coin: [980, 1450], sword: 's166', rec: 'celestial_bar:10,e_light:10,e_earth:8',
+  mech: 'o martelo marca a sua sombra no chão e a sombra cresce a cada golpe; quem estiver dentro dela é esmagado.',
+  shot: 'rock', loco: ['walk', { spd: 88, jump: 430 }], kit: [['gavel', 'swords'], ['gavel', 'waves', 'swords'], ['waves', 'gavel', 'swords', 'gavel']], cds: [1.4, 1.1, .85],
+  moves: {
+    *gavel(c) {
+      const z = bxTele(c, { follow: G.P, x: 0, y: 0, r: 28, r1: c.ph > 1 ? 78 : 62, grow: 1.3, tel: 1.3, col: '#fbbf24' });
+      yield 1.35; const x = z.x, y = z.y;
+      bxBoom(c, x, y, 74, { tel: .05, dm: 1, col: '#fbbf24' }); bxWave(c, 1, { col: '#fbbf24' }); bxWave(c, -1, { col: '#fbbf24' }); shake(7); sfx('boom', .6);
+      yield 1.1;
+    },
+    *waves(c) { yield .3; bxWave(c, 1, { col: '#fbbf24', hh: 12 }); yield .5; bxWave(c, -1, { col: '#fbbf24', hh: 12 }); yield .8; },
+    *swords(c) { c.free = true; for (let k = 0; k < 4; k++) { bxCol(c, c.px + rnd(-180, 180), { w: 26, h: 380, tel: .8, dm: .7, col: '#fde68a' }); yield .32; } yield .9; },
+  },
+});
+
+// ---- 167. Coro dos Querubins: três cantores sustentam a guarda ----
+bx('querubins', {
+  n: 'Coro dos Querubins', act: 5, w: 76, h: 70, hp: 46000, dmg: 124, def: 24, spd: 140, coin: [900, 1300], fly: 1, sword: 's167', rec: 'celestial_bar:8,e_light:10,e_blood:4',
+  mech: 'três querubins cantam em rodízio: enquanto o coro está completo ele quase não leva dano — mate um cantor para abrir a guarda.',
+  shot: 'orb', loco: ['orbit', { r: 220, h: -140, spd: 140, w: .7 }], kit: [['notes', 'chord'], ['notes', 'chord', 'hymn'], ['hymn', 'chord', 'notes', 'chord']], cds: [1.3, 1, .8], bob: 4,
+  init(c) { for (let k = 0; k < 3; k++) bxCherub(c); c.S.t = 9; },
+  passive(c, e) {
+    c.S.t -= c.dt;
+    if (c.S.t <= 0 && bxMinCount(c, 'ch') < 3) { c.S.t = c.ph > 1 ? 6 : 9; bxCherub(c); addText(c.cx, e.y - 18, 'O coro se refaz', '#fda4af', 12, 1); ringFx(c.cx, c.cy, 70, '#fda4af', .4, 2); }
+  },
+  hurt(c, e, dmg) { return c && bxMinCount(c, 'ch') >= 3 ? dmg * .18 : dmg; },
+  moves: {
+    *notes(c) { c.free = true; for (let k = 0; k < 3; k++) { bxFan(c, 4, .22, { speed: 280, r: 7, shape: 'orb', col: '#fda4af', col2: '#fff1f2', dm: .5, life: 3, homing: k % 2 === 0, steer: 1 }); yield .55; } },
+    *chord(c) { c.free = true; bxRing(c, 14, { speed: 210, r: 7, shape: 'orb', col: '#fb7185', col2: '#fff1f2', dm: .45, life: 3.2 }); yield 1.1; },
+    *hymn(c) { c.free = true; for (let k = 0; k < 5; k++) { bxCol(c, c.px + (k - 2) * 44, { w: 26, h: 360, tel: .5 + k * .09, dm: .6, col: '#fda4af' }); } yield 1.4; },
+  },
+});
+
+// ---- 168. Domínio do Trovão: as bordas da arena se eletrificam e avançam ----
+bx('trovao', {
+  n: 'Domínio do Trovão', act: 5, w: 78, h: 96, hp: 52000, dmg: 134, def: 27, spd: 120, coin: [950, 1400], fly: 1, sword: 's168', rec: 'celestial_bar:9,e_lightning:14,e_ice:4',
+  mech: 'carrega as bordas da arena: colunas elétricas avançam dos dois lados para o centro e só recuam quando ele leva um golpe.',
+  shot: 'orb', loco: ['hover', { h: -150, sx: 110, spd: 120 }], kit: [['bolts', 'storm'], ['bolts', 'storm', 'trident'], ['trident', 'storm', 'bolts', 'storm']], cds: [1.3, 1.05, .8], bob: 3,
+  init(c, e) {
+    c.S.ew = 50;
+    c.S.L = bxZone(c, { x: e.x - 620, y: e.y - 300, w: 50, h: 640, tel: 0, t: 1e9, kind: 'fire', dmg: Math.round(c.e.dmg * .5), tick: .55, col: '#67e8f9', flash: .2, keep: true });
+    c.S.R = bxZone(c, { x: e.x + 620, y: e.y - 300, w: 50, h: 640, tel: 0, t: 1e9, kind: 'fire', dmg: Math.round(c.e.dmg * .5), tick: .55, col: '#67e8f9', flash: .2, keep: true });
+  },
+  passive(c, e) {
+    if (!c.S.L || !c.S.R) return;
+    const k = c.ph > 2 ? 26 : c.ph > 1 ? 19 : 13;
+    c.S.ew = Math.min(300, c.S.ew + k * c.dt);
+    const p = pcx(G.P);
+    c.S.L.w = c.S.ew; c.S.L.x = p - 620; c.S.L.y = pcy(G.P) - 320; c.S.L.h = 640;
+    c.S.R.w = c.S.ew; c.S.R.x = p + 620 - c.S.ew; c.S.R.y = pcy(G.P) - 320; c.S.R.h = 640;
+  },
+  hurt(c, e, dmg) { if (c && c.S.ew) c.S.ew = Math.max(40, c.S.ew - 16); return dmg; },
+  moves: {
+    *bolts(c) { c.free = true; for (let k = 0; k < 5; k++) { bxCol(c, c.px + rnd(-200, 200), { w: 24, h: 380, tel: .55, dm: .65, col: '#67e8f9' }); yield .22; } yield .9; },
+    *storm(c) { c.free = true; bxRing(c, 18, { speed: 240, r: 7, shape: 'orb', col: '#67e8f9', col2: '#ecfeff', glow: '#22d3ee', dm: .45, life: 3 }); yield 1.2; },
+    *trident(c) { c.free = true; yield .3; for (let k = -1; k <= 1; k++) bxBeam(c, { follow: true, ang: Math.atan2(c.dy, c.dx) + k * .26, len: 460, w: 9, tel: .7, t: .5, dmg: Math.round(c.e.dmg * .7), col: '#67e8f9', col2: '#ecfeff' }); yield 1.6; },
+  },
+});
+
+// ---- 169. Dragão da Aurora: o rastro de ouro endurece atrás dele ----
+bx('aurora_dourada', {
+  n: 'Dragão da Aurora', act: 5, w: 96, h: 62, hp: 50000, dmg: 130, def: 26, spd: 210, coin: [940, 1400], fly: 1, sword: 's169', rec: 'celestial_bar:9,e_light:8,e_fire:8',
+  mech: 'voa deixando um rastro de ouro que endurece atrás dele: o corredor aperta a cada passada.',
+  shot: 'fire', loco: ['orbit', { r: 200, h: -120, spd: 210, w: 1.1 }], kit: [['breath', 'coil'], ['breath', 'coil', 'sweep'], ['sweep', 'coil', 'breath', 'coil']], cds: [1.2, .95, .75], bob: 3,
+  passive(c, e) {
+    c.S.d = (c.S.d || 0) - c.dt;
+    if (c.S.d <= 0) { c.S.d = .26; bxZone(c, { x: c.cx - 14, y: c.cy - 14, r: 15, tel: .12, t: 6, kind: 'fire', dmg: Math.round(c.e.dmg * .28), tick: .7, col: '#f59e0b', flash: .15 }); }
+  },
+  moves: {
+    *breath(c) { c.free = true; for (let k = 0; k < 3; k++) { bxFan(c, 6, .16, { speed: 300, r: 8, shape: 'fire', col: '#f59e0b', col2: '#fef3c7', dm: .5, life: 2.6 }); yield .5; } },
+    *coil(c) { c.free = true; yield .3; yield* bxDash(c, 620, .7); bxBoom(c, c.cx, c.cy, 58, { tel: .1, dm: .6 }); yield .8; },
+    *sweep(c) { c.free = true; bxBeam(c, { x: c.cx, y: c.cy, ang: -1.2, spin: 1.1, len: 520, w: 10, tel: .6, t: 3.4, dmg: Math.round(c.e.dmg * .6), col: '#f59e0b', col2: '#fef3c7' }); yield 3.8; },
+  },
+});
+
+// ---- 170. Cálice da Eternidade: cada golpe enche a taça; transbordar cura ----
+bx('calice', {
+  n: 'Cálice da Eternidade', act: 5, w: 80, h: 96, hp: 56000, dmg: 132, def: 28, spd: 90, coin: [980, 1450], sword: 's170', rec: 'celestial_bar:10,e_water:10,e_light:8',
+  mech: 'cada golpe enche a taça; quando transborda, ele se cura e despeja uma onda de luz — é preciso parar de bater antes do transbordamento.',
+  shot: 'orb', loco: ['float', { r: 140, h: -80, spd: 90 }], kit: [['spill', 'pour'], ['spill', 'pour', 'drops'], ['drops', 'pour', 'spill', 'pour']], cds: [1.4, 1.1, .85], bob: 2,
+  init(c) { c.S.fill = 0; },
+  after(c, e, dmg) {
+    if (!c) return; c.S.fill += dmg;
+    if (c.S.fill > e.hpMax * .15) {
+      c.S.fill = 0; bxHeal(e, .05);
+      ringFx(c.cx, c.cy, 170, '#fde68a', .5, 4); bxRing(c, 16, { speed: 210, r: 8, shape: 'orb', col: '#fde68a', col2: '#fffbeb', dm: .55, life: 3 });
+      addText(c.cx, e.y - 22, 'Transbordou!', '#fde68a', 14, 1.3); sfx('heal', .6);
+    }
+  },
+  moves: {
+    *spill(c) { c.free = true; for (let k = 0; k < 3; k++) { bxRing(c, 10, { speed: 190, r: 8, shape: 'orb', col: '#fde68a', col2: '#fffbeb', dm: .45, life: 3, off: k * .3 }); yield .7; } },
+    *pour(c) { c.free = true; for (let k = 0; k < 4; k++) { bxCol(c, c.px + rnd(-190, 190), { w: 30, h: 380, tel: .8, dm: .7, col: '#fde68a' }); yield .3; } yield .9; },
+    *drops(c) { c.free = true; bxRain(c, 8, { speed: 300, r: 7, shape: 'orb', col: '#fbbf24', col2: '#fff7c2', dm: .45, life: 3.6, spread: 230 }); yield 1.1; },
+  },
+});
+
+// ---- 171. Coroa da Criação: cada 20% de vida perdida nasce uma mão ----
+bx('coroa', {
+  n: 'Coroa da Criação', act: 5, w: 86, h: 78, hp: 52000, dmg: 128, def: 25, spd: 160, coin: [950, 1400], fly: 1, sword: 's171', rec: 'celestial_bar:9,e_light:10,e_earth:6',
+  mech: 'cria servos com o seu próprio dano: a cada 20% de vida perdida nasce uma mão de luz que persegue você.',
+  shot: 'orb', loco: ['orbit', { r: 230, h: -160, spd: 160, w: .8 }], kit: [['sparks', 'grasp'], ['sparks', 'grasp', 'ring'], ['ring', 'grasp', 'sparks', 'grasp']], cds: [1.3, 1.05, .8], bob: 3,
+  init(c) { c.S.n = 0; },
+  passive(c, e) {
+    const n = Math.floor((1 - e.hp / e.hpMax) * 5);
+    if (n > c.S.n) {
+      c.S.n = n;
+      bxMin(c, { x: c.cx + rnd(-40, 40), y: c.cy, look: 'pylon', w: 18, h: 24, hp: 1200, fly: 1, tag: 'hand', name: 'Mão da Criação', col: '#fde68a', dm: .3,
+        mf: (s) => { const a = Math.atan2(pcy(G.P) - ecy(s), pcx(G.P) - ecx(s)); s.vx = Math.cos(a) * 90; s.vy = Math.sin(a) * 90; } });
+      addText(c.cx, e.y - 18, 'Uma mão nasce', '#fde68a', 12, 1); ringFx(c.cx, c.cy, 60, '#fde68a', .4, 2);
+    }
+  },
+  moves: {
+    *sparks(c) { c.free = true; for (let k = 0; k < 3; k++) { bxFan(c, 5, .18, { speed: 300, r: 7, shape: 'star', col: '#fde68a', col2: '#fffbeb', dm: .5, life: 3 }); yield .55; } },
+    *grasp(c) { c.free = true; for (let k = 0; k < 3; k++) { bxCol(c, c.px + (k - 1) * 60, { w: 30, h: 340, tel: .7, dm: .65, col: '#fde68a', buff: 'slow', bt: 1.4, bd: { mult: .5 } }); } yield 1.2; },
+    *ring(c) { c.free = true; bxRing(c, 16, { speed: 220, r: 7, shape: 'orb', col: '#fbbf24', col2: '#fffbeb', dm: .45, life: 3 }); yield 1.2; },
+  },
+});
+
+// ---- 172. Selo do Juízo Final: sete selos absorvem os golpes ----
+bx('selo', {
+  n: 'Selo do Juízo Final', act: 5, w: 78, h: 78, hp: 58000, dmg: 136, def: 28, spd: 130, coin: [1000, 1500], fly: 1, sword: 's172', rec: 'celestial_bar:10,e_shadow:10,e_blood:8',
+  mech: 'sete selos giram em volta dele e absorvem um golpe cada; romper os sete abre uma janela de 5 s — depois os selos voltam.',
+  shot: 'orb', loco: ['hover', { h: -140, sx: 120, spd: 130 }], kit: [['paper', 'seals'], ['paper', 'seals', 'stamp'], ['stamp', 'seals', 'paper', 'stamp']], cds: [1.35, 1.05, .8], bob: 3,
+  init(c) { c.S.seals = 7; c.S.open = 0; },
+  hurt(c, e, dmg) {
+    if (!c) return dmg;
+    if (c.S.seals > 0) {
+      c.S.seals--; ringFx(c.cx, c.cy, 64, '#f87171', .3, 2);
+      if (c.S.seals === 0) { c.S.open = 5; addText(c.cx, e.y - 24, 'SELOS ROMPIDOS!', '#fef08a', 15, 1.4); flash('#f87171', .2, .3); }
+      return dmg * .1;
+    }
+    return dmg;
+  },
+  passive(c, e) {
+    if (c.S.open > 0) { c.S.open -= c.dt; if (c.S.open <= 0) { c.S.seals = 7; addText(c.cx, e.y - 20, 'Os selos voltam', '#f87171', 12, 1); } }
+  },
+  moves: {
+    *paper(c) { c.free = true; for (let k = 0; k < 4; k++) { bxFan(c, 3, .3, { speed: 320, r: 8, shape: 'blade', col: '#f87171', col2: '#fee2e2', dm: .5, life: 2.6, spin: 7 }); yield .45; } },
+    *seals(c) { c.free = true; for (let k = 0; k < 7; k++) { const a = k / 7 * TAU; bxShot(c, { ang: a, speed: 200, r: 9, shape: 'orb', col: '#f87171', col2: '#fee2e2', dm: .45, life: 4, homing: true, steer: 1 }); yield .16; } yield .8; },
+    *stamp(c) { c.free = true; for (let k = 0; k < 3; k++) { bxCol(c, c.px + rnd(-160, 160), { w: 40, h: 360, tel: .9, dm: .75, col: '#f87171' }); yield .3; } yield 1; },
+  },
+});
+
+// ---- 173. Lâmina do Tempo Zero: quando o ponteiro fecha a volta, zera seus efeitos ----
+bx('tempo_zero', {
+  n: 'Lâmina do Tempo Zero', act: 5, w: 72, h: 96, hp: 55000, dmg: 138, def: 27, spd: 150, coin: [980, 1450], fly: 1, sword: 's173', rec: 'celestial_bar:9,e_time:12,e_lightning:4',
+  mech: 'zera o relógio: quando o ponteiro fecha a volta, todos os seus bônus e escudos somem e as lâminas paradas no ar voltam de uma vez.',
+  shot: 'orb', loco: ['hover', { h: -150, sx: 150, spd: 150 }], kit: [['hands', 'frozen'], ['hands', 'frozen', 'strike'], ['strike', 'frozen', 'hands', 'frozen']], cds: [1.3, 1, .78], bob: 3,
+  init(c) { c.S.t = 10; c.S.shards = []; },
+  passive(c, e) {
+    c.S.t -= c.dt;
+    if (c.S.t <= 0) {
+      c.S.t = c.ph > 2 ? 8 : 11; const P = G.P;
+      P.buffs = {}; addText(pcx(P), P.y - 34, 'TEMPO ZERADO', '#67e8f9', 15, 1.4);
+      ringFx(pcx(P), pcy(P), 110, '#67e8f9', .5, 4); flash('#67e8f9', .18, .3); sfx('portal', .7);
+    }
+  },
+  moves: {
+    *hands(c) { c.free = true; for (let k = 0; k < 6; k++) { const a = k / 6 * TAU + c.t; bxShot(c, { ang: a, speed: 190, r: 9, shape: 'blade', col: '#67e8f9', col2: '#ecfeff', dm: .45, life: 4, spin: 9 }); yield .12; } yield .9; },
+    *frozen(c) { c.free = true; bxRain(c, 6, { speed: 0, r: 9, shape: 'shard', col: '#a5f3fc', col2: '#ecfeff', dm: .5, life: 2.2, spread: 200, grav: 0 }); yield .9; bxRain(c, 6, { speed: 300, r: 9, shape: 'shard', col: '#a5f3fc', col2: '#ecfeff', dm: .5, life: 3, spread: 200 }); yield .8; },
+    *strike(c) { c.free = true; yield .3; bxBeam(c, { follow: true, aim: true, ang: 0, len: 460, w: 11, tel: .7, t: .45, dmg: Math.round(c.e.dmg * .85), col: '#67e8f9', col2: '#ecfeff' }); yield 1.5; },
+  },
+});
+
+// ---- 174. Arauto da Luz: a lanterna acesa mira; apagada, atira às cegas ----
+bx('arauto_luz', {
+  n: 'Arauto da Luz', act: 5, w: 66, h: 92, hp: 47000, dmg: 126, def: 25, spd: 150, coin: [900, 1350], fly: 1, sword: 's174', rec: 'celestial_bar:8,e_light:12,e_fire:6',
+  mech: 'a lanterna acesa mira em você; acertá-lo seis vezes apaga a chama e ele atira às cegas por 4 s (mais tiros, sem mira).',
+  shot: 'fire', loco: ['hover', { h: -150, sx: 130, spd: 155 }], kit: [['beam', 'volley'], ['beam', 'volley', 'lanterns'], ['lanterns', 'volley', 'beam', 'volley']], cds: [1.3, 1, .8], bob: 2,
+  init(c) { c.S.lamp = 6; c.S.blind = 0; },
+  hurt(c, e, dmg) {
+    if (!c) return dmg;
+    c.S.lamp--;
+    if (c.S.lamp <= 0) { c.S.lamp = 6; c.S.blind = 4; addText(c.cx, e.y - 24, 'A chama apagou!', '#94a3b8', 14, 1.3); ringFx(c.cx, c.cy, 90, '#94a3b8', .4, 2); sfx('break', .5); }
+    return dmg;
+  },
+  passive(c, e) { if (c.S.blind > 0) { c.S.blind -= c.dt; if (Math.random() < c.dt * 3) burst(c.cx + rnd(-20, 20), c.cy - 20, 2, { col: ['#475569', '#e2e8f0'], spd: 40, life: .5 }); } },
+  moves: {
+    *beam(c) { c.free = true; yield .25; bxBeam(c, { follow: true, aim: c.S.blind <= 0, ang: Math.random() * TAU, len: 420, w: 10, tel: .8, t: .5, dmg: Math.round(c.e.dmg * .8), col: '#fde047', col2: '#fefce8' }); yield 1.5; },
+    *volley(c) {
+      c.free = true; const blind = c.S.blind > 0;
+      for (let k = 0; k < (blind ? 5 : 3); k++) {
+        if (blind) bxRing(c, 9, { speed: 220, r: 7, shape: 'orb', col: '#fde047', col2: '#fefce8', dm: .45, life: 3, off: rnd(0, 6) });
+        else bxFan(c, 3, .2, { speed: 320, r: 7, shape: 'orb', col: '#fde047', col2: '#fefce8', dm: .5, life: 3 });
+        yield .5;
+      }
+    },
+    *lanterns(c) { c.free = true; for (let k = 0; k < 4; k++) { bxCol(c, c.px + rnd(-190, 190), { w: 26, h: 360, tel: .85, dm: .7, col: '#fde047' }); yield .28; } yield .9; },
+  },
+});
+
+// ---- 175. Sinfonia dos Céus: a pauta varre a tela; só as frestas são seguras ----
+bx('sinfonia', {
+  n: 'Sinfonia dos Céus', act: 5, w: 78, h: 76, hp: 49000, dmg: 127, def: 25, spd: 150, coin: [930, 1380], fly: 1, sword: 's175', rec: 'celestial_bar:9,e_light:8,e_time:4',
+  mech: 'a pauta sobe: cinco linhas de música varrem a tela de baixo para cima e só as frestas entre elas são seguras.',
+  shot: 'orb', loco: ['float', { r: 200, h: -150, spd: 150 }], kit: [['staves', 'notes'], ['staves', 'notes', 'chord'], ['chord', 'notes', 'staves', 'notes']], cds: [1.4, 1.1, .85], bob: 4,
+  moves: {
+    *staves(c) {
+      c.free = true; const P = G.P, y0 = pcy(P) + 250;
+      for (let i = 0; i < 5; i++) {
+        const z = bxZone(c, { x: P.x - 460, y: y0 + i * 46, w: 920, h: 13, tel: .45 + i * .1, kind: 'fire', t: 6.2, dmg: Math.round(c.e.dmg * .16), tick: .4, col: '#f0abfc' });
+        z.fn = (q, dt) => { q.y -= 74 * dt; };
+      }
+      yield 5.4;
+    },
+    *notes(c) { c.free = true; for (let k = 0; k < 4; k++) { bxFan(c, 3, .26, { speed: 300, r: 7, shape: 'orb', col: '#f0abfc', col2: '#fdf4ff', dm: .5, life: 3 }); yield .45; } },
+    *chord(c) { c.free = true; bxRing(c, 16, { speed: 210, r: 7, shape: 'orb', col: '#e879f9', col2: '#fdf4ff', dm: .45, life: 3.2 }); yield 1.2; },
+  },
+});
+
+// ---- 176. Fênix Imortal: morre para um ovo que precisa ser quebrado em 6 s ----
+bx('fenix', {
+  n: 'Fênix Imortal', act: 5, w: 88, h: 80, hp: 50000, dmg: 130, def: 26, spd: 200, coin: [950, 1400], fly: 1, sword: 's176', rec: 'celestial_bar:9,e_fire:12,e_light:6',
+  mech: 'ao cair vira um ovo de cinzas por 6 s: se o ovo sobreviver, ela renasce com mais vida — quebre o ovo para acabar com ela de vez.',
+  shot: 'fire', loco: ['orbit', { r: 230, h: -130, spd: 200, w: .9 }], kit: [['dive', 'feathers'], ['dive', 'feathers', 'nova'], ['nova', 'feathers', 'dive', 'feathers']], cds: [1.2, .95, .75], bob: 3,
+  init(c) { c.S.egg = 0; c.S.reborn = 0; c.S.eggT = 0; },
+  lethal(c, e) {
+    if (!c || c.S.reborn) return false;
+    if (!c.S.egg) {
+      c.S.egg = 1; c.S.eggT = 6; e.hp = e.hpMax * .12; e.invulnerable = false; c.g = null; c.free = false;
+      ringFx(c.cx, c.cy, 100, '#fb923c', .6, 4); addText(c.cx, e.y - 26, 'O OVO DE CINZAS', '#fb923c', 14, 1.4);
+      toast('A Fênix virou um ovo de cinzas! Quebre-o em 6 s.', '#fb923c'); sfx('boom', .7); return true;
+    }
+    c.S.egg = 2; return false;
+  },
+  passive(c, e) {
+    if (c.S.egg === 1) {
+      c.S.eggT -= c.dt; c.skipLoco = true; e.vx *= .9; c.cd = 4;
+      if (c.S.eggT <= 0) {
+        c.S.egg = 0; c.S.reborn = 1; e.hp = e.hpMax * .7; e.invulnerable = false; c.cd = .6;
+        ringFx(c.cx, c.cy, 140, '#fb923c', .7, 5); shake(8); addText(c.cx, e.y - 30, 'RENASCEU!', '#fb923c', 15, 1.5); sfx('boss', .8);
+        for (let k = 0; k < 3; k++) bxSpawn(c, 'imp', c.cx + rnd(-80, 80), c.cy - 20, { hp: 60, dm: .3, vy: -260 });
+      }
+    }
+  },
+  variant: (e, c) => c ? (c.S.egg === 1 ? 1 : 0) : 0,
+  moves: {
+    *dive(c) { c.free = true; yield .35; yield* bxDash(c, 640, .75); bxBoom(c, c.cx, c.cy, 64, { tel: .1, dm: .7 }); yield .9; },
+    *feathers(c) { c.free = true; for (let k = 0; k < 3; k++) { bxFan(c, 6, .16, { speed: 300, r: 7, shape: 'feather', col: '#fb923c', col2: '#ffedd5', dm: .45, life: 3, spin: 6 }); yield .5; } },
+    *nova(c) { c.free = true; for (let k = 0; k < 2; k++) { bxRing(c, 18, { speed: 230, r: 8, shape: 'fire', col: '#f97316', col2: '#ffedd5', dm: .5, life: 3, off: k * .22 }); yield .8; } },
+  },
+});
+
+// ---- 177. Escudo do Firmamento: muralha que barra projéteis ----
+bx('escudo', {
+  n: 'Escudo do Firmamento', act: 5, w: 92, h: 92, hp: 60000, dmg: 134, def: 32, spd: 70, coin: [1000, 1500], sword: 's177', rec: 'celestial_bar:10,e_earth:10,e_light:8',
+  mech: 'levanta a muralha: projéteis e magias não passam — só o golpe de perto, na fenda do olho, fere o corpo lá atrás.',
+  shot: 'rock', loco: ['walk', { spd: 62, jump: 380 }], kit: [['bash', 'spikes'], ['bash', 'spikes', 'wall'], ['wall', 'spikes', 'bash', 'spikes']], cds: [1.5, 1.2, .95],
+  hurt(c, e, dmg, h) { return c && h && h.proj ? dmg * .02 : dmg; },
+  moves: {
+    *bash(c) { c.free = true; yield .3; yield* bxDash(c, 520, .6); bxBoom(c, c.cx, c.cy, 60, { tel: .08, dm: .7 }); yield .9; },
+    *spikes(c) { c.free = true; for (let k = 0; k < 5; k++) { bxCol(c, c.px + rnd(-200, 200), { w: 26, h: 340, tel: .75, dm: .65, col: '#93c5fd' }); yield .22; } yield .9; },
+    *wall(c) { c.free = true; const P = G.P; bxZone(c, { x: P.x + (P.x < c.cx ? -90 : 90), y: P.y - 200, w: 34, h: 280, tel: .5, t: 5, kind: 'dmg', dmg: Math.round(c.e.dmg * .7), col: '#93c5fd', flash: .3 }); yield 1.3; },
+  },
+});
+
+// ---- 178. Chama Sagrada: o fogo pega quem fica parado ----
+bx('chama', {
+  n: 'Chama Sagrada', act: 5, w: 72, h: 92, hp: 45000, dmg: 122, def: 23, spd: 185, coin: [880, 1300], fly: 1, sword: 's178', rec: 'celestial_bar:8,e_fire:14,e_light:6',
+  mech: 'o fogo sagrado persegue quem para: ficar parado incendeia você aos poucos; correndo, a chama se apaga.',
+  shot: 'fire', loco: ['chase', { h: -110, spd: 110 }], kit: [['flame', 'wisp'], ['flame', 'wisp', 'pillar'], ['pillar', 'wisp', 'flame', 'wisp']], cds: [1.25, .95, .75], bob: 4,
+  init(c) { c.S.b = 0; },
+  passive(c, e) {
+    const P = G.P, sp = Math.hypot(P.vx || 0, P.vy || 0);
+    if (!P.dead && sp < 26) {
+      c.S.b += c.dt;
+      if (c.S.b > .35) { c.S.b = 0; hurtPlayer(Math.round(e.dmg * .2), c.cx, 0, { pierce: true, inv: .22 }); burst(pcx(P), pcy(P), 3, { col: ['#fbbf24', '#f97316'], spd: 70, life: .4, glow: true }); }
+    } else c.S.b = 0;
+  },
+  moves: {
+    *flame(c) { c.free = true; for (let k = 0; k < 3; k++) { bxFan(c, 5, .17, { speed: 290, r: 8, shape: 'fire', col: '#fb923c', col2: '#fef3c7', dm: .5, life: 2.6 }); yield .5; } },
+    *wisp(c) { c.free = true; bxRing(c, 12, { speed: 210, r: 7, shape: 'fire', col: '#fbbf24', col2: '#fef3c7', dm: .45, life: 3 }); yield 1.1; },
+    *pillar(c) { c.free = true; for (let k = 0; k < 4; k++) { bxCol(c, c.px + rnd(-170, 170), { w: 28, h: 380, tel: .7, dm: .7, col: '#fb923c' }); yield .26; } yield .9; },
+  },
+});
+
+// ---- 179. Nexo do Infinito: o dano que você dá volta em você 3 s depois ----
+bx('nexo', {
+  n: 'Nexo do Infinito', act: 5, w: 84, h: 84, hp: 57000, dmg: 135, def: 28, spd: 150, coin: [1000, 1500], fly: 1, sword: 's179', rec: 'celestial_bar:10,e_shadow:12,e_time:5',
+  mech: 'guarda cada golpe que você dá e devolve o eco 3 s depois: acertar de novo antes disso redireciona o eco.',
+  shot: 'orb', loco: ['hover', { h: -150, sx: 140, spd: 150 }], kit: [['spiral', 'orbits'], ['spiral', 'orbits', 'collapse'], ['collapse', 'orbits', 'spiral', 'orbits']], cds: [1.3, 1.05, .8], bob: 3,
+  init(c) { c.S.echo = 0; c.S.echoT = 3; },
+  after(c, e, dmg) { if (!c) return; c.S.echo = (c.S.echo || 0) + dmg * .5; c.S.echoT = 3; },
+  passive(c, e) {
+    if ((c.S.echo || 0) > 0) {
+      c.S.echoT -= c.dt;
+      if (c.S.echoT <= 0) {
+        const d = Math.max(1, Math.round(c.S.echo)); c.S.echo = 0;
+        hurtPlayer(d, c.cx, 110, { pierce: true, inv: .15 });
+        addText(pcx(G.P), G.P.y - 28, 'ECO ' + d, '#c084fc', 13, 1.1); ringFx(pcx(G.P), pcy(G.P), 46, '#c084fc', .35, 2);
+      }
+    }
+  },
+  moves: {
+    *spiral(c) { c.free = true; for (let k = 0; k < 15; k++) { bxShot(c, { ang: k * .55, speed: 230, r: 7, shape: 'orb', col: '#c084fc', col2: '#f5f3ff', dm: .4, life: 4 }); yield .09; } yield .9; },
+    *orbits(c) { c.free = true; for (let k = 0; k < 4; k++) { const p = bxShot(c, { ang: k / 4 * TAU, speed: 210, r: 9, shape: 'orb', col: '#a855f7', col2: '#f5f3ff', dm: .5, life: 4, homing: true, steer: 1 }); p.onUpdate = q => { q.vx += Math.cos(G.t * 3) * 20; q.vy += Math.sin(G.t * 3) * 20; }; } yield 1.2; },
+    *collapse(c) { c.free = true; for (let k = 0; k < 6; k++) { bxZone(c, { x: c.px + rnd(-200, 200), y: c.py + rnd(-120, 60), r: 40, tel: .7, t: 1, kind: 'pull', k: 600, core: 26, dmg: Math.round(c.e.dmg * .4), col: '#8b5cf6' }); yield .2; } yield 1.6; },
+  },
+});
+
+// ---- 180. Trono de Ouro: o trono é a armadura (quatro pilares) ----
+bx('trono', {
+  n: 'Trono de Ouro', act: 5, w: 92, h: 98, hp: 62000, dmg: 138, def: 30, spd: 84, coin: [1050, 1550], sword: 's180', rec: 'celestial_bar:10,e_light:10,e_earth:8',
+  mech: 'o trono é a armadura: enquanto os quatro pilares estiverem de pé ele quase não leva dano — derrube os pilares para ele levantar.',
+  shot: 'fire', loco: ['walk', { spd: 78, jump: 400 }], kit: [['guards', 'scepter'], ['guards', 'scepter', 'gold'], ['gold', 'scepter', 'guards', 'scepter']], cds: [1.4, 1.1, .85],
+  init(c, e) {
+    for (let k = 0; k < 4; k++) {
+      bxMin(c, { x: c.cx + (k - 1.5) * 46, y: c.cy + 40, look: 'pylon', w: 16, h: 30, hp: 2600, fly: 0, tag: 'leg', name: 'Pilar do Trono', col: '#f59e0b', dm: .3,
+        mf: (s) => { s.vx *= .9; } });
+    }
+  },
+  hurt(c, e, dmg) { return c && bxMinCount(c, 'leg') > 0 ? dmg * .2 : dmg; },
+  moves: {
+    *guards(c) { c.free = true; for (let k = 0; k < 2; k++) { bxSpawn(c, 'skeleton', c.cx + rnd(-70, 70), c.cy, { hp: 120, dm: .3 }); yield .3; } yield .8; },
+    *scepter(c) { c.free = true; for (let k = 0; k < 3; k++) { bxFan(c, 4, .2, { speed: 300, r: 8, shape: 'orb', col: '#f59e0b', col2: '#fff7c2', dm: .55, life: 3 }); yield .55; } },
+    *gold(c) { c.free = true; bxRain(c, 8, { speed: 320, r: 9, shape: 'star', col: '#fbbf24', col2: '#fffbeb', dm: .5, life: 3.6, spread: 240 }); yield 1.2; },
+  },
+});
+
+;
+/* ===== 13i_bx_a6.js ===== */
+/* ============================================================
+   13i_bx_a6: chefes novos do Ato VI · Fim de Tudo (20) — Tier 10
+   Cada um guarda UMA das espadas 181–200: essas espadas não são forjadas, caem do chefe.
+   O último é a APOTEOSE: 4 estágios (terra → terra → céu → céu), um golpe/mecânica por estágio.
+   Motor em 13c_bossx.js; arte em 05l_bxart6.js.
+   ============================================================ */
+function bxPlanet(c, k) {   // planeta em órbita do Cosmos Vivo
+  const s = bxMin(c, { x: c.cx + Math.cos(k / 4 * TAU) * 90, y: c.cy + Math.sin(k / 4 * TAU) * 70, look: 'orb', w: 26, h: 26, hp: 5200, fly: 1, tag: 'planet', name: 'Planeta', col: '#c084fc', dm: .25,
+    mf: (q) => { const t = G.t * .9 + q.ph0; q.vx = Math.cos(t) * 130; q.vy = Math.sin(t) * 90; } });
+  s.ph0 = k * 1.7; return s;
+}
+function bxRoot(c, k, n) {   // raiz da Semente Cósmica
+  const x = c.cx + (k - (n - 1) / 2) * 90 + rnd(-16, 16), gy = groundY(x, c.cy, 60);
+  return bxMin(c, { x, y: (gy > 0 ? gy : c.cy) - 22, look: 'pylon', w: 18, h: 34, hp: 2400, fly: 0, tag: 'root', name: 'Raiz', col: '#a3e635', dm: .22,
+    mf: (q, dt) => { q.vx = 0; q.sh = (q.sh === undefined ? 2 : q.sh) - dt; if (q.sh <= 0) { q.sh = 2.6; bxShot({ e: q.owner, d: q.owner.d.bx, cx: ecx(q), cy: ecy(q) - 12, px: pcx(G.P), py: pcy(G.P) }, { speed: 210, r: 6, shape: 'orb', col: '#a3e635', dm: .4, life: 3 }); } } });
+}
+
+// ---- 181. Primeira Luz: apagado é intocável; cada golpe dele acende a janela ----
+bx('luz_primeira', {
+  n: 'Primeira Luz', act: 6, w: 80, h: 84, hp: 78000, dmg: 168, def: 34, spd: 160, coin: [1500, 2200], fly: 1, sword: 's181', rec: 'mythic_core:1,celestial_bar:12,e_light:14',
+  mech: 'enquanto apagado ele é quase intocável; cada golpe dele acende a arena por 4 s — e na luz o seu dano sobe 15%.',
+  shot: 'orb', loco: ['hover', { h: -150, sx: 130, spd: 160 }], kit: [['flare', 'swarm'], ['flare', 'swarm', 'dawn'], ['dawn', 'swarm', 'flare', 'dawn']], cds: [1.25, 1, .78], bob: 3,
+  init(c) { c.S.lit = 0; },
+  passive(c) { if (c.S.lit > 0) c.S.lit -= c.dt; },
+  hurt(c, e, dmg) { return c && c.S.lit <= 0 ? dmg * .04 : dmg * 1.15; },
+  moves: {
+    *flare(c) { c.free = true; c.S.lit = 4; addText(c.cx, c.cy - 30, 'A LUZ ACENDE', '#fff7c2', 13, 1.2); for (let k = 0; k < 3; k++) { bxRing(c, 12, { speed: 230, r: 7, shape: 'orb', col: '#fff7c2', col2: '#ffffff', glow: '#fde68a', dm: .45, life: 3, off: k * .2 }); yield .55; } },
+    *swarm(c) { c.free = true; for (let k = 0; k < 4; k++) { bxFan(c, 3, .22, { speed: 330, r: 6, shape: 'star', col: '#fef08a', col2: '#fff', dm: .45, life: 2.6 }); yield .4; } },
+    *dawn(c) { c.free = true; c.S.lit = 4; for (let k = 0; k < 6; k++) { bxCol(c, c.px + rnd(-190, 190), { w: 30, h: 380, tel: .55, dm: .7, col: '#fde68a' }); yield .2; } yield .9; },
+  },
+});
+
+// ---- 182. Fim de Tudo: cada marca vira uma cicatriz de vazio ----
+bx('fim', {
+  n: 'Fim de Tudo', act: 6, w: 88, h: 96, hp: 82000, dmg: 172, def: 36, spd: 130, coin: [1550, 2250], fly: 1, sword: 's182', rec: 'mythic_core:1,celestial_bar:12,e_shadow:14',
+  mech: 'apaga pedaços do chão: cada marca vira uma cicatriz de vazio que queima por 30 s — a arena vai ficando sem lugar seguro.',
+  shot: 'orb', loco: ['float', { r: 190, h: -150, spd: 130 }], kit: [['erase', 'gaps'], ['erase', 'gaps', 'unmake'], ['unmake', 'gaps', 'erase', 'erase']], cds: [1.3, 1.05, .8], bob: 3,
+  moves: {
+    *erase(c) {
+      c.free = true;
+      for (let k = 0; k < 3; k++) {
+        const x = c.px + rnd(-200, 200), y = c.py + rnd(-30, 40);
+        bxZone(c, { x, y, r: 42, tel: .9, t: 30, kind: 'fire', dmg: Math.round(c.e.dmg * .16), tick: .55, col: '#0f172a', rim: '#94a3b8', alpha: .5 });
+        yield .35;
+      }
+      yield .8;
+    },
+    *gaps(c) { c.free = true; for (let k = 0; k < 5; k++) { bxCol(c, c.px + rnd(-220, 220), { w: 22, h: 380, tel: .6, dm: .6, col: '#94a3b8' }); yield .18; } yield .9; },
+    *unmake(c) { c.free = true; for (let k = 0; k < 2; k++) { bxRing(c, 16, { speed: 200, r: 8, shape: 'orb', col: '#cbd5e1', col2: '#0f172a', dm: .5, life: 3.4, off: k * .3 }); yield .7; } },
+  },
+});
+
+// ---- 183. Buraco Branco: empurra tudo para longe ----
+bx('buraco_branco', {
+  n: 'Buraco Branco', act: 6, w: 92, h: 86, hp: 84000, dmg: 170, def: 35, spd: 120, coin: [1550, 2300], fly: 1, sword: 's183', rec: 'mythic_core:1,celestial_bar:12,e_light:12',
+  mech: 'um buraco branco: tudo é empurrado para longe dele, inclusive você e os seus projéteis — é preciso lutar contra a correnteza.',
+  shot: 'orb', loco: ['hover', { h: -140, sx: 60, spd: 110 }], kit: [['jets', 'pulse'], ['jets', 'pulse', 'flare'], ['flare', 'pulse', 'jets', 'pulse']], cds: [1.35, 1.1, .85], bob: 2,
+  passive(c, e) {
+    const P = G.P, dx = pcx(P) - c.cx, dy = pcy(P) - c.cy, d = Math.hypot(dx, dy) || 1;
+    if (d < 430) { P.vx += dx / d * 760 * c.dt; P.vy += dy / d * 520 * c.dt; }
+  },
+  moves: {
+    *jets(c) { c.free = true; for (let k = -1; k <= 1; k++) bxBeam(c, { follow: true, ang: k * .5 - PI / 2, len: 520, w: 9, tel: .7, t: 2.4, dmg: Math.round(c.e.dmg * .55), col: '#e0f2fe', col2: '#ffffff' }); yield 2.8; },
+    *pulse(c) { c.free = true; for (let k = 0; k < 3; k++) { bxRing(c, 14, { speed: 260, r: 7, shape: 'orb', col: '#bae6fd', col2: '#ffffff', dm: .45, life: 3 }); yield .6; } },
+    *flare(c) { c.free = true; for (let k = 0; k < 5; k++) { const a = k / 5 * TAU + c.t; bxShot(c, { ang: a, speed: 340, r: 10, shape: 'star', col: '#ffffff', col2: '#e0f2fe', dm: .55, life: 3, spin: 8 }); yield .22; } yield .8; },
+  },
+});
+
+// ---- 184. Cosmos Vivo: quatro planetas absorvem o dano ----
+bx('cosmos', {
+  n: 'Cosmos Vivo', act: 6, w: 96, h: 90, hp: 86000, dmg: 168, def: 34, spd: 140, coin: [1600, 2350], fly: 1, sword: 's184', rec: 'mythic_core:1,celestial_bar:12,e_shadow:10,e_light:8',
+  mech: 'quatro planetas giram em volta e absorvem os golpes: cada planeta vivo corta o seu dano pela metade de novo — destruí-los enfraquece o núcleo, mas eles renascem.',
+  shot: 'orb', loco: ['orbit', { r: 240, h: -150, spd: 140, w: .5 }], kit: [['meteors', 'spiral'], ['meteors', 'spiral', 'eclipse'], ['eclipse', 'spiral', 'meteors', 'spiral']], cds: [1.3, 1.05, .8], bob: 3,
+  init(c) { for (let k = 0; k < 4; k++) bxPlanet(c, k); c.S.t = 14; },
+  passive(c, e) {
+    c.S.t -= c.dt;
+    if (c.S.t <= 0 && bxMinCount(c, 'planet') < 4) { c.S.t = c.ph > 2 ? 9 : 14; bxPlanet(c, bxMinCount(c, 'planet')); addText(c.cx, e.y - 20, 'Um planeta nasce', '#c084fc', 12, 1); }
+  },
+  hurt(c, e, dmg) { const n = c ? bxMinCount(c, 'planet') : 0; return n > 0 ? dmg / (1 + .75 * n) : dmg; },
+  moves: {
+    *meteors(c) { c.free = true; for (let k = 0; k < 4; k++) { bxRain(c, 2, { speed: 330, r: 10, shape: 'meteor', col: '#c084fc', col2: '#f5f3ff', dm: .5, life: 3.4, spread: 230, spin: 5 }); yield .45; } },
+    *spiral(c) { c.free = true; for (let k = 0; k < 14; k++) { bxShot(c, { ang: k * .48, speed: 250, r: 7, shape: 'orb', col: '#a855f7', col2: '#f5f3ff', dm: .4, life: 3.6 }); yield .08; } yield .8; },
+    *eclipse(c) { c.free = true; for (let k = 0; k < 2; k++) { bxRing(c, 20, { speed: 220, r: 7, shape: 'orb', col: '#7c3aed', col2: '#f5f3ff', dm: .45, life: 3.2, off: k * .18 }); yield .8; } },
+  },
+});
+
+// ---- 185. Teorema Final: quatro quadrantes, um seguro ----
+bx('teorema', {
+  n: 'Teorema Final', act: 6, w: 82, h: 82, hp: 80000, dmg: 170, def: 34, spd: 150, coin: [1550, 2250], fly: 1, sword: 's185', rec: 'mythic_core:1,celestial_bar:12,e_time:8,e_light:8',
+  mech: 'enuncia um teorema: quatro quadrantes acendem e só o que corresponde à resposta é seguro — os outros três explodem.',
+  shot: 'orb', loco: ['hover', { h: -160, sx: 120, spd: 150 }], kit: [['proof', 'grid'], ['proof', 'grid', 'lemma'], ['lemma', 'grid', 'proof', 'proof']], cds: [1.35, 1.1, .85], bob: 3,
+  init(c) { c.S.n = 0; },
+  moves: {
+    *proof(c) {
+      c.free = true; const P = G.P, safe = rndi(0, 3), qs = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+      c.S.n++;
+      for (let i = 0; i < 4; i++) {
+        const [sx, sy] = qs[i], x = P.x + sx * 170 - 95, y = P.y + sy * 120 - 75;
+        if (i === safe) bxZone(c, { x, y, w: 190, h: 150, tel: .01, t: 2.4, kind: 'buff', buff: 'shield', bt: .3, col: '#22d3ee', alpha: .22 });
+        else bxZone(c, { x, y, w: 190, h: 150, tel: 1.9, kind: 'dmg', dmg: Math.round(c.e.dmg * .95), col: '#f43f5e', flash: .35 });
+      }
+      addText(P.x + 60, P.y - 90, 'RESPOSTA: ' + (safe + 1) + 'º QUADRANTE', '#22d3ee', 13, 1.6);
+      yield 2.2;
+    },
+    *grid(c) { c.free = true; for (let k = 0; k < 6; k++) { bxCol(c, c.px + (k - 2.5) * 46, { w: 22, h: 380, tel: .7, dm: .6, col: '#a5b4fc' }); } yield 1.3; },
+    *lemma(c) { c.free = true; for (let k = 0; k < 3; k++) { bxFan(c, 5, .16, { speed: 330, r: 7, shape: 'blade', col: '#a5b4fc', col2: '#eef2ff', dm: .5, life: 2.8 }); yield .5; } },
+  },
+});
+
+// ---- 186. O Último Nome: enquanto o nome está escrito, tudo persegue você ----
+bx('ultimo_nome', {
+  n: 'O Último Nome', act: 6, w: 84, h: 92, hp: 88000, dmg: 172, def: 36, spd: 140, coin: [1600, 2350], fly: 1, sword: 's186', rec: 'mythic_core:1,celestial_bar:12,e_shadow:10,e_blood:6',
+  mech: 'escreve o seu nome no livro: enquanto estiver escrito, todos os tiros te perseguem — três golpes apagam o nome.',
+  shot: 'orb', loco: ['float', { r: 200, h: -150, spd: 140 }], kit: [['ink', 'quill'], ['ink', 'quill', 'page'], ['page', 'quill', 'ink', 'quill']], cds: [1.3, 1.05, .8], bob: 3,
+  init(c) { c.S.name = 0; c.S.hits = 0; c.S.t = 9; },
+  passive(c, e) {
+    if (c.S.name > 0) { c.S.name -= c.dt; if (c.S.name <= 0) addText(c.cx, e.y - 22, 'O nome se apaga', '#fde68a', 12, 1); return; }
+    c.S.t -= c.dt;
+    if (c.S.t <= 0) { c.S.t = 14; c.S.name = 7; c.S.hits = 0; addText(pcx(G.P), G.P.y - 34, 'SEU NOME ESTÁ ESCRITO', '#fde68a', 15, 1.5); ringFx(pcx(G.P), pcy(G.P), 70, '#fde68a', .5, 3); sfx('portal', .6); }
+  },
+  after(c) { if (c && c.S.name > 0) { c.S.hits++; if (c.S.hits >= 3) { c.S.name = 0; addText(c.cx, c.e.y - 20, 'Nome apagado', '#86efac', 13, 1.2); } } },
+  moves: {
+    *ink(c) { c.free = true; const hm = c.S.name > 0; for (let k = 0; k < 4; k++) { bxFan(c, 3, .2, { speed: 300, r: 7, shape: 'orb', col: '#1e1b2e', col2: '#fde68a', glow: '#fde68a', dm: .5, life: 3, homing: hm, steer: 1.4 }); yield .45; } },
+    *quill(c) { c.free = true; yield .3; for (let k = 0; k < 5; k++) { bxCol(c, c.px + (k - 2) * 52, { w: 24, h: 360, tel: .6, dm: .6, col: '#fde68a' }); } yield 1.2; },
+    *page(c) { c.free = true; for (let k = 0; k < 3; k++) { bxRing(c, 12, { speed: 210, r: 8, shape: 'blade', col: '#e2e8f0', col2: '#fde68a', dm: .5, life: 3, spin: 7, off: k * .25 }); yield .6; } },
+  },
+});
+
+// ---- 187. Origem do Vazio: o horizonte puxa; só a borda fere ----
+bx('origem', {
+  n: 'Origem do Vazio', act: 6, w: 92, h: 92, hp: 90000, dmg: 176, def: 38, spd: 120, coin: [1650, 2400], fly: 1, sword: 's187', rec: 'mythic_core:1,celestial_bar:12,e_shadow:14',
+  mech: 'o horizonte do vazio puxa você para o centro: dentro dele o chefe é intocável e longe demais ele quase não sente — o lugar certo é a borda.',
+  shot: 'orb', loco: ['still', {}], kit: [['tendrils', 'collapse'], ['tendrils', 'collapse', 'voids'], ['voids', 'collapse', 'tendrils', 'collapse']], cds: [1.3, 1.05, .8], bob: 2,
+  passive(c) {
+    const P = G.P, dx = c.cx - pcx(P), dy = c.cy - pcy(P), d = Math.hypot(dx, dy) || 1;
+    if (d < 460) { P.vx += dx / d * 470 * c.dt; P.vy += dy / d * 330 * c.dt; }
+  },
+  hurt(c, e, dmg) { const d = c ? Math.hypot(c.dx, c.dy) : 0; return d < 130 ? dmg * .06 : d > 380 ? dmg * .3 : dmg * 1.1; },
+  moves: {
+    *tendrils(c) { c.free = true; for (let k = 0; k < 8; k++) { const a = k / 8 * TAU + c.t; bxShot(c, { ang: a, speed: 190, r: 8, shape: 'orb', col: '#a855f7', col2: '#f5f3ff', dm: .45, life: 3.6 }); yield .14; } yield .9; },
+    *collapse(c) { c.free = true; for (let k = 0; k < 5; k++) { bxRing(c, 14, { speed: 240, r: 7, shape: 'orb', col: '#7c3aed', col2: '#ede9fe', dm: .4, life: 3, off: k * .16 }); yield .3; } yield .8; },
+    *voids(c) { c.free = true; for (let k = 0; k < 3; k++) { bxZone(c, { x: c.px + rnd(-180, 180), y: c.py + rnd(-90, 60), r: 46, tel: .8, t: 1.4, kind: 'pull', k: 640, core: 30, dmg: Math.round(c.e.dmg * .4), col: '#7c3aed' }); yield .3; } yield 1.4; },
+  },
+});
+
+// ---- 188. Relógio do Universo: compara o seu dano a cada 10 s ----
+bx('relogio', {
+  n: 'Relógio do Universo', act: 6, w: 86, h: 96, hp: 92000, dmg: 174, def: 36, spd: 150, coin: [1650, 2400], fly: 1, sword: 's188', rec: 'mythic_core:1,celestial_bar:12,e_time:14',
+  mech: 'cada 10 s ele compara o seu dano com o dele: se você bateu pouco, ele se cura e dispara mais rápido; se bateu muito, ele cambaleia.',
+  shot: 'orb', loco: ['orbit', { r: 230, h: -150, spd: 150, w: .7 }], kit: [['hands', 'tick'], ['hands', 'tick', 'gears'], ['gears', 'tick', 'hands', 'tick']], cds: [1.3, 1.05, .8], bob: 3,
+  init(c) { c.S.dmg = 0; c.S.t = 10; c.S.rag = 0; },
+  after(c, e, dmg) { if (c) c.S.dmg += dmg; },
+  passive(c, e) {
+    c.S.t -= c.dt;
+    if (c.S.t > 0) return;
+    c.S.t = 10;
+    const need = e.hpMax * .05;
+    if (c.S.dmg < need) {
+      bxHeal(e, .05); c.S.rag++; addText(c.cx, e.y - 24, 'Pouco dano: ele acelera', '#fbbf24', 13, 1.3);
+      ringFx(c.cx, c.cy, 90, '#fbbf24', .4, 2); bxRing(c, 14, { speed: 240, r: 7, shape: 'orb', col: '#fbbf24', col2: '#fffbeb', dm: .4, life: 3 });
+    } else {
+      e.st.stun = 2.2; addText(c.cx, e.y - 24, 'Bom ritmo: ele cambaleia', '#86efac', 14, 1.3); ringFx(c.cx, c.cy, 110, '#86efac', .5, 3);
+    }
+    c.S.dmg = 0;
+  },
+  moves: {
+    *hands(c) { c.free = true; for (let k = 0; k < 8; k++) { const a = k / 8 * TAU + c.t * .6; bxShot(c, { ang: a, speed: 210, r: 8, shape: 'blade', col: '#67e8f9', col2: '#ecfeff', dm: .45, life: 3.2, spin: 8 }); yield .1; } yield .8; },
+    *tick(c) { c.free = true; for (let k = 0; k < 4; k++) { bxRing(c, 12, { speed: 230, r: 7, shape: 'orb', col: '#22d3ee', col2: '#ecfeff', dm: .4, life: 3, off: k * .12 }); yield .22; } yield .8; },
+    *gears(c) { c.free = true; for (let k = 0; k < 5; k++) { bxCol(c, c.px + rnd(-200, 200), { w: 26, h: 380, tel: .55, dm: .6, col: '#67e8f9' }); yield .18; } yield .9; },
+  },
+});
+
+// ---- 189. Semente Cósmica: cinco raízes e ela floresce ----
+bx('semente', {
+  n: 'Semente Cósmica', act: 6, w: 88, h: 100, hp: 85000, dmg: 168, def: 34, spd: 110, coin: [1600, 2300], fly: 0, sword: 's189', rec: 'mythic_core:1,celestial_bar:12,e_earth:10,e_poison:8',
+  mech: 'lança raízes pelo chão: se cinco raízes sobreviverem, ela floresce, se cura e chama a floresta — corte as raízes.',
+  shot: 'orb', loco: ['walk', { spd: 74, jump: 460 }], kit: [['spores', 'roots'], ['spores', 'roots', 'bloom'], ['bloom', 'roots', 'spores', 'roots']], cds: [1.4, 1.1, .85],
+  init(c) { c.S.t = 5; c.S.bloomed = 0; },
+  passive(c, e) {
+    c.S.t -= c.dt;
+    if (c.S.t <= 0) { c.S.t = c.ph > 2 ? 4 : 6; if (bxMinCount(c, 'root') < 6) { bxRoot(c, bxMinCount(c, 'root'), 6); addText(c.cx, e.y - 18, 'Uma raiz brota', '#a3e635', 11, 1); } }
+    if (!c.S.bloomed && bxMinCount(c, 'root') >= 5) {
+      c.S.bloomed = 1; bxHeal(e, .07); ringFx(c.cx, c.cy, 140, '#a3e635', .6, 4);
+      addText(c.cx, e.y - 26, 'FLORESCER!', '#a3e635', 14, 1.4); shake(6);
+      for (let k = 0; k < 3; k++) bxRoot(c, k, 3);
+    }
+  },
+  moves: {
+    *spores(c) { c.free = true; for (let k = 0; k < 3; k++) { bxFan(c, 5, .18, { speed: 250, r: 8, shape: 'orb', col: '#a3e635', col2: '#f7fee7', dm: .45, life: 3.2, status: [['poison', 3, { dps: 18 }]] }); yield .55; } },
+    *roots(c) { c.free = true; for (let k = 0; k < 3; k++) { bxCol(c, c.px + rnd(-170, 170), { w: 28, h: 340, tel: .8, dm: .6, col: '#a3e635', buff: 'slow', bt: 1.4, bd: { mult: .5 } }); yield .28; } yield .9; },
+    *bloom(c) { c.free = true; for (let k = 0; k < 2; k++) { bxRing(c, 16, { speed: 210, r: 8, shape: 'orb', col: '#65a30d', col2: '#ecfccb', dm: .45, life: 3.2, off: k * .2 }); yield .7; } },
+  },
+});
+
+// ---- 190. Axioma: durante a regra, quem ataca leva o próprio dano de volta ----
+bx('axioma', {
+  n: 'Axioma', act: 6, w: 86, h: 100, hp: 90000, dmg: 176, def: 38, spd: 110, coin: [1650, 2400], fly: 0, sword: 's190', rec: 'mythic_core:1,celestial_bar:12,e_light:8,e_earth:8',
+  mech: 'declara um axioma: por 4 s, quem atacar recebe metade do próprio dano de volta — é preciso parar de bater quando a pedra acender.',
+  shot: 'orb', loco: ['walk', { spd: 66, jump: 380 }], kit: [['law', 'weight'], ['law', 'weight', 'chains'], ['chains', 'weight', 'law', 'weight']], cds: [1.4, 1.1, .85],
+  init(c) { c.S.rule = 0; c.S.t = 8; },
+  passive(c, e) {
+    if (c.S.rule > 0) c.S.rule -= c.dt;
+    c.S.t -= c.dt;
+    if (c.S.t <= 0) { c.S.t = c.ph > 2 ? 9 : 12; c.S.rule = 4; addText(c.cx, e.y - 28, 'AXIOMA: NÃO ATAQUE', '#a5b4fc', 15, 1.5); ringFx(c.cx, c.cy, 120, '#a5b4fc', .5, 3); sfx('portal', .6); }
+  },
+  after(c, e, dmg) { if (c && c.S.rule > 0) { hurtPlayer(Math.max(1, Math.round(dmg * .5)), c.cx, 90, { pierce: true, inv: .2 }); addText(c.cx, e.y - 14, 'Axioma!', '#a5b4fc', 12, .9); } },
+  moves: {
+    *law(c) { c.free = true; for (let k = 0; k < 4; k++) { bxCol(c, c.px + (k - 1.5) * 64, { w: 26, h: 360, tel: .7, dm: .65, col: '#a5b4fc' }); } yield 1.3; },
+    *weight(c) { c.free = true; for (let k = 0; k < 2; k++) { bxRing(c, 16, { speed: 200, r: 8, shape: 'orb', col: '#818cf8', col2: '#eef2ff', dm: .45, life: 3.2, off: k * .25 }); yield .7; } },
+    *chains(c) { c.free = true; for (let k = 0; k < 6; k++) { bxShot(c, { ang: k / 6 * TAU + c.t, speed: 240, r: 9, shape: 'orb', col: '#a5b4fc', col2: '#eef2ff', dm: .5, life: 3.4, homing: true, steer: .9 }); yield .12; } yield .8; },
+  },
+});
+
+// ---- 191. Convergência Final: portais nas bordas fecham em você ----
+bx('convergencia', {
+  n: 'Convergência Final', act: 6, w: 92, h: 88, hp: 95000, dmg: 178, def: 38, spd: 160, coin: [1700, 2450], fly: 1, sword: 's191', rec: 'mythic_core:2,celestial_bar:12,e_lightning:8,e_time:6',
+  mech: 'abre portais nas bordas da tela e traz tudo para o centro: os projéteis convergem em você, de todas as direções ao mesmo tempo.',
+  shot: 'orb', loco: ['hover', { h: -155, sx: 90, spd: 150 }], kit: [['gates', 'spiral'], ['gates', 'spiral', 'focus'], ['focus', 'gates', 'spiral', 'gates']], cds: [1.3, 1.05, .8], bob: 3,
+  moves: {
+    *gates(c) {
+      c.free = true; const P = G.P;
+      for (let k = 0; k < 10; k++) {
+        const a = k / 10 * TAU + c.t * .3, x = pcx(P) + Math.cos(a) * 430, y = pcy(P) + Math.sin(a) * 300;
+        const p = bxShot(c, { x, y, speed: 210, r: 7, shape: 'orb', col: '#fde68a', col2: '#fffbeb', dm: .45, life: 4, homing: true, steer: 1.1 });
+        p.x = x; p.y = y; yield .1;
+      }
+      yield .9;
+    },
+    *spiral(c) { c.free = true; for (let k = 0; k < 16; k++) { bxShot(c, { ang: k * .42 + c.t, speed: 240, r: 6, shape: 'blade', col: '#fbbf24', col2: '#fffbeb', dm: .4, life: 3.2, spin: 10 }); yield .07; } yield .8; },
+    *focus(c) { c.free = true; for (let k = 0; k < 3; k++) { bxCol(c, c.px, { w: 54, h: 400, tel: .7 + k * .18, dm: .85, col: '#fde68a' }); } yield 1.4; },
+  },
+});
+
+// ---- 192. Espada do Autor: escreve a sentença letra por letra ----
+bx('autor', {
+  n: 'Espada do Autor', act: 6, w: 90, h: 96, hp: 98000, dmg: 180, def: 40, spd: 140, coin: [1700, 2500], fly: 1, sword: 's192', rec: 'mythic_core:2,celestial_bar:14,e_light:10,e_time:8',
+  mech: 'escreve uma palavra no chão: cada letra é uma coluna que cai em sequência, e a última letra é a mais forte de todas.',
+  shot: 'orb', loco: ['float', { r: 210, h: -160, spd: 140 }], kit: [['write', 'sketch'], ['write', 'sketch', 'erase'], ['erase', 'sketch', 'write', 'write']], cds: [1.35, 1.1, .85], bob: 3,
+  moves: {
+    *write(c) {
+      c.free = true; const P = G.P, n = 6, x0 = P.x - 150;
+      for (let i = 0; i < n; i++) {
+        bxCol(c, x0 + i * 60, { w: 24, h: 360, tel: .35 + i * .12, dm: .45, col: '#fbbf24' });
+        addText(x0 + i * 60, P.y - 70, 'APOTEOSE'[i] || '•', '#fde68a', 14, .8);
+        yield .12;
+      }
+      bxCol(c, P.x, { w: 70, h: 420, tel: .5, dm: 1.15, col: '#f59e0b' });
+      shake(6); yield 1.3;
+    },
+    *sketch(c) { c.free = true; for (let k = 0; k < 4; k++) { bxFan(c, 4, .2, { speed: 320, r: 7, shape: 'blade', col: '#fde68a', col2: '#fffbeb', dm: .5, life: 2.8 }); yield .42; } },
+    *erase(c) { c.free = true; for (let k = 0; k < 5; k++) { bxShot(c, { ang: k / 5 * TAU + c.t, speed: 190, r: 10, shape: 'orb', col: '#e2e8f0', col2: '#ffffff', dm: .5, life: 4, homing: true, steer: .8 }); yield .15; } yield .8; },
+  },
+});
+
+// ---- 193. Nada Eterno: por 4 s, nenhum golpe passa de 40 ----
+bx('nada', {
+  n: 'Nada Eterno', act: 6, w: 90, h: 94, hp: 96000, dmg: 176, def: 38, spd: 150, coin: [1700, 2450], fly: 1, sword: 's193', rec: 'mythic_core:2,celestial_bar:12,e_shadow:14',
+  mech: 'apaga o excesso: por 4 s nenhum golpe seu passa de 40 de dano — o dano vem do tempo certo, não da força.',
+  shot: 'orb', loco: ['chase', { h: -130, spd: 120 }], kit: [['void', 'snuff'], ['void', 'snuff', 'hollow'], ['hollow', 'snuff', 'void', 'void']], cds: [1.3, 1.05, .8], bob: 3,
+  init(c) { c.S.null = 0; c.S.t = 9; },
+  passive(c, e) {
+    if (c.S.null > 0) { c.S.null -= c.dt; return; }
+    c.S.t -= c.dt;
+    if (c.S.t <= 0) { c.S.t = c.ph > 2 ? 7 : 10; c.S.null = 4; addText(c.cx, e.y - 28, 'NADA', '#e2e8f0', 16, 1.5); flash('#0a0a10', .3, .4); ringFx(c.cx, c.cy, 130, '#94a3b8', .5, 3); }
+  },
+  hurt(c, e, dmg) { return c && c.S.null > 0 ? Math.min(dmg, 40) : dmg; },
+  moves: {
+    *void(c) { c.free = true; for (let k = 0; k < 4; k++) { bxRing(c, 14, { speed: 210, r: 8, shape: 'orb', col: '#64748b', col2: '#e2e8f0', dm: .45, life: 3.2, off: k * .2 }); yield .5; } },
+    *snuff(c) { c.free = true; for (let k = 0; k < 6; k++) { bxShot(c, { ang: k / 6 * TAU + c.t, speed: 220, r: 9, shape: 'orb', col: '#94a3b8', col2: '#f1f5f9', dm: .5, life: 3.4, homing: true, steer: 1 }); yield .12; } yield .8; },
+    *hollow(c) { c.free = true; for (let k = 0; k < 5; k++) { bxCol(c, c.px + rnd(-200, 200), { w: 28, h: 380, tel: .6, dm: .7, col: '#64748b' }); yield .2; } yield .9; },
+  },
+});
+
+// ---- 194. Tudo de Uma Vez: cada golpe é uma mecânica de outro ato ----
+bx('tudo', {
+  n: 'Tudo de Uma Vez', act: 6, w: 88, h: 100, hp: 100000, dmg: 178, def: 38, spd: 150, coin: [1750, 2500], fly: 1, sword: 's194', rec: 'mythic_core:2,celestial_bar:14,e_light:8,e_shadow:8',
+  mech: 'tudo de uma vez: cada golpe dele é uma mecânica de outro ato — gravidade invertida, muralha, confusão e enxame.',
+  shot: 'orb', loco: ['float', { r: 190, h: -150, spd: 145 }], kit: [['grav', 'wall'], ['wall', 'confuse'], ['confuse', 'swarm'], ['swarm', 'grav', 'confuse', 'wall']], cds: [1.25, 1, .75], bob: 3,
+  pick(c) { const L = ['grav', 'wall', 'confuse', 'swarm']; return L[c.i++ % 4]; },
+  moves: {
+    *grav(c) { c.free = true; addText(pcx(G.P), G.P.y - 32, 'GRAVIDADE!', '#a78bfa', 14, 1.2); bxBuff('gravflip', 2.6); bxRing(c, 14, { speed: 220, r: 7, shape: 'orb', col: '#a78bfa', col2: '#ede9fe', dm: .45, life: 3 }); yield 1.2; },
+    *wall(c) { c.free = true; const P = G.P; for (let k = 0; k < 6; k++) { bxZone(c, { x: P.x - 400 + k * 140, y: P.y - 200, w: 30, h: 300, tel: .7, t: 2.4, kind: 'dmg', dmg: Math.round(c.e.dmg * .6), col: '#f472b6', flash: .3 }); } yield 1.6; },
+    *confuse(c) { c.free = true; addText(pcx(G.P), G.P.y - 32, 'CONFUSÃO!', '#f472b6', 14, 1.2); bxBuff('confuse', 3); for (let k = 0; k < 3; k++) { bxFan(c, 4, .25, { speed: 300, r: 7, shape: 'orb', col: '#f472b6', col2: '#fdf2f8', dm: .45, life: 3 }); yield .4; } },
+    *swarm(c) { c.free = true; for (let k = 0; k < 10; k++) { bxShot(c, { ang: k / 10 * TAU, speed: 220, r: 6, shape: 'orb', col: '#f9a8d4', col2: '#fdf2f8', dm: .35, life: 3.6, homing: true, steer: .8 }); yield .08; } yield .9; },
+  },
+});
+
+// ---- 195. Ponto Zero: puxa tudo para um ponto e prende quem chega perto ----
+bx('ponto', {
+  n: 'Ponto Zero', act: 6, w: 84, h: 80, hp: 92000, dmg: 180, def: 38, spd: 130, coin: [1700, 2450], fly: 1, sword: 's195', rec: 'mythic_core:2,celestial_bar:12,e_time:10,e_lightning:8',
+  mech: 'colapsa num ponto: puxa tudo para o centro; perto dele você flutua sem conseguir pular e leva dano contínuo.',
+  shot: 'orb', loco: ['still', {}], kit: [['rings', 'gravity'], ['rings', 'gravity', 'needle'], ['needle', 'gravity', 'rings', 'gravity']], cds: [1.25, 1, .75], bob: 6,
+  passive(c, e) {
+    const P = G.P, dx = c.cx - pcx(P), dy = c.cy - pcy(P), d = Math.hypot(dx, dy) || 1;
+    if (d < 460) { P.vx += dx / d * 520 * c.dt; P.vy += dy / d * 380 * c.dt; }
+    if (d < 170) { bxBuff('floaty', .3); c.S.hit = (c.S.hit || 0) + c.dt; if (c.S.hit > .5) { c.S.hit = 0; hurtPlayer(Math.round(e.dmg * .18), c.cx, 0, { pierce: true, inv: .3 }); } }
+  },
+  moves: {
+    *rings(c) { c.free = true; for (let k = 0; k < 4; k++) { bxRing(c, 16, { speed: 240, r: 7, shape: 'orb', col: '#fde047', col2: '#fefce8', dm: .4, life: 3.2, off: k * .18 }); yield .35; } yield .7; },
+    *gravity(c) { c.free = true; for (let k = 0; k < 3; k++) { bxZone(c, { x: c.px + rnd(-200, 200), y: c.py + rnd(-100, 60), r: 54, tel: .7, t: 1.6, kind: 'pull', k: 720, core: 34, dmg: Math.round(c.e.dmg * .45), col: '#fbbf24' }); yield .3; } yield 1.3; },
+    *needle(c) { c.free = true; yield .3; for (let k = 0; k < 8; k++) { bxShot(c, { ang: k / 8 * TAU + c.t, speed: 320, r: 5, shape: 'blade', col: '#fde047', col2: '#fefce8', dm: .5, life: 2.6, trail: '#fbbf24' }); } yield 1.1; },
+  },
+});
+
+// ---- 196. Coração do Multiverso: cada batida inverte a gravidade ----
+bx('coracao', {
+  n: 'Coração do Multiverso', act: 6, w: 92, h: 88, hp: 97000, dmg: 178, def: 38, spd: 150, coin: [1720, 2480], fly: 1, sword: 's196', rec: 'mythic_core:2,celestial_bar:12,e_blood:10,e_light:6',
+  mech: 'a cada batida o mundo troca: a gravidade inverte e os tiros mudam de cor e de padrão — é preciso reaprender a andar no ar.',
+  shot: 'orb', loco: ['hover', { h: -150, sx: 110, spd: 150 }], kit: [['beat', 'pulse'], ['beat', 'pulse', 'worlds'], ['worlds', 'pulse', 'beat', 'beat']], cds: [1.3, 1.05, .8], bob: 4,
+  init(c) { c.S.b = 3.4; c.S.beats = 0; },
+  passive(c, e) {
+    c.S.b -= c.dt;
+    if (c.S.b > 0) return;
+    c.S.b = 3.4; c.S.beats++;
+    const flip = c.S.beats % 2 === 0;
+    addText(c.cx, e.y - 26, flip ? 'BATIDA · GRAVIDADE' : 'BATIDA', flip ? '#f43f5e' : '#fb7185', 13, 1.1);
+    if (flip) bxBuff('gravflip', 2.2);
+    ringFx(c.cx, c.cy, 90, '#f43f5e', .4, 3);
+  },
+  moves: {
+    *beat(c) { c.free = true; for (let k = 0; k < 3; k++) { bxRing(c, 14, { speed: 230, r: 8, shape: 'orb', col: '#f43f5e', col2: '#ffe4e6', dm: .45, life: 3, off: k * .22 }); yield .45; } },
+    *pulse(c) { c.free = true; for (let k = 0; k < 4; k++) { bxCol(c, c.px + rnd(-190, 190), { w: 30, h: 380, tel: .6, dm: .65, col: '#fb7185' }); yield .22; } yield .8; },
+    *worlds(c) { c.free = true; for (let k = 0; k < 8; k++) { const a = k / 8 * TAU + c.t; bxShot(c, { ang: a, speed: 210, r: 8, shape: 'orb', col: k % 2 ? '#22d3ee' : '#f43f5e', col2: '#ffffff', dm: .45, life: 3.4, homing: true, steer: .7 }); yield .1; } yield .8; },
+  },
+});
+
+// ---- 197. Lâmina Absoluta: só fere durante o próprio corte ----
+bx('lamina', {
+  n: 'Lâmina Absoluta', act: 6, w: 88, h: 104, hp: 100000, dmg: 182, def: 40, spd: 170, coin: [1750, 2550], fly: 1, sword: 's197', rec: 'mythic_core:2,celestial_bar:14,e_light:10,e_lightning:8',
+  mech: 'a lâmina absoluta corta tudo: ele só pode ser ferido no instante em que a própria lâmina dele está cortando — o resto do tempo, quica.',
+  shot: 'orb', loco: ['hover', { h: -150, sx: 150, spd: 170 }], kit: [['cut', 'feint'], ['cut', 'feint', 'rain'], ['rain', 'feint', 'cut', 'cut']], cds: [1.2, .95, .72], bob: 3,
+  init(c) { c.S.slash = 0; },
+  passive(c) { if (c.S.slash > 0) c.S.slash -= c.dt; },
+  hurt(c, e, dmg) { return c && c.S.slash <= 0 ? dmg * .05 : dmg * 1.2; },
+  moves: {
+    *cut(c) {
+      c.free = true; yield .35;
+      c.S.slash = .6;
+      bxBeam(c, { follow: true, aim: true, ang: 0, len: 470, w: 12, tel: .12, t: .3, dmg: Math.round(c.e.dmg * .8), col: '#a5f3fc', col2: '#ffffff' });
+      bxCol(c, c.px, { w: 46, h: 400, tel: .1, dm: .6, col: '#a5f3fc' });
+      yield .9; c.S.slash = 0;
+    },
+    *feint(c) { c.free = true; for (let k = 0; k < 4; k++) { bxFan(c, 3, .2, { speed: 360, r: 6, shape: 'blade', col: '#67e8f9', col2: '#ffffff', dm: .45, life: 2.4 }); yield .35; } },
+    *rain(c) { c.free = true; for (let k = 0; k < 5; k++) { bxCol(c, c.px + rnd(-200, 200), { w: 20, h: 380, tel: .5, dm: .6, col: '#a5f3fc' }); yield .16; } yield .9; },
+  },
+});
+
+// ---- 198. Maré Cósmica: a maré sobe (flutua) e desce (queima o chão) ----
+bx('mare', {
+  n: 'Maré Cósmica', act: 6, w: 100, h: 88, hp: 99000, dmg: 180, def: 38, spd: 140, coin: [1740, 2500], fly: 1, sword: 's198', rec: 'mythic_core:2,celestial_bar:13,e_water:12,e_ice:6',
+  mech: 'a maré sobe e desce: quando sobe você flutua e ondas varrem o chão; quando desce, o chão queima por onde ela passou.',
+  shot: 'orb', loco: ['hover', { h: -140, sx: 120, spd: 140 }], kit: [['surge', 'spray'], ['surge', 'spray', 'lowtide'], ['lowtide', 'spray', 'surge', 'surge']], cds: [1.3, 1.05, .8], bob: 3,
+  init(c) { c.S.tide = 0; c.S.t = 6; },
+  passive(c, e) {
+    c.S.t -= c.dt;
+    if (c.S.t <= 0) { c.S.t = 7; c.S.tide = c.S.tide ? 0 : 1; addText(c.cx, e.y - 26, c.S.tide ? 'A MARÉ SOBE' : 'A MARÉ DESCE', '#2dd4bf', 13, 1.2); }
+    if (c.S.tide) bxBuff('floaty', .3);
+  },
+  moves: {
+    *surge(c) { c.free = true; for (let k = 0; k < 4; k++) { bxWave(c, 1, { col: '#2dd4bf', hh: 14 }); bxWave(c, -1, { col: '#2dd4bf', hh: 14 }); yield .45; } },
+    *spray(c) { c.free = true; for (let k = 0; k < 4; k++) { bxFan(c, 5, .18, { speed: 300, r: 8, shape: 'orb', col: '#2dd4bf', col2: '#ccfbf1', dm: .45, life: 3 }); yield .45; } },
+    *lowtide(c) { c.free = true; for (let k = 0; k < 4; k++) { bxZone(c, { x: c.px + rnd(-220, 220), y: c.py + rnd(-20, 50), r: 44, tel: .6, t: 8, kind: 'fire', dmg: Math.round(c.e.dmg * .14), tick: .5, col: '#0f766e', rim: '#5eead4', alpha: .35 }); yield .3; } yield 1; },
+  },
+});
+
+// ---- 199. Brado do Infinito: o grito volta 1,5 s depois pelo lado oposto ----
+bx('brado', {
+  n: 'Brado do Infinito', act: 6, w: 94, h: 90, hp: 102000, dmg: 184, def: 40, spd: 150, coin: [1780, 2550], fly: 1, sword: 's199', rec: 'mythic_core:2,celestial_bar:14,e_light:10,e_lightning:8',
+  mech: 'grita: o grito vai e volta 1,5 s depois pelo lado oposto — é preciso trocar de lado antes do eco.',
+  shot: 'orb', loco: ['hover', { h: -150, sx: 100, spd: 150 }], kit: [['shout', 'echo'], ['shout', 'echo', 'silence'], ['silence', 'echo', 'shout', 'shout']], cds: [1.25, 1, .75], bob: 3,
+  moves: {
+    *shout(c) { c.free = true; bxFan(c, 7, .13, { speed: 340, r: 8, shape: 'orb', col: '#fbbf24', col2: '#fef3c7', dm: .45, life: 2.6 }); ringFx(c.cx, c.cy, 60, '#fbbf24', .35, 2); yield .8; },
+    *echo(c) {
+      c.free = true; const P = G.P, mx = 2 * pcx(P) - c.cx, my = 2 * pcy(P) - c.cy;
+      for (let k = 0; k < 3; k++) {
+        bxShot(c, { x: mx, y: my, speed: 320, r: 9, shape: 'orb', col: '#f59e0b', col2: '#fef3c7', dm: .5, life: 3, trail: '#fbbf24' });
+        bxRing({ e: c.e, d: c.d, cx: mx, cy: my, px: pcx(P), py: pcy(P) }, 8, { speed: 280, r: 7, shape: 'orb', col: '#fbbf24', col2: '#fef3c7', dm: .4, life: 2.6, off: k });
+        yield .5;
+      }
+    },
+    *silence(c) { c.free = true; for (let k = 0; k < 5; k++) { bxCol(c, c.px + rnd(-210, 210), { w: 28, h: 380, tel: .55, dm: .65, col: '#fbbf24' }); yield .18; } yield .9; },
+  },
+});
+
+// ============================================================
+// 200. APOTEOSE — o chefe final: 4 estágios, terra → terra → céu → céu
+// ============================================================
+bx('apoteose', {
+  n: 'Apoteose', act: 6, w: 108, h: 124, hp: 260000, dmg: 232, def: 46, spd: 150, coin: [5000, 8000], fly: 0, sword: 's200', rec: 'mythic_core:4,celestial_bar:20,e_light:20,e_time:14',
+  mech: 'quatro estágios de vida: I julgamento e martelo, II selos que o blindam, III asas com raios girando e IV a apoteose final — nos dois primeiros ele anda no chão, nos dois últimos voa.',
+  shot: 'orb', cds: [1.2, 1.05, .9, .7], bob: 2, keepFace: false,
+  phase: c => Math.max(1, Math.min(4, 1 + Math.floor((1 - c.hp) * 4 + 1e-9))),
+  loco(c, e) {
+    if (e.noclip) {
+      steerFly(e, c.px + Math.cos(c.t * .7) * 200, c.py - 170 + Math.sin(c.t * 1.1) * 36, e.spd * c.sm, 2.1, c.dt);
+      return;
+    }
+    c.jt -= c.dt;
+    const dir = Math.sign(c.dx) || 1, sp = 86 * c.sm * (1 + (c.ph - 1) * .15);
+    if (Math.abs(c.dx) > 46) e.vx = approach(e.vx, dir * sp, 900 * c.dt); else e.vx *= Math.pow(.01, c.dt);
+    if (e.onGround && c.jt <= 0 && (e.hitX || c.dy < -80)) { e.vy = -480; c.jt = .7; }
+  },
+  init(c) { c.S.seals = 0; c.S.aura = 0; },
+  onPhase(c, e, ph) {
+    const nm = ['', 'ESTÁGIO I · JULGAMENTO', 'ESTÁGIO II · SELO', 'ESTÁGIO III · ASAS', 'ESTÁGIO IV · APOTEOSE'][ph];
+    addText(c.cx, e.y - 40, nm, '#fde68a', 16, 1.8); shake(9); sfx('boss', .9); flash('#fde68a', .25, .4);
+    if (ph === 2) { for (let k = 0; k < 4; k++) bxSeal(c, k); c.S.seals = 4; }
+    if (ph === 3) {
+      e.fly = 1; e.noclip = 1; c.nograv = true; e.vy = -260; e.vx = 0;
+      addText(c.cx, e.y - 64, 'ASAS', '#fff7c2', 14, 1.4); ringFx(c.cx, c.cy, 170, '#fde68a', .6, 5);
+    }
+    if (ph === 4) { c.S.aura = 1; for (let k = 0; k < 4; k++) bxBeam(c, { x: c.cx, y: c.cy, ang: k * PI / 2 + .4, spin: .5, len: 640, w: 8, tel: 1, t: 6, dmg: Math.round(e.dmg * .5), col: '#fff7c2', col2: '#ffffff' }); }
+  },
+  hurt(c, e, dmg) { return c && c.ph === 2 && bxMinCount(c, 'seal') > 0 ? dmg * .22 : dmg; },
+  variant: (e, c) => c ? Math.max(0, Math.min(3, c.ph - 1)) : 0,
+  moves: {
+    // Estágio I — terra
+    *judge(c, e) {
+      const z = bxTele(c, { follow: G.P, x: 0, y: 0, r: 34, grow: 1, r1: 66, tel: 1.2, col: '#fde68a' });
+      yield 1.25; const x = z.x, y = z.y;
+      bxBoom(c, x, y, 80, { tel: .04, dm: 1, col: '#fde68a' }); bxWave(c, 1, { col: '#fde68a', hh: 13 }); bxWave(c, -1, { col: '#fde68a', hh: 13 }); shake(8); yield 1;
+    },
+    *quake(c) { c.free = true; if (c.e.onGround) c.e.vy = -420; yield .5; bxWave(c, 1, { col: '#fbbf24', hh: 14 }); bxWave(c, -1, { col: '#fbbf24', hh: 14 }); bxRain(c, 4, { speed: 340, r: 10, shape: 'rock', col: '#a8a29e', col2: '#fbbf24', dm: .55, life: 3 }); yield 1; },
+    // Estágio II — terra (selos)
+    *seals(c) { c.free = true; if (bxMinCount(c, 'seal') === 0) { for (let k = 0; k < 4; k++) bxSeal(c, k); } yield .8; for (let k = 0; k < 4; k++) { bxCol(c, c.px + rnd(-200, 200), { w: 30, h: 380, tel: .6, dm: .6, col: '#fde68a' }); yield .2; } yield .9; },
+    *slam(c, e) { c.free = true; yield .6; bxBoom(c, c.cx, c.cy + 30, 90, { tel: .08, dm: .8 }); bxWave(c, 1, { col: '#fde68a', hh: 15 }); bxWave(c, -1, { col: '#fde68a', hh: 15 }); if (e.onGround) e.vy = -380; shake(9); yield 1.1; },
+    // Estágio III — céu (asas)
+    *wings(c) { c.free = true; bxBeam(c, { x: c.cx, y: c.cy, ang: .2, spin: .95, len: 620, w: 9, tel: .7, t: 4.6, dmg: Math.round(c.e.dmg * .6), col: '#fff7c2', col2: '#ffffff' }); bxBeam(c, { x: c.cx, y: c.cy, ang: PI + .2, spin: -.95, len: 620, w: 9, tel: .7, t: 4.6, dmg: Math.round(c.e.dmg * .6), col: '#fde68a', col2: '#ffffff' }); yield 4.8; },
+    *plume(c) { c.free = true; for (let k = 0; k < 4; k++) { bxFan(c, 6, .15, { speed: 320, r: 7, shape: 'feather', col: '#fde68a', col2: '#fff7c2', dm: .45, life: 2.8, spin: 6 }); yield .45; } },
+    *dive(c) { c.free = true; yield .3; yield* bxDash(c, 700, .8); bxBoom(c, c.cx, c.cy, 80, { tel: .08, dm: .8 }); shake(7); yield 1; },
+    // Estágio IV — céu (apoteose)
+    *nova(c) { c.free = true; for (let k = 0; k < 3; k++) { bxRing(c, 22, { speed: 260, r: 8, shape: 'star', col: '#fff7c2', col2: '#ffffff', glow: '#fde68a', dm: .5, life: 3, off: k * .18 }); yield .5; } },
+    *collapse(c) { c.free = true; for (let k = 0; k < 6; k++) { bxZone(c, { x: c.px + rnd(-220, 220), y: c.py + rnd(-120, 60), r: 50, tel: .6, t: 1.5, kind: 'pull', k: 700, core: 34, dmg: Math.round(c.e.dmg * .45), col: '#fde68a' }); yield .18; } yield 1.2; },
+    *final(c, e) { c.free = true; addText(c.cx, e.y - 50, 'APOTEOSE', '#ffffff', 18, 1.6); for (let k = 0; k < 8; k++) { bxCol(c, c.px + (k - 3.5) * 56, { w: 26, h: 420, tel: .5 + (k % 3) * .12, dm: .8, col: '#fde68a' }); } yield 1.6; bxRing(c, 24, { speed: 300, r: 8, shape: 'star', col: '#ffffff', col2: '#fff7c2', dm: .6, life: 3 }); shake(10); yield 1; },
+  },
+  pick(c) { const L = [['judge', 'quake'], ['seals', 'slam', 'quake'], ['wings', 'plume', 'dive'], ['nova', 'collapse', 'final', 'nova']][Math.max(0, Math.min(3, c.ph - 1))]; return L[c.i++ % L.length]; },
+});
+function bxSeal(c, k) {
+  const a = k / 4 * TAU;
+  return bxMin(c, { x: c.cx + Math.cos(a) * 96, y: c.cy + Math.sin(a) * 70, look: 'mirror', w: 20, h: 26, hp: 6000, fly: 1, tag: 'seal', name: 'Selo', col: '#fde68a', dm: .2,
+    mf: (q) => { const t = G.t * .8 + k * 1.6; q.vx = Math.cos(t) * 110; q.vy = Math.sin(t) * 70; } });
+}
+
+;
 /* ===== 14_draw_enemies.js ===== */
 /* ============================================================
    14_draw_enemies: sprites procedurais de inimigos e chefes
@@ -9878,6 +11412,7 @@ function tipHTML(id, o) {
   if (it.type === 'sword') {
     const sw = it.sw, dps = (sw.baseDamage * sw.attackSpeed).toFixed(0), cc = Math.round(sw.critChance * 100), P = G.P;
     h += `<div class="ts">${TYPE_PT.sword} · ${T_.n} · #${String(sw.num).padStart(3, '0')}</div><div class="st2"><span>Dano</span><b>${sw.baseDamage}${P && P.stats.dmg ? ' <span style="color:#86efac">(+' + P.stats.dmg + ')</span>' : ''}</b><span>Velocidade</span><b>${sw.attackSpeed} golpes/s</b><span>Repulsão</span><b>${sw.knockbackForce}</b><span>Crítico</span><b>${cc}%</b><span>DPS base</span><b>≈ ${dps}</b><span>Ataque</span><b>${{ ArcSwing: 'Arco', Thrust: 'Estocada', Beam: 'Feixe', Orbital: 'Orbital' }[sw.attackType]}</b></div><div class="mech">${escHtml(sw.txt)}</div>`;
+    if (sw.dropFromName) h += `<div class="rcp" style="color:#fbbf24">Não se forja: cai do chefe <b>${escHtml(sw.dropFromName)}</b>. Invoque-o com o sigilo.</div>`;
     if (!(o && o.noRecipe)) { const rt = recipeText(id); if (rt) h += `<div class="rcp">${rt}</div>`; }
   } else {
     h += `<div class="ts">${TYPE_PT[it.type] || ''}${it.tier ? ' · ' + T_.n : ''}</div>`;
@@ -10008,10 +11543,10 @@ function renderArsenal() {
   if (!avail.some(t => t[0] === G.ui.arsTab)) G.ui.arsTab = 'T1';
   avail.forEach(([k, n]) => { const t = document.createElement('div'); t.className = 'tab' + (G.ui.arsTab === k ? ' on' : ''); t.textContent = n; if (/^T\d+$/.test(k)) t.style.borderColor = TIERS[+k.slice(1)].col; t.onclick = () => { G.ui.arsTab = k; renderArsenal(); }; tabs.appendChild(t); });
   const body = $('ars-body'), tab = G.ui.arsTab; body.innerHTML = '';
-  const grid = (ids, withNum) => { const g = document.createElement('div'); g.className = 'ars-grid'; ids.forEach(id => { const it = IT[id], el = document.createElement('div'); el.className = 'slot t' + (it.tier || 0); el.innerHTML = `<i class="ic ${iconClass(id)}"></i>` + (withNum && it.type === 'sword' ? `<span class="num">${String(it.sw.num).padStart(3, '0')}</span>` : ''); el.onmouseenter = ev => showTip(tipHTML(id), ev); el.onmousemove = moveTip; el.onmouseleave = hideTip; el.onmousedown = ev => { ev.preventDefault(); if (cre) arsGive(id, ev.shiftKey ? stackMax(id) > 1 ? 99 : 1 : 1); else toast(it.n + ': ' + (RECIPES.find(r => r.out === id) ? 'veja a receita no tooltip e construa no inventário (E).' : ''), tierCol(id)); }; g.appendChild(el); }); return g; };
+  const grid = (ids, withNum) => { const g = document.createElement('div'); g.className = 'ars-grid'; ids.forEach(id => { const it = IT[id], el = document.createElement('div'); el.className = 'slot t' + (it.tier || 0); el.innerHTML = `<i class="ic ${iconClass(id)}"></i>` + (withNum && it.type === 'sword' ? `<span class="num">${String(it.sw.num).padStart(3, '0')}</span>` : ''); el.onmouseenter = ev => showTip(tipHTML(id), ev); el.onmousemove = moveTip; el.onmouseleave = hideTip; el.onmousedown = ev => { ev.preventDefault(); if (cre) arsGive(id, ev.shiftKey ? stackMax(id) > 1 ? 99 : 1 : 1); else toast(it.n + ': ' + (RECIPES.find(r => r.out === id) ? 'veja a receita no tooltip e construa no inventário (E).' : (it.sw && it.sw.dropFromName ? 'não se forja — cai do chefe ' + it.sw.dropFromName + '.' : '')), tierCol(id)); }; g.appendChild(el); }); return g; };
   if (/^T\d+$/.test(tab) || tab === 'ALL') {
     const swords = SWORDS.filter(s => tab === 'ALL' || s.tierLevel === +tab.slice(1));
-    if (/^T\d+$/.test(tab)) { const T_ = TIERS[+tab.slice(1)]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px 12px;border-left:4px solid ' + T_.col + ';background:rgba(255,255,255,.05);border-radius:6px;font-size:13px'; const sws = swords; d.innerHTML = `<b style="color:${T_.col}">${T_.n}</b> · multiplicador de dano ${T_.mult[0]}x–${T_.mult[1]}x · ${sws.length} espadas · dano ${Math.min(...sws.map(s => s.baseDamage))}–${Math.max(...sws.map(s => s.baseDamage))}<br><span style="color:var(--mut)">${T_.mech}</span>` + ((+tab.slice(1)) > 6 ? '<br><span style="color:#fbbf24">Tier novo (pós-jogo): 20 espadas inéditas, cada uma com arte pintada pixel a pixel e efeito próprio.</span>' : ''); body.appendChild(d); }
+    if (/^T\d+$/.test(tab)) { const T_ = TIERS[+tab.slice(1)]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px 12px;border-left:4px solid ' + T_.col + ';background:rgba(255,255,255,.05);border-radius:6px;font-size:13px'; const sws = swords; d.innerHTML = `<b style="color:${T_.col}">${T_.n}</b> · multiplicador de dano ${T_.mult[0]}x–${T_.mult[1]}x · ${sws.length} espadas · dano ${Math.min(...sws.map(s => s.baseDamage))}–${Math.max(...sws.map(s => s.baseDamage))}<br><span style="color:var(--mut)">${T_.mech}</span>` + ((+tab.slice(1)) >= 9 ? '<br><span style="color:#fbbf24">Tier ' + tab.slice(1) + ': estas 20 espadas <b>não são forjadas</b> — cada uma cai do chefe do Ato ' + ({ 9: 'V', 10: 'VI' }[+tab.slice(1)]) + ' que a guarda.</span>' : (+tab.slice(1)) > 6 ? '<br><span style="color:#fbbf24">Tier novo (pós-jogo): 20 espadas inéditas, cada uma com arte pintada pixel a pixel e efeito próprio.</span>' : ''); body.appendChild(d); }
     body.appendChild(grid(swords.map(s => s.id), true));
     const note = document.createElement('div'); note.style.cssText = 'margin-top:10px;font-size:12px;color:var(--mut)'; note.textContent = cre ? 'Clique para pegar 1 espada. Passe o mouse para ver detalhes e receita.' : 'Passe o mouse sobre uma espada para ver atributos, mecânica e receita.'; body.appendChild(note);
   } else if (tab === 'items') {
@@ -10023,7 +11558,7 @@ function renderArsenal() {
     const mk = (keys, boss) => { const wrap = document.createElement('div'); keys.forEach(k => { const d = ED[k], b = document.createElement('div'); b.className = 'enemy-btn'; b.innerHTML = `<b>${d.n}</b> <span style="color:var(--mut)">HP ${d.hp >= 1e8 ? '∞' : d.hp}</span>`; b.onclick = () => { if (boss) { G.boss = null; const ok = summonBoss(k.startsWith('bx_') ? 'x:' + k.slice(3) : { boss_slime: 'slime', boss_eye: 'eye', boss_guardian: 'guardian', boss_colossus: 'colossus' }[k]); if (!ok) return; } else { const P = G.P, sp = freeSpot(d.w, d.h, pcx(P) + P.face * 150, pcy(P) - 10); spawnEnemy(k, sp.x, sp.y, { elem: G.ui.enemyElem || undefined }); } sfx('tick'); }; wrap.appendChild(b); }); return wrap; };
     const s1 = document.createElement('div'); s1.className = 'sect'; s1.textContent = 'Alvos de treino'; body.appendChild(s1); body.appendChild(mk(['dummy']));
     const s2 = document.createElement('div'); s2.className = 'sect'; s2.textContent = 'Inimigos'; body.appendChild(s2); body.appendChild(mk(Object.keys(ED).filter(k => !ED[k].boss && !ED[k].isDummy)));
-    const s3 = document.createElement('div'); s3.className = 'sect'; s3.textContent = 'Chefes (sem restrição no criativo)'; body.appendChild(s3); body.appendChild(mk(Object.keys(ED).filter(k => ED[k].boss && !ED[k].bx), true)); for (let a = 1; a <= 4; a++) { const sa = document.createElement('div'); sa.className = 'sect'; sa.textContent = 'Chefes novos · ' + BX_ACTS[a].n; body.appendChild(sa); body.appendChild(mk(BXLIST.filter(d => d.act === a).map(d => 'bx_' + d.id), true)); }
+    const s3 = document.createElement('div'); s3.className = 'sect'; s3.textContent = 'Chefes (sem restrição no criativo)'; body.appendChild(s3); body.appendChild(mk(Object.keys(ED).filter(k => ED[k].boss && !ED[k].bx), true)); for (let a = 1; a < BX_ACTS.length; a++) { const sa = document.createElement('div'); sa.className = 'sect'; sa.textContent = 'Chefes novos · ' + BX_ACTS[a].n; body.appendChild(sa); body.appendChild(mk(BXLIST.filter(d => d.act === a).map(d => 'bx_' + d.id), true)); }
   } else if (tab === 'world') {
     const P = G.P, row = (title, btns) => { const s = document.createElement('div'); s.className = 'sect'; s.textContent = title; body.appendChild(s); const r = document.createElement('div'); r.className = 'bar-row'; btns.forEach(([n, f, on]) => { const b = document.createElement('button'); b.className = 'btn' + (on ? ' on' : ''); b.textContent = n; b.onclick = () => { f(b); sfx('tick'); renderArsenal(); }; r.appendChild(b); }); body.appendChild(r); };
     row('Hora do dia', [['Amanhecer', () => G.time = .05], ['Meio-dia', () => G.time = .3], ['Entardecer', () => G.time = .58], ['Meia-noite', () => G.time = .82]]);

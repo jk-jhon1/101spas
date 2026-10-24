@@ -324,7 +324,7 @@ function S2(num, name, d, v, k, look, fx, txt, rec, o) {
   o = Object.assign({}, o || {}); o.st = o.st || TIER7_ST[Math.ceil(num / 20)];
   const sw = S(num, name, d, v, k, look, fx, txt, rec, o);
   sw.src = 'novo'; sw.kind = 'ext'; sw.station = o.st;
-  const r = RECIPES[RECIPES.length - 1]; r.st = o.st;
+  if (!o.noRecipe) { const r = RECIPES[RECIPES.length - 1]; r.st = o.st; }
   return sw;
 }
 

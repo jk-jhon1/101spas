@@ -36,22 +36,22 @@ SWORDS.forEach(s => { if (!s.look || !s.look.sh || !s.look.col) err('look invál
 // CSV (só grava em docs/ se você pedir: CATALOGO=1 node dev/validate.js)
 const WRITE_DOCS = process.env.CATALOGO === '1';
 let csv = '#;Nome;Tier;Dano;Vel;KB;Crit;Tipo de ataque;Mecânica única;Origem;Estação;Receita\n';
-for (const s of SWORDS) { const r = RECIPES.find(r => r.out === s.id); csv += [String(s.num).padStart(3, '0'), s.swordName, s.tierLevel, s.baseDamage, s.attackSpeed, s.knockbackForce, Math.round(s.critChance * 100) + '%', s.attackType, '"' + s.txt.replace(/"/g, '""') + '"', s.src === 'pdf' ? 'GDD' : 'Inédita', STATION_NAME[s.station], Object.entries(r.ing).map(([k, v]) => v + 'x ' + IT[k].n).join(' + ')].join(';') + '\n'; }
+for (const s of SWORDS) { const r = RECIPES.find(r => r.out === s.id); csv += [String(s.num).padStart(3, '0'), s.swordName, s.tierLevel, s.baseDamage, s.attackSpeed, s.knockbackForce, Math.round(s.critChance * 100) + '%', s.attackType, '"' + s.txt.replace(/"/g, '""') + '"', s.src === 'pdf' ? 'GDD' : 'Inédita', STATION_NAME[s.station] || '—', r ? Object.entries(r.ing).map(([k, v]) => v + 'x ' + IT[k].n).join(' + ') : 'cai do chefe ' + (s.dropFromName || '?')].join(';') + '\n'; }
 if (WRITE_DOCS) fs.writeFileSync(__dirname + '/../docs/catalogo_200_espadas.csv', '\ufeff' + csv);
 // Markdown por tier
-let md = '# Catálogo mestre — 200 espadas\n\n> Gerado automaticamente a partir dos dados do jogo (`src/11_swords.js` e `src/11b_swords_x.js`).\n> **Origem:** `GDD` = texto original do documento de design · `Inédita` = criada para o jogo seguindo as regras do tier. Os **Tiers 7–10 são novos**, 20 espadas cada, com arte pintada pixel a pixel em `src/06b_swordart.js`.\n\n';
+let md = '# Catálogo mestre — 200 espadas\n\n> Gerado automaticamente a partir dos dados do jogo (`src/11_swords.js` e `src/11b_swords_x.js`).\n> **Origem:** `GDD` = texto original do documento de design · `Inédita` = criada para o jogo seguindo as regras do tier. Os **Tiers 7–10 são novos**, 20 espadas cada, com arte pintada pixel a pixel em `src/06b_swordart.js`. As dos **Tiers 9 e 10 não são forjáveis: cada uma cai do chefe do Ato V/VI que a guarda** (`src/13h_bx_a5.js` e `src/13i_bx_a6.js`).\n\n';
 const TN = { 1: 'TIER 1 — Início de jogo & Básico (001–020)', 2: 'TIER 2 — Pré-Bosses Intermediários (021–040)', 3: 'TIER 3 — Transição & Mid-Game (041–060)', 4: 'TIER 4 — Hardmode Inicial (061–080)', 5: 'TIER 5 — Hardmode Avançado (081–100)', 6: 'TIER 6 — End-Game / Mítico (101–120)', 7: 'TIER 7 — Forja Estelar · Lendário (121–140)', 8: 'TIER 8 — Relicário do Vazio · Ancestral (141–160)', 9: 'TIER 9 — Eco Primordial · Divino (161–180)', 10: 'TIER 10 — Origem · Supremo (181–200)' };
 const COLS = { 1: '#10b981', 2: '#0284c7', 3: '#7c3aed', 4: '#d97706', 5: '#dc2626', 6: '#4f46e5', 7: '#eab308', 8: '#db2777', 9: '#06b6d4', 10: '#f8fafc' };
 for (let t = 1; t <= 10; t++) {
   const L = SWORDS.filter(x => x.tierLevel === t), T_ = TIERS[t];
   md += `## ${TN[t]}\n\n- Cor de raridade: \`${COLS[t]}\` · multiplicador de dano do GDD: **${T_.mult[0]}x–${T_.mult[1]}x** · estação de criação: **${[...new Set(L.map(x => STATION_NAME[x.station]))].join(' / ')}**\n- Regra do tier: ${T_.mech}\n- Origem: ${L[0].src === 'pdf' ? '**GDD** — textos originais' : (t <= 6 ? '**Inéditas** — criadas seguindo as regras do tier' : '**Tier novo** — 20 espadas inéditas com arte exclusiva')}\n\n| # | Espada | Dano | Vel | KB | Crít | Mecânica única | Receita |\n|---|---|---|---|---|---|---|---|\n`;
-  for (const s of L) { const r = RECIPES.find(r => r.out === s.id); md += `| ${String(s.num).padStart(3, '0')} | **${s.swordName}** | ${s.baseDamage} | ${s.attackSpeed} | ${s.knockbackForce} | ${Math.round(s.critChance * 100)}% | ${s.txt} | ${Object.entries(r.ing).map(([k, v]) => v + '× ' + IT[k].n).join(', ')} _(${STATION_NAME[s.station]}${s.station === 'bench' ? '' : ''})_ |\n`; }
+  for (const s of L) { const r = RECIPES.find(r => r.out === s.id); md += `| ${String(s.num).padStart(3, '0')} | **${s.swordName}** | ${s.baseDamage} | ${s.attackSpeed} | ${s.knockbackForce} | ${Math.round(s.critChance * 100)}% | ${s.txt} | ${r ? Object.entries(r.ing).map(([k, v]) => v + '× ' + IT[k].n).join(', ') + ' _(' + STATION_NAME[s.station] + ')_' : '**Cai do chefe ' + (s.dropFromName || '?') + '**'} |\n`; }
   md += '\n';
 }
 if (WRITE_DOCS) { fs.writeFileSync(__dirname + '/../docs/catalogo_200_espadas.md', md); console.log('docs/catalogo_200_espadas.{md,csv} atualizados'); }
-// ---- 50 chefes novos: dados completos + docs/chefes_novos.md ----
+// ---- 90 chefes novos (atos I–VI): dados completos + docs/chefes_novos.md ----
 console.log('chefes novos:', BXLIST.length);
-if (BXLIST.length !== 50) err('esperado 50 chefes novos, há ' + BXLIST.length);
+if (BXLIST.length !== 90) err('esperado 90 chefes novos, há ' + BXLIST.length);
 const bsw = new Set(), bnm = new Set();
 for (const d of BXLIST) {
   const ed = ED['bx_' + d.id], miss = ['n', 'act', 'w', 'h', 'hp', 'dmg', 'coin', 'sword', 'rec', 'mech', 'moves', 'acc'].filter(k => d[k] === undefined || d[k] === null);
@@ -60,9 +60,12 @@ for (const d of BXLIST) {
   if (!d.kit && !d.pick) err('chefe sem repertório (kit/pick): ' + d.id); for (const k of [].concat(...(d.kit || []))) if (!d.moves[k]) err('golpe inexistente ' + k + ' em ' + d.id);
   if (bsw.has(d.sword)) err('espada repetida: ' + d.sword); bsw.add(d.sword); if (bnm.has(d.n)) err('nome repetido: ' + d.n); bnm.add(d.n);
 }
-let bm = '# Chefes novos — 50 (Atos I a IV)\n\n> Gerado automaticamente a partir dos dados do jogo (`src/13d..13g_bx_*.js`). Cada chefe tem **visual próprio** (pintado em `src/05g..05j_bxart*.js`, mesmo estilo dos 4 chefes anteriores: corpo escuro, brilho de uma cor, halo) e **uma mecânica única**.\n> **Como invocar:** no Criativo, Arsenal → *Inimigos & Chefes*; no modo Aventura, crie o **Sigilo** do chefe (receita abaixo) e use-o (a condição, quando houver, é o local/hora). **Espada:** cada chefe larga uma espada garantida (continua podendo ser forjada).\n\n';
+const dropS = SWORDS.filter(x => x.tierLevel >= 9);
+for (const x of dropS) { if (RECIPES.some(r => r.out === x.id)) err('Tier 9/10 não pode ser forjável: ' + x.id); if (!x.dropFrom || !BXLIST.some(d => d.id === x.dropFrom)) err('Tier 9/10 sem chefe de origem: ' + x.id); }
+console.log('espadas de Tier 9/10 (só caem de chefe):', dropS.length);
+let bm = '# Chefes novos — ' + BXLIST.length + ' (Atos I a VI)\n\n> Gerado automaticamente a partir dos dados do jogo (`src/13d..13i_bx_*.js`). Cada chefe tem **visual próprio** (pintado em `src/05g..05l_bxart*.js`, mesmo estilo dos 4 chefes anteriores: corpo escuro, brilho de uma cor, halo) e **uma mecânica única**.\n> **Como invocar:** no Criativo, Arsenal → *Inimigos & Chefes*; no modo Aventura, crie o **Sigilo** do chefe (receita abaixo) e use-o (a condição, quando houver, é o local/hora). **Espada:** cada chefe larga a sua espada garantida. As dos Atos I a IV também podem ser forjadas; as dos **Atos V e VI (Tiers 9 e 10) só caem do chefe**.\n\n';
 const AN = BX_ACTS;
-for (let a = 1; a <= 4; a++) {
+for (let a = 1; a < AN.length; a++) {
   bm += '## ' + AN[a].n + ' (' + BXLIST.filter(d => d.act === a).length + ')\n\nEstação do Sigilo: **' + STATION_NAME[AN[a].st] + '** · estágio do mundo mínimo: ' + AN[a].stage + '\n\n| # | Chefe | Vida | Dano | Mecânica única | Sigilo (receita) | Condição | Espada |\n|---|---|---|---|---|---|---|---|\n';
   for (const d of BXLIST.filter(x => x.act === a)) {
     const rc = RECIPES.find(r => r.out === 'sg_' + d.id), ing = rc ? Object.keys(rc.ing).map(k => rc.ing[k] + '× ' + (IT[k] ? IT[k].n : k)).join(', ') : '';
@@ -109,7 +112,7 @@ const bossAcc = Object.keys(BX_ACC);
 if (bossAcc.length !== 45) err('chefes com acessório: esperado 45, veio ' + bossAcc.length);
 if (new Set(Object.values(BX_ACC)).size !== 45) err('acessório repetido entre chefes');
 const semAcc = BXLIST.filter(d => !BX_ACC[d.id]);
-if (semAcc.length !== 9) err('chefes sem acessório: esperado 9, veio ' + semAcc.length + ' (' + semAcc.map(d => d.id).join(', ') + ')');
+if (semAcc.length !== 49) err('chefes sem acessório: esperado 49, veio ' + semAcc.length + ' (' + semAcc.map(d => d.id).join(', ') + ')');
 
 // documento gerado (só com CATALOGO=1)
 if (WRITE_DOCS) {

@@ -13,7 +13,7 @@ function part4(doc) {
   doc.h3('Validação e dados (sem navegador)');
   doc.fileCard({
     name: 'dev/validate.js', lines: 141, tag: 'Teste', role: 'Valida o catálogo inteiro', color: COL.ui,
-    summary: 'Carrega os módulos de dados no Node e confere 200 espadas, 20 por tier, faixas de dano, nomes únicos, receitas, estações e os 50 chefes.',
+    summary: 'Carrega os módulos de dados no Node e confere 200 espadas, 20 por tier, faixas de dano, nomes únicos, receitas, estações e os 90 chefes.',
     what: 'É o teste mais rápido e o mais abrangente sobre conteúdo. Ele falha se faltar uma espada, se um tier tiver 19 ou 21, se o dano sair da faixa, se um ingrediente não existir, se a estação for inválida ou se um nome repetir. Também gera o catálogo em Markdown/CSV — mas só quando pedido, para não sujar o repositório a cada execução.',
     how: [
       '`node dev/validate.js` → imprime um resumo por tier e `CATÁLOGO OK` no fim.',
@@ -69,8 +69,8 @@ function part4(doc) {
     ['test_arsenal_clicks.js', 'Clica em (quase) tudo do Arsenal: todas as abas de tier, itens, inimigos e mundo.'],
     ['test_enemies.js', 'Todos os inimigos e variantes elementais contra o jogador, sem exceções.'],
     ['test_bosses.js', 'Sprites e fases dos 4 chefes clássicos, íris que segue o jogador, tinta de status, cache e caixas de colisão.'],
-    ['test_bx.js', 'Cada um dos 50 chefes novos: invocação, 3 fases, todos os golpes, morte, loot e limpeza de lacaios.'],
-    ['test_bx_art.js', 'Arte dos 50 chefes: silhueta própria, corpo escuro com brilho, paleta curta, colisão dentro do desenho.'],
+    ['test_bx.js', 'Cada um dos 90 chefes novos: invocação, fases, todos os golpes, morte, loot e limpeza de lacaios.'],
+    ['test_bx_art.js', 'Arte dos 90 chefes: silhueta própria, corpo escuro com brilho, paleta curta, colisão dentro do desenho.'],
     ['test_progress.js', 'Morte e renascimento, derrota dos 4 chefes, drops, bandeiras, estágio e minérios de Hardmode.'],
     ['test_npc_save.js', 'Salas válidas, spawn de NPC, painel da loja e ida e volta do save pelo IndexedDB.'],
     ['test_fluids.js', 'Água + lava = obsidiana, areia caindo e plantas sem apoio.'],
@@ -132,8 +132,8 @@ function part4(doc) {
     deps: '11c_gear_x, 10b_gear_fx', used: 'README, consulta',
   });
   doc.fileCard({
-    name: 'docs/chefes_novos.md', lines: 83, tag: 'Gerado', role: 'Lista dos 50 chefes', color: COL.base,
-    summary: 'Nome, ato, atributos, mecânica única, acessório exclusivo, condição de invocação e recompensas dos 50 chefes novos.',
+    name: 'docs/chefes_novos.md', lines: 137, tag: 'Gerado', role: 'Lista dos 90 chefes', color: COL.base,
+    summary: 'Nome, ato, atributos, mecânica única, espada guardada, acessório exclusivo, condição de invocação e recompensas dos 90 chefes novos.',
     what: 'É gerado pelo `validate.js` a partir dos dados de `13d..13g_bx_*.js`, então nunca fica desatualizado em relação ao jogo.',
     deps: '13c_bossx, 13d..13g', used: 'README, consulta',
   });
@@ -217,19 +217,19 @@ function part6(doc) {
   doc.para('Cada mundo pode virar um arquivo `.json` autocontido, com CRC-32 para detectar corrupção. Na importação, **nada é confiado**: o CRC é verificado, campos desconhecidos são descartados, valores são presos à faixa válida, itens inexistentes são removidos e as camadas precisam ter o tamanho certo. Um arquivo ruim nunca quebra o jogo — no pior caso, é recusado com uma mensagem.');
 
   doc.h2('20.  Os Tiers 7–10 (espadas 121–200)', { mark: 's20' });
-  doc.para('A adição mais recente: **quatro tiers novos, 20 espadas cada, 80 no total**, levando o catálogo de 120 para 200. Nome, atributos, mecânica e desenho são exclusivos, e a arte é pintada pixel a pixel — não é variação das 120 antigas.');
+  doc.para('A adição mais recente: **quatro tiers novos, 20 espadas cada, 80 no total**, levando o catálogo de 120 para 200. Nome, atributos, mecânica e desenho são exclusivos, e a arte é pintada pixel a pixel — não é variação das 120 antigas. Os tiers 7 e 8 ainda podem ser forjados; os **tiers 9 e 10 não têm receita** (`dropOnly`): cada uma das 40 espadas cai do chefe que a guarda — as 20 do Ato V, guardadas pelos chefes de `13h_bx_a5.js`, e as 20 do Ato VI, guardadas pelos de `13i_bx_a6.js`.');
   doc.table(['Tier', 'Nome', 'Cor', 'Espadas', 'Dano', 'Crítico', 'Estação'], [
     ['7', 'Forja Estelar', '#eab308', '121–140', '300–360', '12%', 'Bigorna Avançada'],
     ['8', 'Relicário do Vazio', '#db2777', '141–160', '470–620', '15%', 'Bigorna Avançada'],
-    ['9', 'Eco Primordial', '#06b6d4', '161–180', '690–880', '18%', 'Forja Celeste'],
-    ['10', 'Origem', '#f8fafc', '181–200', '980–1400', '22%', 'Forja Celeste'],
+    ['9', 'Eco Primordial', '#06b6d4', '161–180', '690–880', '18%', 'cai do chefe (Ato V)'],
+    ['10', 'Origem', '#f8fafc', '181–200', '980–1400', '22%', 'cai do chefe (Ato VI)'],
   ], [0.08, 0.24, 0.13, 0.13, 0.16, 0.1, 0.16], { size: 8.2 });
   doc.h3('Os 25 efeitos novos (FX2)');
   doc.para('Os efeitos novos ficaram em um objeto próprio (`FX2`), sem tocar na biblioteca antiga: eco do golpe, leque de lâminas, nova, cometa, varredura, corrente, marca que detona, domínio, gravidade, escudo, dobra, divisão, almas perseguidoras, execução, explosão de sangue, convergência, ciclo, fenda, espelho, tempestade, parada no tempo, linha de condenação, orbes, singularidade e big bang.');
   doc.h3('O que foi verificado');
   doc.bullets([
     '200 espadas, 20 por tier, nomes únicos, dano dentro da faixa e receitas válidas (`validate.js`).',
-    '200/200 espadas craftáveis, nenhum ingrediente sem fonte (`reach.js`).',
+    '200/200 espadas obtíveis (160 forjadas + 40 que caem de chefe), nenhum ingrediente sem fonte (`reach.js`).',
     'Os oito ganchos de cada uma das 80 espadas executam sem exceção (`test_swords_x.js`).',
     'Catálogo com abas T1–T10 + “Todas”, 20 slots por aba e 200 em “Todas”; 379 ícones, tooltips, venda, save e painéis sem erro.',
   ]);
@@ -257,7 +257,7 @@ function part6(doc) {
 function appendix(doc) {
   doc.setPart('Apêndices');
   doc.h2('A.  Todos os módulos em uma tabela', { mark: 'sa', break: true });
-  doc.para('Referência rápida: nome, linhas e papel de cada um dos 46 módulos, na ordem de carga.');
+  doc.para('Referência rápida: nome, linhas e papel de cada um dos 50 módulos, na ordem de carga.');
   const mods = [
     ['00_util.js', 84, 'Matemática, RNG determinístico, Perlin, cores'],
     ['01_data.js', 259, 'Tiers, tiles, paredes, itens, receitas'],
@@ -269,11 +269,13 @@ function appendix(doc) {
     ['05c_canopy.js', 164, 'Copas das árvores por vizinhança'],
     ['05d_bosspaint.js', 151, 'Ferramentas de pintura dos chefes'],
     ['05e_bossart.js', 293, 'Sprites dos 4 chefes clássicos'],
-    ['05f_bxart.js', 68, 'Infraestrutura da arte dos 50 chefes'],
+    ['05f_bxart.js', 68, 'Infraestrutura da arte dos 90 chefes'],
     ['05g_bxart1.js', 142, 'Arte dos chefes do Ato I (8)'],
     ['05h_bxart2.js', 243, 'Arte dos chefes do Ato II (14)'],
     ['05i_bxart3.js', 236, 'Arte dos chefes do Ato III (16)'],
     ['05j_bxart4.js', 179, 'Arte dos chefes do Ato IV (12)'],
+    ['05k_bxart5.js', 339, 'Arte dos chefes do Ato V (20)'],
+    ['05l_bxart6.js', 302, 'Arte dos chefes do Ato VI (20), 4 variantes da Apoteose'],
     ['06_icons.js', 243, 'Ícones de itens e sprites das espadas 1–120'],
     ['06b_swordart.js', 649, 'Arte pixel a pixel das espadas 121–200'],
     ['06c_gearart.js', 760, 'Arte própria de cada peça de equipamento'],
@@ -290,11 +292,13 @@ function appendix(doc) {
     ['12_player.js', 360, 'Jogador, inventário, criação, mineração'],
     ['13_enemies.js', 334, 'Inimigos, IA, spawn e drops'],
     ['13b_bosses.js', 78, 'Os 4 chefes clássicos'],
-    ['13c_bossx.js', 306, 'Motor dos 50 chefes novos'],
+    ['13c_bossx.js', 312, 'Motor dos 90 chefes novos'],
     ['13d_bx_a1.js', 120, 'Chefes novos do Ato I (8)'],
     ['13e_bx_a2.js', 269, 'Chefes novos do Ato II (14)'],
     ['13f_bx_a3.js', 263, 'Chefes novos do Ato III (16)'],
     ['13g_bx_a4.js', 187, 'Chefes novos do Ato IV (12)'],
+    ['13h_bx_a5.js', 433, 'Chefes novos do Ato V (20)'],
+    ['13i_bx_a6.js', 442, 'Chefes novos do Ato VI (20) — inclui a Apoteose'],
     ['14_draw_enemies.js', 236, 'Desenho de inimigos e chefes'],
     ['14b_draw_bx.js', 36, 'Desenho dos chefes novos'],
     ['15_ui.js', 319, 'HUD, inventário, catálogo, mapa, ajuda'],
@@ -307,7 +311,7 @@ function appendix(doc) {
     ['16_main.js', 270, 'Loop, render, input, câmera'],
   ];
   doc.table(['Módulo', 'Linhas', 'Papel'], mods.map(m => [m[0], String(m[1]), m[2]]), [0.28, 0.1, 0.62], { size: 7.9 });
-  doc.para('Total: **46 módulos · 10.757 linhas** de JavaScript, mais 404 linhas de CSS e template.');
+  doc.para('Total: **50 módulos · 12.505 linhas** de JavaScript, mais 404 linhas de CSS e template.');
 
   doc.h2('B.  Comandos e ganchos de teste', { mark: 'sb' });
   doc.table(['Comando', 'Efeito'], [
@@ -321,7 +325,7 @@ function appendix(doc) {
   ], [0.42, 0.58], { size: 8.4 });
   doc.h3('Ganchos expostos no navegador');
   doc.para('O `16_main.js` publica alguns atalhos em `window` para que os testes dirijam o jogo sem depender de cliques: `__G` (estado), `__step(dt)`, `__render()`, `__start(opções)`, `__SW` (catálogo), `__IT` (itens), `__Worlds`, `__chooseSeed`, `__PAD` e `__padUpdate`. Eles não afetam o jogador — são a interface de automação do projeto.');
-  doc.callout('ok', 'Resumo final', 'O 101spas é um jogo de navegador em arquivo único, construído por concatenação de 46 módulos globais. Os dados de conteúdo estão separados do motor; o desenho é gerado por código em dois pipelines (vetorial pixelizado e pintura pixel a pixel); o estado vive em G; a interface é DOM sobre um canvas de baixa resolução ampliado por fator inteiro; e a verificação é feita em duas camadas — Node para dados e lógica, Chromium para o jogo de verdade.');
+  doc.callout('ok', 'Resumo final', 'O 101spas é um jogo de navegador em arquivo único, construído por concatenação de 50 módulos globais. Os dados de conteúdo estão separados do motor; o desenho é gerado por código em dois pipelines (vetorial pixelizado e pintura pixel a pixel); o estado vive em G; a interface é DOM sobre um canvas de baixa resolução ampliado por fator inteiro; e a verificação é feita em duas camadas — Node para dados e lógica, Chromium para o jogo de verdade.');
 }
 
 module.exports = { part4, part6, appendix };
