@@ -281,7 +281,7 @@
 | 187 | **Origem do Vazio** | 1300 | 0.9 | 10 | 22% | Do nada, tudo: puxa o mundo para si e colapsa a tela em seguida. | **Cai do chefe Origem do Vazio** |
 | 188 | **Relógio do Universo** | 1010 | 1.35 | 5 | 22% | Atrasa o tempo dos inimigos, acelera o seu e repete o golpe duas vezes. | **Cai do chefe Relógio do Universo** |
 | 189 | **Semente Cósmica** | 1040 | 1.2 | 6 | 22% | Planta um mundo: um domínio vivo cura e três sementes caçam os inimigos. | **Cai do chefe Semente Cósmica** |
-| 190 | **Axioma** | 1060 | 1.45 | 4 | 22% | Verdade absoluta: cinco agulhas perfeitas e cada uma se parte em três. | **Cai do chefe Axioma** |
+| 190 | **Axioma** | 1060 | 1.45 | 4 | 22% | Verdade absoluta: cinco agulhas perfeitas e cada uma se parte em três. | **Cai do chefe Axioma** — só depois de derrotar todos os chefes do jogo |
 | 191 | **Convergência Final** | 1090 | 1.15 | 6 | 22% | Três acertos bastam para convergir tudo num único golpe devastador. | **Cai do chefe Convergência Final** |
 | 192 | **Espada do Autor** | 1250 | 0.95 | 9 | 22% | Reescreve a cena: dano na tela inteira, colapso e 200 de escudo divino. | **Cai do chefe Espada do Autor** |
 | 193 | **Nada Eterno** | 1180 | 1.25 | 5 | 22% | O vazio eterno: suga, retarda e apaga o que sobrar. | **Cai do chefe Nada Eterno** |

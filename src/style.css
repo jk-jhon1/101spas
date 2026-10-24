@@ -267,3 +267,18 @@ body.touch-on #boss-name{font-size:13px}
   #hotbar .slot{width:30px;height:30px}#hotbar .slot .ic{width:24px;height:24px}
   #item-name{left:140px;transform:none}
 }
+
+/* ---------- conquistas ---------- */
+#ach{z-index:46;background:rgba(3,5,12,.9);padding:10px}
+#ach .box{width:min(880px,96vw);max-width:none;max-height:92vh;padding:16px 18px}
+.ach-tabs{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 10px}
+.ach-tabs .tab{font-size:11.5px;cursor:pointer}
+.ach-row{display:flex;gap:10px;align-items:center;padding:7px 9px;border-radius:6px;background:rgba(255,255,255,.05);margin-bottom:5px;border-left:4px solid #334155}
+.ach-row.on{background:rgba(251,191,36,.10)}
+.ach-row.off{opacity:.68}
+.ach-ic{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:14px;flex:0 0 26px}
+.ach-nm{font-weight:800;font-size:13px;line-height:1.25}
+.ach-ds{font-size:11.5px;color:var(--mut);line-height:1.35;margin-top:1px}
+.ach-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:4px}
+.ach-bar i{display:block;height:100%;background:var(--acc)}
+.ach-pct{font-size:11px;color:var(--mut);margin-left:auto;white-space:nowrap;flex:0 0 auto}

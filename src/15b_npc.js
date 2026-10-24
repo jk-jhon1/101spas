@@ -69,11 +69,33 @@ function spawnNpc(type, room) {
   G.npcs.push(n); toast(d.n + ' mudou-se para a sua casa! (clique direito para conversar)', '#86efac', 5); sfx('heal'); burst(x + 6, y + 13, 14, { col: ['#86efac', '#fff'], spd: 90, glow: true, life: .6, g: -50 });
   return n;
 }
+// Item de invocação de NPC (Modo Criativo): coloca o morador ao lado do jogador, sem exigir casa.
+// Se aquele NPC já existe, ele é trazido para perto em vez de duplicar.
+function summonNpcItem(type) {
+  const d = NPC_DEF[type]; if (!d) return false;
+  if (G.mode !== 'creative') { toast('Itens de invocação de NPC só funcionam no Modo Criativo.', '#fbbf24', 4); return false; }
+  const P = G.P, wd = G.world;
+  const side = P.face || 1, sx = pcx(P) + side * 44;
+  const gy = groundY(sx, pcy(P) - 8, 40);
+  const x = clamp(sx, 20, wd.w * TS - 20), y = (gy > 0 ? gy : pcy(P) + 20) - 26;
+  let n = G.npcs.find(q => q.type === type);
+  if (!n) { n = { type, d, w: 12, h: 26, vx: 0, vy: 0, onGround: false, face: side, t: 1, age: 0, hitX: 0, hitY: 0, away: 0 }; G.npcs.push(n); }
+  n.free = true; n.home = 'free'; n.room = null; n.leave = false; n.away = 0;
+  n.x = x - n.w / 2; n.y = y; n.homeX = n.x; n.target = n.x; n.vx = n.vy = 0; n.face = side;
+  burst(n.x + 6, n.y + 13, 18, { col: ['#86efac', d.shirt || '#fff', '#fff'], spd: 100, glow: true, life: .7, g: -40 });
+  ringFx(n.x + 6, n.y + 13, 26, '#86efac', .45, 3); sfx('portal');
+  achSummon(type); achStat('npcSummoned', 1);
+  toast(d.n + ' foi invocado! (item exclusivo do Modo Criativo)', '#86efac', 4);
+  return n;
+}
 function updateNpcs(dt) {
   const P = G.P; G.npcScanT -= dt; G.npcSpawnT -= dt;
   if (G.npcScanT <= 0) {
     G.npcScanT = 4; const rooms = scanRooms();
-    for (const n of G.npcs) { const r = rooms.find(r => r.id === n.home); if (r) { n.room = r; n.away = 0; } else { n.away += 4; if (n.away >= 12) { n.leave = true; } } }
+    for (const n of G.npcs) {
+      if (n.free) { n.room = null; n.away = 0; continue; }   /* invocado no Criativo: não precisa de casa */
+      const r = rooms.find(r => r.id === n.home); if (r) { n.room = r; n.away = 0; } else { n.away += 4; if (n.away >= 12) { n.leave = true; } }
+    }
     G.npcs = G.npcs.filter(n => { if (n.leave) { toast(n.d.n + ' foi embora porque a casa deixou de ser válida.', '#fca5a5', 4); return false; } return true; });
   }
   if (G.npcSpawnT <= 0) {
@@ -84,7 +106,7 @@ function updateNpcs(dt) {
     n.age += dt; n.t -= dt; const near = !P.dead && Math.abs(pcx(P) - (n.x + 6)) < 70 && Math.abs(pcy(P) - (n.y + 13)) < 50;
     if (near) { n.vx = approach(n.vx, 0, 600 * dt); n.face = pcx(P) > n.x + 6 ? 1 : -1; }
     else {
-      if (n.t <= 0) { n.t = rnd(2, 5); const r = n.room; n.target = r && Math.random() < .7 ? rnd(r.minx + 1, r.maxx) * TS : n.x; }
+      if (n.t <= 0) { n.t = rnd(2, 5); const r = n.room; n.target = r && Math.random() < .7 ? rnd(r.minx + 1, r.maxx) * TS : (n.free ? (n.homeX || n.x) + rnd(-26, 26) : n.x); }
       const dx = n.target - n.x; if (Math.abs(dx) > 6) { n.vx = approach(n.vx, Math.sign(dx) * 38, 500 * dt); n.face = Math.sign(dx); } else n.vx = approach(n.vx, 0, 600 * dt);
     }
     n.vy = Math.min(n.vy + GRAV * dt, MAXFALL); bodyMove(n, dt, { stepUp: true });
@@ -121,6 +143,7 @@ const GUIDE_HINTS = [
 ];
 function openNpc(n) {
   const box = $('npc-panel'), d = n.d; openPanel('npc'); G.ui.npc = n;
+  { const a = achS(); if (!a.st.talk) a.st.talk = {}; a.st.talk[n.type] = 1; }   /* conquista: falar com cada NPC */
   const head = `<h3><span>${d.n}</span><span><button class="btn" id="npc-close">Fechar</button></span></h3><div style="font-size:12px;color:var(--mut);margin-bottom:10px">${d.desc}</div>`;
   const body = document.createElement('div');
   const setHTML = h => { box.innerHTML = head; box.appendChild(body); body.innerHTML = h; box.querySelector('#npc-close').onclick = () => closePanels(); };
@@ -128,7 +151,7 @@ function openNpc(n) {
     let idx = 0; const applicable = () => GUIDE_HINTS.filter(h => h[0]()); const show = () => { const a = applicable(); const msg = a[idx % a.length][1]; setHTML(`<div style="font-size:14px;line-height:1.5;padding:8px 10px;background:rgba(255,255,255,.06);border-radius:8px;min-height:90px">${escHtml(msg)}</div><div style="margin-top:10px;display:flex;gap:8px"><button class="btn pri" id="g-next">Outra dica</button><button class="btn" id="g-cat">Abrir catálogo de espadas (B)</button></div>`); $('g-next').onclick = () => { idx++; show(); sfx('tick'); }; $('g-cat').onclick = () => { closePanels(); openPanel('arsenal'); }; };
     show();
   } else if (n.type === 'nurse') {
-    const render = () => { const P = G.P, miss = Math.ceil(P.maxHp - P.hp), cost = miss <= 0 ? 0 : Math.max(1, Math.ceil(miss * (1 + G.stage * .6) * .4)); setHTML(`<div style="font-size:14px;margin-bottom:10px">${miss <= 0 ? 'Você está em perfeita saúde!' : 'Você está ferido. Posso cuidar disso por <b style="color:#fbbf24">' + cost + ' moedas</b>.'}</div><button class="btn pri" id="n-heal" ${miss <= 0 ? 'disabled style="opacity:.5"' : ''}>Curar (${cost} moedas)</button> <span style="margin-left:8px;color:var(--mut);font-size:12px">Você tem ${invCount('coin')} moedas.</span>`); const b = $('n-heal'); if (b) b.onclick = () => { if (miss <= 0) return; if (invCount('coin') < cost) { toast('Moedas insuficientes.', '#fbbf24'); return; } invRemove('coin', cost); P.hp = P.maxHp; sfx('heal'); burst(pcx(P), pcy(P), 16, { col: ['#4ade80', '#fff'], spd: 100, glow: true, life: .6, g: -50 }); toast('Totalmente curado!', '#86efac'); render(); G.invChanged = true; }; };
+    const render = () => { const P = G.P, miss = Math.ceil(P.maxHp - P.hp), cost = miss <= 0 ? 0 : Math.max(1, Math.ceil(miss * (1 + G.stage * .6) * .4)); setHTML(`<div style="font-size:14px;margin-bottom:10px">${miss <= 0 ? 'Você está em perfeita saúde!' : 'Você está ferido. Posso cuidar disso por <b style="color:#fbbf24">' + cost + ' moedas</b>.'}</div><button class="btn pri" id="n-heal" ${miss <= 0 ? 'disabled style="opacity:.5"' : ''}>Curar (${cost} moedas)</button> <span style="margin-left:8px;color:var(--mut);font-size:12px">Você tem ${invCount('coin')} moedas.</span>`); const b = $('n-heal'); if (b) b.onclick = () => { if (miss <= 0) return; if (invCount('coin') < cost) { toast('Moedas insuficientes.', '#fbbf24'); return; } invRemove('coin', cost); achStat('nurse', 1); P.hp = P.maxHp; sfx('heal'); burst(pcx(P), pcy(P), 16, { col: ['#4ade80', '#fff'], spd: 100, glow: true, life: .6, g: -50 }); toast('Totalmente curado!', '#86efac'); render(); G.invChanged = true; }; };
     render();
   } else {
     let tab = 'buy'; const render = () => {
@@ -137,8 +160,8 @@ function openNpc(n) {
       else { const seen = new Map(); G.P.inv.forEach((s, i) => { if (s && s.id !== 'coin') seen.set(s.id, (seen.get(s.id) || 0) + s.n); }); for (const [id, cnt] of seen) { const it = IT[id]; rows += `<div class="shop-row" data-sell="${id}"><i class="ic ${iconClass(id)}"></i><div style="flex:1"><div style="font-weight:700;color:${tierCol(id)}">${escHtml(it.n)} <span style="color:var(--mut);font-weight:400">×${cnt}</span></div></div><div style="color:#86efac;font-weight:700">+${sellPrice(id)} ●</div></div>`; } if (!rows) rows = '<div style="color:var(--mut);padding:10px">Você não tem itens para vender.</div>'; }
       setHTML(`<div class="tabs"><div class="tab ${tab === 'buy' ? 'on' : ''}" id="t-buy">Comprar</div><div class="tab ${tab === 'sell' ? 'on' : ''}" id="t-sell">Vender (1/3 do valor)</div><span style="margin-left:auto;color:#fbbf24;font-weight:700;font-size:13px">● ${coins}</span></div><div style="max-height:46vh;overflow-y:auto">${rows}</div><div style="font-size:11px;color:var(--mut);margin-top:6px">Shift+clique: ${tab === 'buy' ? 'comprar 10' : 'vender tudo'}</div>`);
       $('t-buy').onclick = () => { tab = 'buy'; render(); }; $('t-sell').onclick = () => { tab = 'sell'; render(); };
-      box.querySelectorAll('[data-buy]').forEach(el => { const id = el.dataset.buy; el.onmouseenter = ev => showTip(tipHTML(id), ev); el.onmousemove = moveTip; el.onmouseleave = hideTip; el.onclick = ev => { const n_ = ev.shiftKey && stackMax(id) > 1 ? 10 : 1, price = itemValue(id) * n_; if (invCount('coin') < price) { toast('Moedas insuficientes.', '#fbbf24'); return; } if (!invCanAdd(id, n_)) { toast('Inventário cheio.', '#fbbf24'); return; } invRemove('coin', price); invAdd(id, n_); sfx('coin'); render(); }; });
-      box.querySelectorAll('[data-sell]').forEach(el => { const id = el.dataset.sell; el.onclick = ev => { const have = invCount(id), n_ = ev.shiftKey ? have : 1; invRemove(id, n_); invAdd('coin', sellPrice(id) * n_); sfx('coin'); render(); }; });
+      box.querySelectorAll('[data-buy]').forEach(el => { const id = el.dataset.buy; el.onmouseenter = ev => showTip(tipHTML(id), ev); el.onmousemove = moveTip; el.onmouseleave = hideTip; el.onclick = ev => { const n_ = ev.shiftKey && stackMax(id) > 1 ? 10 : 1, price = itemValue(id) * n_; if (invCount('coin') < price) { toast('Moedas insuficientes.', '#fbbf24'); return; } if (!invCanAdd(id, n_)) { toast('Inventário cheio.', '#fbbf24'); return; } invRemove('coin', price); invAdd(id, n_); achStat('bought', n_); sfx('coin'); render(); }; });
+      box.querySelectorAll('[data-sell]').forEach(el => { const id = el.dataset.sell; el.onclick = ev => { const have = invCount(id), n_ = ev.shiftKey ? have : 1; invRemove(id, n_); invAdd('coin', sellPrice(id) * n_); achStat('sold', n_); sfx('coin'); render(); }; });
     };
     render();
   }

@@ -76,6 +76,23 @@ function drawIconSpec(g, spec, it) {
       else { const pts = []; for (let i = 0; i < 10; i++) { const a = -PI / 2 + i / 10 * TAU, r = i % 2 ? 5 : 13; pts.push([16 + Math.cos(a) * r, 16 + Math.sin(a) * r]); } poly(g, pts, '#fbbf24'); circ(g, 16, 16, 3, '#4f46e5', '#1e1b4b'); }
       break;
     }
+    case 'npcp': {   // item de invocar NPC: estátua/retrato em pixel-art do morador (um por profissão)
+      const t = spec[1], shirt = spec[2] || '#2f9a3a', hair = spec[3] || '#7a4a22';
+      glowDot(g, 16, 17, 15, shirt, .4);
+      rrect(g, 5, 21, 22, 8, 2, '#2a3348', '#0b1020');                          // pedestal
+      g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(7, 22, 18, 2);
+      rrect(g, 9, 9, 14, 14, 4, shirt, 'rgba(0,0,0,.6)');                      // corpo/roupa
+      if (t === 'smith') { g.fillStyle = '#e7e2d8'; g.fillRect(11, 13, 10, 9); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(11, 13, 10, 1); }  // avental
+      if (t === 'nurse') { g.fillStyle = '#ef4444'; g.fillRect(14.5, 14, 3, 8); g.fillRect(12, 16.5, 8, 3); }                                     // cruz
+      circ(g, 16, 8, 5.5, '#f2c69a', 'rgba(0,0,0,.6)');                        // cabeça
+      g.fillStyle = '#1b2333'; g.fillRect(13, 7, 1.6, 2); g.fillRect(17.4, 7, 1.6, 2);
+      if (t === 'guide') { g.fillStyle = hair; g.fillRect(10.5, 2.6, 11, 4.4); g.fillRect(9.6, 5.4, 12.8, 1.6); }
+      else if (t === 'trader') { g.fillStyle = '#a78bfa'; g.fillRect(10, 1.8, 12, 3); g.fillRect(13, -1.2 + 4, 6, 2.2); g.fillStyle = hair; g.fillRect(11, 6, 2, 3); g.fillRect(19, 6, 2, 3); }
+      else if (t === 'nurse') { g.fillStyle = hair; g.fillRect(10, 2.4, 12, 4); g.fillRect(8.6, 5, 3, 7); g.fillRect(20.4, 5, 3, 7); g.fillStyle = '#fff'; g.fillRect(13, 2, 6, 1.6); }
+      else { g.fillStyle = hair; g.fillRect(11, 5.4, 10, 2.6); g.fillRect(12, 8.6, 8, 1.4); }
+      rrect(g, 5, 21, 22, 8, 2, null, 'rgba(0,0,0,.55)');
+      break;
+    }
     case 'sigil': {   // pedra de invocação dos chefes novos: disco escuro com runa luminosa (única por chefe)
       const n = spec[2] || 0; glowDot(g, 16, 16, 15, col, .5); circ(g, 16, 16, 12, '#14121c', dk, 1.4); circ(g, 16, 16, 9.5, '#262035', null);
       const k = 4 + n % 3, pts = []; for (let i = 0; i < k; i++) { const a = hash2(n, i, 3) * TAU, r = 3 + hash2(n, i, 4) * 6; pts.push([16 + Math.cos(a) * r, 16 + Math.sin(a) * r]); }

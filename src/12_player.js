@@ -25,6 +25,7 @@ function invCanAdd(id, n) {
 }
 function invAdd(id, n, meta) {
   const P = G.P, sm = stackMax(id);
+  achSee(id); if (id === 'coin') achStat('coins', n);   /* conquistas: histórico de itens e moedas ganhas */
   if (sm > 1) for (const s of P.inv) { if (s && s.id === id && s.n < sm) { const k = Math.min(n, sm - s.n); s.n += k; n -= k; if (n <= 0) break; } }
   while (n > 0) {
     const i = P.inv.indexOf(null); if (i < 0) break;
@@ -63,6 +64,7 @@ function doCraft(r) {
   if (!free) for (const k in r.ing) invRemove(k, r.ing[k]);
   const left = invAdd(r.out, r.n);
   if (left > 0) dropItem(r.out, left, G.P.x, G.P.y);
+  achStat('crafted', 1); if (r.st === 'forge') achStat('forge', 1);
   sfx('craft'); return true;
 }
 
@@ -107,6 +109,7 @@ function breakTile(x, y, byPlayer) {
   if (d.unb) return false;
   if (id === T.chest) { const ch = wd.chests.get(wd.idx(x, y)); if (ch && ch.some(s => s)) { toast('Esvazie o baú primeiro.', '#fbbf24'); return false; } wd.chests.delete(wd.idx(x, y)); }
   let drop = null, wood = 0;
+  if (byPlayer) achStat('mined', 1);
   if (id === T.trunk) { wood = wd.fellTree(x, y); dropItem('wood', wood, x * TS + 4, y * TS); sfx('break'); tileBits(x, y, id); return true; }
   if (d.door) { const [a, b] = wd.doorColumn(x, y); for (let yy = a; yy <= b; yy++) wd.set(x, yy, 0, true); dropItem('door', 1, x * TS + 4, y * TS + 4); wd.checkSupport(x, a - 1); sfx('break'); tileBits(x, y, id); return true; }
   drop = tileDropFor(id, x, y);
@@ -145,12 +148,12 @@ function placeTile(tx, ty, itemId) {
     if (!canPlaceTile(tx, ty, it.tile)) return false;
     if (it.tile === T.doorC) { for (let k = 0; k < 3; k++) wd.set(tx, ty - k, T.doorC, true); wd.checkSupport(tx, ty); }
     else { const cur = wd.get(tx, ty); if (cur) { onWorldBreak(tx, ty, cur); } wd.set(tx, ty, it.tile); }
-    sfx('place'); return true;
+    sfx('place'); achStat('placed', 1); return true;
   }
   if (it.type === 'wall') {
     if (wd.wallAt(tx, ty) === it.wall) return false; if (wd.get(tx, ty) && SOLID[wd.get(tx, ty)]) return false;
     const adj = wd.wallAt(tx - 1, ty) || wd.wallAt(tx + 1, ty) || wd.wallAt(tx, ty - 1) || wd.wallAt(tx, ty + 1) || SOLID[wd.get(tx - 1, ty)] || SOLID[wd.get(tx + 1, ty)] || SOLID[wd.get(tx, ty - 1)] || SOLID[wd.get(tx, ty + 1)];
-    if (!adj) return false; wd.setWall(tx, ty, it.wall); sfx('place'); return true;
+    if (!adj) return false; wd.setWall(tx, ty, it.wall); sfx('place'); achStat('placed', 1); return true;
   }
   return false;
 }
@@ -199,6 +202,10 @@ function useConsumable(P, s, it) {
   if (it.use === 'heal') { if (P.buffs.curse) { toast('Maldição: você não consegue se curar!', '#c084fc'); return; } if (P.potionCd > 0) { toast('Poção em recarga (' + Math.ceil(P.potionCd) + 's)', '#fbbf24'); return; } if (P.hp >= P.maxHp) return; gearCall('onPotion', P); healPlayer(it.heal); P.potionCd = creative ? 2 : 30 * (1 - (P.stats.cdr || 0)); sfx('heal'); burst(P.x + P.w / 2, P.y + P.h / 2, 14, { col: ['#4ade80', '#bbf7d0'], spd: 90, g: -60, glow: true, life: .6 }); consume(); }
   else if (it.use === 'life') { if (P.crystals >= 15) { toast('Vida máxima já no limite.', '#fbbf24'); return; } P.crystals++; recalcStats(); P.hp = P.maxHp; sfx('heal'); toast('Vida máxima aumentada! (' + P.maxHp + ')', '#f472b6'); consume(); }
   else if (it.use.startsWith('boss_')) { if (summonBoss(it.use.slice(5))) consume(); }
+  else if (it.use.startsWith('npc:')) {   /* itens de invocar NPC: exclusivos do Modo Criativo */
+    if (G.mode !== 'creative') { toast('"' + it.n + '" só funciona no Modo Criativo.', '#fbbf24', 4); sfx('tick'); return; }
+    summonNpcItem(it.use.slice(4));
+  }
 }
 
 // ---------- atualização do jogador ----------
@@ -301,7 +308,7 @@ function interact(P) {
   const n = nearestNpcAt(m.wx, m.wy); if (n) openNpc(n);
 }
 function killPlayer() {
-  const P = G.P; if (P.dead) return; P.dead = true; P.hp = 0; P.respawnT = G.mode === 'creative' ? .6 : 4;
+  const P = G.P; if (P.dead) return; P.dead = true; P.hp = 0; P.respawnT = G.mode === 'creative' ? .6 : 4; achStat('deaths', 1);
   burst(P.x + P.w / 2, P.y + P.h / 2, 30, { col: ['#c0392b', '#e74c3c', '#f2c28b'], spd: 220, g: 500, life: .9, size: 3.4 });
   sfx('boom', .6); shake(10);
   for (const inst of P.cb.inst) inst.dead = true; P.cb.inst.length = 0;

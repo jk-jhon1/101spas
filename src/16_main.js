@@ -33,8 +33,8 @@ window.addEventListener('keydown', e => {
   Snd.init();
   if (G.state === 'play' && GAMEKEYS.has(e.code)) e.preventDefault();
   if (KEYS[e.code] && e.repeat) return; KEYS[e.code] = true;
-  if (G.state !== 'play') { if (e.code === 'Escape') { if (!$('help').classList.contains('hidden')) showHelp(false); else openWorlds(false); } return; }
-  if (e.code === 'Escape') { if (!$('help').classList.contains('hidden')) showHelp(false); else if (G.ui.open) closePanels(); else if (G.paused) setPause(false); else setPause(true); return; }
+  if (G.state !== 'play') { if (e.code === 'Escape') { if (achOpen()) showAch(false); else if (!$('help').classList.contains('hidden')) showHelp(false); else openWorlds(false); } return; }
+  if (e.code === 'Escape') { if (achOpen()) showAch(false); else if (!$('help').classList.contains('hidden')) showHelp(false); else if (G.ui.open) closePanels(); else if (G.paused) setPause(false); else setPause(true); return; }
   if (G.paused) return;
   const P = G.P;
   if (e.code === 'KeyE' || e.code === 'Tab') { if (G.ui.open === 'inv') closePanels(); else if (!P.dead) openPanel('inv'); }
@@ -54,12 +54,13 @@ window.addEventListener('mousemove', e => { G.mouse.sx = e.clientX; G.mouse.sy =
 window.addEventListener('contextmenu', e => e.preventDefault());
 window.addEventListener('wheel', e => { if (G.state !== 'play' || G.paused || G.ui.open) return; const P = G.P; P.sel = (P.sel + (e.deltaY > 0 ? 1 : 9)) % 10; G.invChanged = true; e.preventDefault(); }, { passive: false });
 window.addEventListener('resize', resize);
-function setPause(p) { G.paused = p; $('pause-world').textContent = G.worldName || ''; $('pause').classList.toggle('hidden', !p); G.mouse.down = [false, false, false]; if (p) closePanels(true); setBlocking(); G.ui.blocking = G.ui.blocking || p; }
+function setPause(p) { G.paused = p; $('pause-world').textContent = G.worldName || ''; $('pause').classList.toggle('hidden', !p); G.mouse.down = [false, false, false]; if (p) closePanels(true); else showAch(false); setBlocking(); G.ui.blocking = G.ui.blocking || p; }
 
 // ---------- geração assíncrona + início ----------
 function resetGameState(mode) {
   G.mode = mode; G.enemies = []; G.projs = []; G.drops = []; G.parts = []; G.texts = []; G.boss = null; G.bxs = null; G.flags = { slime: false, eye: false, guardian: false, colossus: false }; G.stage = 0; G.time = .1; G.day = 1; G.t = 0;
   G.freeze = 0; G.dark = 0; G.flash = null; G.hitStop = 0; G.kills = 0; G.opts = { god: false, noSpawn: false, showDps: false, freeCraft: false }; G.dpsLog = []; G.held = null; G.chestSlots = null; G.chestPos = null; G.paused = false; G.zoomAdj = 0; G.npcs = []; G.rooms = []; G.npcScanT = 3; G.npcSpawnT = 8; G.autoSaveT = 60;
+  { const a = achS(); if (!a.st.modes) a.st.modes = {}; a.st.modes[mode] = 1; }   /* conquista dos dois modos (novo mundo ou mundo aberto) */
 }
 function startGame(opts) {
   opts = opts || {}; Snd.init();
@@ -87,7 +88,13 @@ function finishLoad(sv) {
   if (sv) {
     G.time = sv.time; G.day = sv.day; G.t = sv.t || 0; G.stage = sv.stage; G.flags = sv.flags; G.kills = sv.kills || 0; Object.assign(G.opts, sv.opts || {});
     P.x = sv.P.x; P.y = sv.P.y; P.crystals = sv.P.crystals; P.inv = sv.P.inv; P.equip = normalizeEquip(sv.P.equip); P.sel = sv.P.sel || 0;
-    for (const nd of sv.npcs || []) { const rm = { id: nd.home, cx: +nd.home.split(',')[0], cy: +nd.home.split(',')[1], minx: +nd.home.split(',')[0] - 3, maxx: +nd.home.split(',')[0] + 3 }; const n = spawnNpcQuiet(nd.type, rm); n.x = nd.x; n.y = nd.y; }
+    for (const nd of sv.npcs || []) {
+      const free = nd.free === true || nd.home === 'free', pp = String(nd.home).split(',');
+      const cx = +pp[0] || Math.floor(nd.x / TS), cy = +pp[1] || Math.floor(nd.y / TS);
+      const rm = { id: nd.home, cx, cy, minx: cx - 3, maxx: cx + 3 };
+      const n = spawnNpcQuiet(nd.type, rm); n.x = nd.x; n.y = nd.y;
+      if (free) { n.free = true; n.room = null; n.homeX = n.x; n.target = n.x; n.home = 'free'; }
+    }
   } else if (G.mode === 'creative') { G.opts.god = false; give('pick_celestial'); give('s001'); give('s062'); give('s100'); give('s120'); give('s021'); give('s055'); give('torch', 99); give('potion3', 20); give('stone', 999); give('plank', 999); give('bench'); give('chest'); P.crystals = 15; }
   else { give('s001'); give('pick_copper'); give('torch', 12); give('potion1', 3); }
   G.invChanged = true; recalcStats(); P.hp = sv ? Math.min(sv.P.hp, P.maxHp) : P.maxHp; if (!sv) P.sel = 0;
@@ -115,6 +122,7 @@ function step(dt) {
   updatePlayer(dt); updateNpcs(dt); updateEnemies(dt); bxUpdate(dt); updateProjs(dt); updateDrops(dt); updateParts(dt); updateTexts(dt);
   _liqT -= dt; if (_liqT <= 0) { _liqT = .05; wd.stepLiquids(2200); } _fallT -= dt; if (_fallT <= 0) { _fallT = .08; wd.stepFalling(160); }
   spawnTick(dt);
+  achTick(dt);   /* conquistas: distância, camadas, biomas, profundidade e checagem a cada 0,6 s */
   G.autoSaveT -= dt; if (G.autoSaveT <= 0) { G.autoSaveT = 60; Worlds.save({ silent: true }); }   // autosave a cada minuto
   // câmera
   const c = G.cam, vw = c.w / c.zoom, vh = c.h / c.zoom, m = G.mouse;
@@ -261,6 +269,9 @@ function frame(now) {
 function initGame() {
   initUI(); resize(); G.state = 'title'; initSky(11); initTouch();
   $('btn-help').onclick = () => showHelp(true); initWorldsUI();   // botões do título, mundos salvos e autosave (15e_worlds.js)
+  achLoad();   // conquistas do jogador (guarda o progresso entre mundos)
+  $('btn-ach').onclick = () => showAch(true); $('p-ach').onclick = () => showAch(true);   // as duas entradas exigidas: menu e pausa
+  achLabels();
   $('p-resume').onclick = () => setPause(false); $('p-help').onclick = () => showHelp(true);
   $('p-sound').onclick = () => { Snd.mute(!Snd.muted); $('p-sound').textContent = 'Som: ' + (Snd.muted ? 'desligado' : 'ligado'); };
   requestAnimationFrame(frame);

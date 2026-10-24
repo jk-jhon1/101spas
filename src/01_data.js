@@ -187,6 +187,13 @@ item('summon_slime', 'Coroa de Gosma', { type: 'use', tier: 1, stack: 20, ic: ['
 item('summon_eye', 'Lente Suspeita', { type: 'use', tier: 2, stack: 20, ic: ['summon', 'eye', '#f87171'], use: 'boss_eye', desc: 'Invoca o Olho Colossal (somente à noite).' });
 item('summon_guardian', 'Boneco Infernal', { type: 'use', tier: 2, stack: 20, ic: ['summon', 'imp', '#fb923c'], use: 'boss_guardian', desc: 'Invoca o Guardião do Abismo (somente no Inferno). Derrotá-lo inicia o Hardmode.' });
 item('summon_colossus', 'Coração Estelar', { type: 'use', tier: 5, stack: 20, ic: ['summon', 'star', '#fbbf24'], use: 'boss_colossus', desc: 'Invoca o Colosso Estelar (chefe final).' });
+// ---- Itens de invocar NPC (exclusivos do Modo Criativo) ----
+// No Criativo, o Arsenal entrega qualquer item: estes quatro chamam o Guia, o Mercador, a Enfermeira e o Armeiro
+// para o seu lado, sem precisar de casa válida. No modo Aventura eles existem, mas não fazem nada.
+item('npc_guide', 'Sino do Guia', { type: 'use', tier: 6, stack: 5, creativeOnly: true, ic: ['npcp', 'guide', '#2f9a3a', '#7a4a22'], use: 'npc:guide', desc: 'Invoca o Guia ao seu lado. Só funciona no modo Criativo.' });
+item('npc_trader', 'Baú do Mercador', { type: 'use', tier: 6, stack: 5, creativeOnly: true, ic: ['npcp', 'trader', '#7c3aed', '#2a2a2a'], use: 'npc:trader', desc: 'Invoca o Mercador ao seu lado. Só funciona no modo Criativo.' });
+item('npc_nurse', 'Maleta da Enfermeira', { type: 'use', tier: 6, stack: 5, creativeOnly: true, ic: ['npcp', 'nurse', '#f8fafc', '#f5c16c'], use: 'npc:nurse', desc: 'Invoca a Enfermeira ao seu lado. Só funciona no modo Criativo.' });
+item('npc_smith', 'Martelo do Armeiro', { type: 'use', tier: 6, stack: 5, creativeOnly: true, ic: ['npcp', 'smith', '#8a5c2c', '#6b4a2a'], use: 'npc:smith', desc: 'Invoca o Armeiro ao seu lado. Só funciona no modo Criativo.' });
 // picaretas: pow = poder, spd = velocidade de mineração
 const PICKS = [
   ['pick_copper', 'Picareta de Cobre', 1, 1.0, '#d9772f', 1], ['pick_iron', 'Picareta de Ferro', 2, 1.35, '#c9b8a8', 1], ['pick_gold', 'Picareta de Ouro', 3, 1.7, '#f6c93a', 1],

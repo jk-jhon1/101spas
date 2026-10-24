@@ -27,6 +27,7 @@ function bx(id, d) {
   if (d.sword && IT[d.sword] && IT[d.sword].sw) {   /* Tier 9/10: a espada não se forja, cai só do chefe */
     const sw = IT[d.sword].sw; if (sw.tierLevel >= 9) { const k = RECIPES.findIndex(r => r.out === sw.id); if (k >= 0) RECIPES.splice(k, 1); sw.dropOnly = true; }
     if (sw.dropOnly) { sw.dropFrom = id; sw.dropFromName = d.n; }
+    if (id === 'axioma') sw.sealedAll = true;   /* a espada 190 só cai com todos os chefes derrotados (bxLoot) */
   }
   const cond = d.cond ? ' Condição: ' + bxCondText(d) + '.' : '';
   item('sg_' + id, 'Sigilo: ' + (d.sigil || d.n), { type: 'use', tier: d.act + 1, stack: 20, ic: ['sigil', d.acc, d.i], use: 'boss_x:' + id, desc: 'Invoca ' + d.n + '.' + cond + ' Mecânica: ' + d.mech });
@@ -298,15 +299,26 @@ function bxLoot(e) {
   const rain = (id, n) => { for (let i = 0; i < n; i += Math.max(1, Math.ceil(n / 8))) dropItem(id, Math.min(Math.ceil(n / 8) || 1, n - i), x + rnd(-30, 30), y + rnd(-20, 10), rnd(-120, 120), rnd(-300, -150)); };
   rain('coin', rndi(d.coin[0], d.coin[1]));
   for (const [id, a, b] of A.mat) { const n = rndi(a, b); rain(id, n); }
-  if (d.sword) dropItem(d.sword, 1, x, y);
+  if (d.sword && d.id === 'axioma') {
+    // Axioma é o guardião da última espada: ela só cai quando todos os chefes do jogo já caíram.
+    // (o Axioma ainda não tem a bandeira marcada neste instante — ele conta como o que está morrendo agora)
+    const miss = bossesLeft() - 1;
+    if (miss > 0) toast('A espada ' + (IT[d.sword] ? IT[d.sword].n : d.sword) + ' não cai ainda: faltam ' + miss + (miss === 1 ? ' chefe' : ' chefes') + ' para derrotar no jogo.', '#fbbf24', 8);
+    else dropItem(d.sword, 1, x, y);
+  } else if (d.sword) dropItem(d.sword, 1, x, y);
   gearBossDrop(d, dropItem, x, y);   /* acessório exclusivo do chefe (11c_gear_x.js) */
   if (d.i % 3 === 0) dropItem('life_crystal', 1, x + 8, y);
   dropItem(A.pot, 2 + d.act, x - 10, y);
   if (d.loot) d.loot(e, rain);
 }
 function bxDefeated(e) {
-  const d = e.d.bx; G.flags[d.id] = true; bxCleanup(e);
-  toast(d.n + ' foi derrotado!' + (d.sword ? ' Espada: ' + (IT[d.sword] ? IT[d.sword].n : d.sword) + '.' : ''), d.acc, 6);
+  const d = e.d.bx; G.flags[d.id] = true; bxCleanup(e); achBoss();
+  const sw = d.sword && IT[d.sword] ? IT[d.sword].n : null;
+  const swTxt = !sw ? '' : (d.id === 'axioma' && bossesLeft() > 0) ? ' A espada ' + sw + ' continua selada: faltam ' + bossesLeft() + ' chefes.' : ' Espada: ' + sw + '.';
+  toast(d.n + ' foi derrotado!' + swTxt, d.acc, 6);
   if (d.death) d.death(e);
 }
 function bxDefeatedCount() { let n = 0; for (const d of BXLIST) if (G.flags && G.flags[d.id]) n++; return n; }
+// Quantos chefes do jogo ainda faltam (os 4 clássicos + os 90 novos). O Axioma usa isto: a espada 190 só cai depois de todos.
+const CLASSIC_KEYS = ['slime', 'eye', 'guardian', 'colossus'];
+function bossesLeft() { let n = BXLIST.length + CLASSIC_KEYS.length; for (const d of BXLIST) if (G.flags && G.flags[d.id]) n--; for (const k of CLASSIC_KEYS) if (G.flags && G.flags[k]) n--; return n; }

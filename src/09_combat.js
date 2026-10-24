@@ -106,6 +106,7 @@ function hitEnemy(e, h) {
   if (st.exec && !e.boss && e.hpMax && e.hp / e.hpMax < st.exec) dmg *= 1.5;   /* execução (armaduras/acessórios) */
   const bxh = e.bxh; if (bxh && bxh.hurt) { dmg = bxh.hurt(e.ai.x, e, dmg, h); if (!(dmg > 0)) { addText(ecx(e), e.y - 4, 'Imune', '#94a3b8', 12, .6); sfx('hit'); return { dmg: 0, crit: false, e, killed: false }; } }   /* chefes novos: mecânica própria de dano */
   dmg = Math.max(1, Math.round(dmg));
+  achMax('hit', dmg);   /* conquistas: maior golpe */
   e.hp -= dmg; e.hurtT = .12; e.flash = .1; e.lastHit = G.t; if (bxh && bxh.after) bxh.after(e.ai.x, e, dmg, h);
   if (e.isDummy) { e.hp = e.hpMax; } if (G.opts.showDps || e.isDummy) dpsPush(dmg, e);
   // números
@@ -143,7 +144,7 @@ function killEnemy(e, h) {
     if (h && h.sword && !h.noHooks) fxCall(h.sword, 'onKill', P, e, h);
     if (!(h && h.gear)) gearCall('onKill', P, e, h);
     rollDrops(e, h);
-    G.kills = (G.kills || 0) + 1;
+    G.kills = (G.kills || 0) + 1; achKill(e);
   }
   if (e.boss) bossDefeated(e);
 }

@@ -83,7 +83,7 @@ function tipHTML(id, o) {
   if (it.type === 'sword') {
     const sw = it.sw, dps = (sw.baseDamage * sw.attackSpeed).toFixed(0), cc = Math.round(sw.critChance * 100), P = G.P;
     h += `<div class="ts">${TYPE_PT.sword} · ${T_.n} · #${String(sw.num).padStart(3, '0')}</div><div class="st2"><span>Dano</span><b>${sw.baseDamage}${P && P.stats.dmg ? ' <span style="color:#86efac">(+' + P.stats.dmg + ')</span>' : ''}</b><span>Velocidade</span><b>${sw.attackSpeed} golpes/s</b><span>Repulsão</span><b>${sw.knockbackForce}</b><span>Crítico</span><b>${cc}%</b><span>DPS base</span><b>≈ ${dps}</b><span>Ataque</span><b>${{ ArcSwing: 'Arco', Thrust: 'Estocada', Beam: 'Feixe', Orbital: 'Orbital' }[sw.attackType]}</b></div><div class="mech">${escHtml(sw.txt)}</div>`;
-    if (sw.dropFromName) h += `<div class="rcp" style="color:#fbbf24">Não se forja: cai do chefe <b>${escHtml(sw.dropFromName)}</b>. Invoque-o com o sigilo.</div>`;
+    if (sw.dropFromName) h += `<div class="rcp" style="color:#fbbf24">Não se forja: cai do chefe <b>${escHtml(sw.dropFromName)}</b>. Invoque-o com o sigilo.` + (sw.sealedAll ? '<br><b>SELADA:</b> só cai depois de derrotar <b>todos os chefes do jogo</b> (os 4 clássicos e os 90 novos).' : '') + `</div>`;
     if (!(o && o.noRecipe)) { const rt = recipeText(id); if (rt) h += `<div class="rcp">${rt}</div>`; }
   } else {
     h += `<div class="ts">${TYPE_PT[it.type] || ''}${it.tier ? ' · ' + T_.n : ''}</div>`;
@@ -193,7 +193,7 @@ function openPanel(name) {
   closePanels(true); G.ui.open = name; setBlocking();
   if (name === 'inv') { $('panel-inv').classList.remove('hidden'); G.ui.craftDirty = true; refreshInvUI(); }
   else if (name === 'arsenal') { $('panel-arsenal').classList.remove('hidden'); renderArsenal(); }
-  else if (name === 'map') { $('panel-map').classList.remove('hidden'); drawBigMap(); }
+  else if (name === 'map') { $('panel-map').classList.remove('hidden'); drawBigMap(); achStat('map'); }
   else if (name === 'npc') $('npc-panel').classList.remove('hidden');
   sfx('tick');
 }
@@ -204,7 +204,7 @@ function closePanels(silent) {
   ['panel-inv', 'panel-arsenal', 'panel-map', 'npc-panel'].forEach(id => { const e = $(id); if (e) e.classList.add('hidden'); });
   G.ui.open = null; setBlocking(); hideTip(); G.invChanged = true;
 }
-function openChest(tx, ty) { const wd = G.world, k = wd.idx(tx, ty); let c = wd.chests.get(k); if (!c) { c = new Array(20).fill(null); wd.chests.set(k, c); } G.chestSlots = c; G.chestPos = k; openPanel('inv'); G.chestSlots = c; G.chestPos = k; refreshInvUI(); sfx('door'); }
+function openChest(tx, ty) { const wd = G.world, k = wd.idx(tx, ty); let c = wd.chests.get(k); if (!c) { c = new Array(20).fill(null); wd.chests.set(k, c); achStat('chests'); } G.chestSlots = c; G.chestPos = k; openPanel('inv'); G.chestSlots = c; G.chestPos = k; refreshInvUI(); sfx('door'); }
 // ---------- Arsenal / Catálogo ----------
 const ARS_TABS = [['T1', 'Tier 1'], ['T2', 'Tier 2'], ['T3', 'Tier 3'], ['T4', 'Tier 4'], ['T5', 'Tier 5'], ['T6', 'Tier 6'], ['T7', 'Tier 7'], ['T8', 'Tier 8'], ['T9', 'Tier 9'], ['T10', 'Tier 10'], ['ALL', 'Todas'], ['items', 'Itens'], ['enemies', 'Inimigos & Chefes'], ['world', 'Mundo']];
 function arsGive(id, n) { const left = invAdd(id, n || 1); if (left) dropItem(id, left, G.P.x, G.P.y); sfx('pickup'); G.ui.craftDirty = true; }
@@ -233,7 +233,7 @@ function renderArsenal() {
   } else if (tab === 'world') {
     const P = G.P, row = (title, btns) => { const s = document.createElement('div'); s.className = 'sect'; s.textContent = title; body.appendChild(s); const r = document.createElement('div'); r.className = 'bar-row'; btns.forEach(([n, f, on]) => { const b = document.createElement('button'); b.className = 'btn' + (on ? ' on' : ''); b.textContent = n; b.onclick = () => { f(b); sfx('tick'); renderArsenal(); }; r.appendChild(b); }); body.appendChild(r); };
     row('Hora do dia', [['Amanhecer', () => G.time = .05], ['Meio-dia', () => G.time = .3], ['Entardecer', () => G.time = .58], ['Meia-noite', () => G.time = .82]]);
-    row('Opções de teste', [['Invencível', () => G.opts.god = !G.opts.god, G.opts.god], ['Sem spawn de inimigos', () => G.opts.noSpawn = !G.opts.noSpawn, G.opts.noSpawn], ['Criação grátis', () => G.opts.freeCraft = !G.opts.freeCraft, G.opts.freeCraft]]);
+    row('Opções de teste', [['Invencível', () => { G.opts.god = !G.opts.god; if (G.opts.god) achStat('god'); }, G.opts.god], ['Sem spawn de inimigos', () => G.opts.noSpawn = !G.opts.noSpawn, G.opts.noSpawn], ['Criação grátis', () => G.opts.freeCraft = !G.opts.freeCraft, G.opts.freeCraft]]);
     row('Ações', [['Curar tudo', () => { P.hp = P.maxHp; }], ['Remover inimigos', () => { G.enemies.length = 0; G.projs = G.projs.filter(p => p.friendly); G.boss = null; }], ['+500 moedas', () => arsGive('coin', 500)], ['+4 Cristais de Vida', () => { P.crystals = Math.min(15, P.crystals + 4); recalcStats(); P.hp = P.maxHp; }]]);
     row('Progressão do mundo (estágio dos inimigos)', [['Estágio 0 · Início', () => { G.stage = 0; }, G.stage === 0], ['Estágio 1 · Pós-Olho', () => { G.stage = 1; G.flags.eye = true; }, G.stage === 1], ['Estágio 2 · Hardmode', () => { if (!G.world.hardmode) spawnHardmodeOres(G.world); G.stage = 2; G.flags.eye = G.flags.guardian = true; toast('Hardmode ativado: minérios T3/T4 gerados.', '#fb923c'); }, G.stage === 2], ['Estágio 3 · Pós-Colosso', () => { if (!G.world.hardmode) spawnHardmodeOres(G.world); G.stage = 3; G.flags.guardian = true; }, G.stage === 3]]);
     const tp = (x, y) => () => { P.x = x * TS; P.y = (y - 3) * TS; P.vx = P.vy = 0; P.fallStart = 0; closePanels(); }; const sf = x => G.world.surf[x];
