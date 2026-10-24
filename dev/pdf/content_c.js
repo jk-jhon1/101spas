@@ -77,7 +77,7 @@ function part3b(doc) {
   doc.fileCard({
     name: 'src/11_swords.js', lines: 157, tag: 'Conteúdo', role: 'Catálogo das 120 primeiras espadas', color: COL.play,
     summary: 'A fábrica `S(...)` monta o objeto `SwordItemSO` de cada espada: atributos, arte, efeitos, receita e os métodos OnSwing/OnHitEnemy.',
-    what: 'Cada chamada `S(num, nome, dano, velocidade, knockback, look, efeitos, texto, receita)` cria uma espada com id (`s001`…`s120`), tier calculado por `ceil(num/20)`, crítico padrão do tier e receita associada. Os textos dos tiers 1, 3 e 5 vêm do GDD; os tiers 2, 4 e 6 foram criados porque o PDF original estava truncado.',
+    what: 'Cada chamada `S(num, nome, dano, velocidade, knockback, look, efeitos, texto, receita)` cria uma espada com id (`s001`…`s120`), tier calculado por `ceil(num/20)`, crítico padrão do tier e receita associada. Os textos dos tiers 1, 3 e 5 vêm do GDD; os tiers 2, 4 e 6 completam o catálogo seguindo as regras de cada tier.',
     how: [
       '`DEF_CRIT` e `TIER_STATION` definem crítico e estação padrão por tier (tiers 7–10 estendidos aqui).',
       'Os métodos `OnSwing`/`OnHitEnemy` existem para cumprir o contrato do schema e delegam aos ganchos.',

@@ -89,7 +89,6 @@ button{font:inherit;cursor:pointer}
 .ars-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:5px}
 .ars-grid .slot{width:100%;height:52px}.ars-grid .slot .ic{width:44px;height:44px}
 .ars-grid .slot .num{position:absolute;left:3px;top:1px;font-size:9px;color:#cbd5f5;opacity:.75}
-.ars-grid .slot.novo::after{content:"★";position:absolute;right:3px;top:0;font-size:10px;color:#fbbf24}
 .bar-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
 .btn{padding:7px 14px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid var(--line);color:var(--txt);font-size:13px;font-weight:600;pointer-events:auto}
 .btn:hover{background:rgba(255,255,255,.2)}.btn.pri{background:var(--acc);color:#1b1305;border-color:var(--acc)}.btn.pri:hover{filter:brightness(1.08);background:var(--acc)}.btn.on{background:#16a34a;border-color:#16a34a}
@@ -102,8 +101,6 @@ button{font:inherit;cursor:pointer}
 #tooltip .st2 b{color:#fff}
 #tooltip .mech{color:#dfe7ff;margin-top:4px;font-style:italic}
 #tooltip .rcp{margin-top:6px;padding-top:6px;border-top:1px solid var(--line);color:var(--mut);font-size:11.5px}
-#tooltip .tag{display:inline-block;margin-top:6px;padding:1px 7px;border-radius:9px;font-size:10px;background:rgba(251,191,36,.18);color:var(--acc)}
-#tooltip .tag.pdf{background:rgba(16,185,129,.18);color:#6ee7b7}
 #cursor-item{position:fixed;z-index:70;width:44px;height:44px;pointer-events:none}
 #cursor-item .ic{width:44px;height:44px}#cursor-item .cnt{position:absolute;right:0;bottom:-2px;font-size:12px;font-weight:700;text-shadow:0 0 3px #000}
 /* ---------- telas ---------- */
@@ -5434,8 +5431,8 @@ function breakHeldSword() { // 005: 5% de chance de quebrar (reembolsa metade do
 /* ============================================================
    11_swords: CATÁLOGO MESTRE — 120 espadas (schema SwordItemSO)
    Tiers 1, 3 e 5: textos originais do GDD (src:'pdf').
-   Tiers 2, 4 e 6: o PDF veio truncado -> criadas seguindo as
-   regras de cada tier (src:'novo').
+   Tiers 2, 4 e 6: completadas seguindo as regras de cada tier
+   (src:'novo').
    Campos: swordID, swordName, tierLevel, baseDamage, attackSpeed,
    knockbackForce, critChance, projectilePrefab, attackType,
    passiveEffects[], OnSwing(combat, dir), OnHitEnemy(enemy, info)
@@ -8291,7 +8288,6 @@ function tipHTML(id, o) {
   if (it.type === 'sword') {
     const sw = it.sw, dps = (sw.baseDamage * sw.attackSpeed).toFixed(0), cc = Math.round(sw.critChance * 100), P = G.P;
     h += `<div class="ts">${TYPE_PT.sword} · ${T_.n} · #${String(sw.num).padStart(3, '0')}</div><div class="st2"><span>Dano</span><b>${sw.baseDamage}${P && P.stats.dmg ? ' <span style="color:#86efac">(+' + P.stats.dmg + ')</span>' : ''}</b><span>Velocidade</span><b>${sw.attackSpeed} golpes/s</b><span>Repulsão</span><b>${sw.knockbackForce}</b><span>Crítico</span><b>${cc}%</b><span>DPS base</span><b>≈ ${dps}</b><span>Ataque</span><b>${{ ArcSwing: 'Arco', Thrust: 'Estocada', Beam: 'Feixe', Orbital: 'Orbital' }[sw.attackType]}</b></div><div class="mech">${escHtml(sw.txt)}</div>`;
-    h += `<span class="tag ${sw.src === 'pdf' ? 'pdf' : ''}">${sw.src === 'pdf' ? 'Do GDD (PDF)' : '★ Criada para completar o GDD (PDF truncado)'}</span>`;
     if (!(o && o.noRecipe)) { const rt = recipeText(id); if (rt) h += `<div class="rcp">${rt}</div>`; }
   } else {
     h += `<div class="ts">${TYPE_PT[it.type] || ''}${it.tier ? ' · ' + T_.n : ''}</div>`;
@@ -8415,12 +8411,12 @@ function renderArsenal() {
   if (!avail.some(t => t[0] === G.ui.arsTab)) G.ui.arsTab = 'T1';
   avail.forEach(([k, n]) => { const t = document.createElement('div'); t.className = 'tab' + (G.ui.arsTab === k ? ' on' : ''); t.textContent = n; if (/^T\d+$/.test(k)) t.style.borderColor = TIERS[+k.slice(1)].col; t.onclick = () => { G.ui.arsTab = k; renderArsenal(); }; tabs.appendChild(t); });
   const body = $('ars-body'), tab = G.ui.arsTab; body.innerHTML = '';
-  const grid = (ids, withNum) => { const g = document.createElement('div'); g.className = 'ars-grid'; ids.forEach(id => { const it = IT[id], el = document.createElement('div'); el.className = 'slot t' + (it.tier || 0) + (it.type === 'sword' && it.sw.src === 'novo' ? ' novo' : ''); el.innerHTML = `<i class="ic ${iconClass(id)}"></i>` + (withNum && it.type === 'sword' ? `<span class="num">${String(it.sw.num).padStart(3, '0')}</span>` : ''); el.onmouseenter = ev => showTip(tipHTML(id), ev); el.onmousemove = moveTip; el.onmouseleave = hideTip; el.onmousedown = ev => { ev.preventDefault(); if (cre) arsGive(id, ev.shiftKey ? stackMax(id) > 1 ? 99 : 1 : 1); else toast(it.n + ': ' + (RECIPES.find(r => r.out === id) ? 'veja a receita no tooltip e construa no inventário (E).' : ''), tierCol(id)); }; g.appendChild(el); }); return g; };
+  const grid = (ids, withNum) => { const g = document.createElement('div'); g.className = 'ars-grid'; ids.forEach(id => { const it = IT[id], el = document.createElement('div'); el.className = 'slot t' + (it.tier || 0); el.innerHTML = `<i class="ic ${iconClass(id)}"></i>` + (withNum && it.type === 'sword' ? `<span class="num">${String(it.sw.num).padStart(3, '0')}</span>` : ''); el.onmouseenter = ev => showTip(tipHTML(id), ev); el.onmousemove = moveTip; el.onmouseleave = hideTip; el.onmousedown = ev => { ev.preventDefault(); if (cre) arsGive(id, ev.shiftKey ? stackMax(id) > 1 ? 99 : 1 : 1); else toast(it.n + ': ' + (RECIPES.find(r => r.out === id) ? 'veja a receita no tooltip e construa no inventário (E).' : ''), tierCol(id)); }; g.appendChild(el); }); return g; };
   if (/^T\d+$/.test(tab) || tab === 'ALL') {
     const swords = SWORDS.filter(s => tab === 'ALL' || s.tierLevel === +tab.slice(1));
-    if (/^T\d+$/.test(tab)) { const T_ = TIERS[+tab.slice(1)]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px 12px;border-left:4px solid ' + T_.col + ';background:rgba(255,255,255,.05);border-radius:6px;font-size:13px'; const sws = swords; d.innerHTML = `<b style="color:${T_.col}">${T_.n}</b> · multiplicador de dano ${T_.mult[0]}x–${T_.mult[1]}x · ${sws.length} espadas · dano ${Math.min(...sws.map(s => s.baseDamage))}–${Math.max(...sws.map(s => s.baseDamage))}<br><span style="color:var(--mut)">${T_.mech}</span>` + ((+tab.slice(1)) > 6 ? '<br><span style="color:#fbbf24">★ Tier novo (pós-jogo): 20 espadas inéditas, cada uma com arte pintada pixel a pixel e efeito próprio.</span>' : (+tab.slice(1)) % 2 === 0 ? '<br><span style="color:#fbbf24">★ Este tier estava truncado no PDF — as 20 espadas foram criadas seguindo as regras acima.</span>' : ''); body.appendChild(d); }
+    if (/^T\d+$/.test(tab)) { const T_ = TIERS[+tab.slice(1)]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px 12px;border-left:4px solid ' + T_.col + ';background:rgba(255,255,255,.05);border-radius:6px;font-size:13px'; const sws = swords; d.innerHTML = `<b style="color:${T_.col}">${T_.n}</b> · multiplicador de dano ${T_.mult[0]}x–${T_.mult[1]}x · ${sws.length} espadas · dano ${Math.min(...sws.map(s => s.baseDamage))}–${Math.max(...sws.map(s => s.baseDamage))}<br><span style="color:var(--mut)">${T_.mech}</span>` + ((+tab.slice(1)) > 6 ? '<br><span style="color:#fbbf24">Tier novo (pós-jogo): 20 espadas inéditas, cada uma com arte pintada pixel a pixel e efeito próprio.</span>' : ''); body.appendChild(d); }
     body.appendChild(grid(swords.map(s => s.id), true));
-    const note = document.createElement('div'); note.style.cssText = 'margin-top:10px;font-size:12px;color:var(--mut)'; note.textContent = cre ? 'Clique para pegar 1 espada · ★ = criada (não consta no PDF). Passe o mouse para ver detalhes e receita.' : 'Passe o mouse sobre uma espada para ver atributos, mecânica e receita. ★ = criada para completar o GDD.'; body.appendChild(note);
+    const note = document.createElement('div'); note.style.cssText = 'margin-top:10px;font-size:12px;color:var(--mut)'; note.textContent = cre ? 'Clique para pegar 1 espada. Passe o mouse para ver detalhes e receita.' : 'Passe o mouse sobre uma espada para ver atributos, mecânica e receita.'; body.appendChild(note);
   } else if (tab === 'items') {
     const groups = [['Blocos', i => i.type === 'block' || i.type === 'wall'], ['Materiais', i => i.type === 'mat'], ['Ferramentas', i => i.type === 'pick'], ['Armaduras', i => i.type === 'armor'], ['Acessórios', i => i.type === 'acc'], ['Consumíveis e Invocações', i => i.type === 'use']];
     for (const [n, f] of groups) { const s = document.createElement('div'); s.className = 'sect'; s.textContent = n; body.appendChild(s); body.appendChild(grid(Object.keys(IT).filter(id => IT[id].type !== 'sword' && f(IT[id])), false)); }
@@ -8501,7 +8497,7 @@ function helpHTML() {
 <li><b>Tier 2</b>: platina, meteorito (ilhas do céu), Brasita do Inferno, gemas. Derrote o <b>Rei Slime</b> e o <b>Olho Colossal</b> (noite).</li>
 <li><b>Tier 3/4 (Hardmode)</b>: vá ao Inferno, use o <b>Boneco Infernal</b> contra o Guardião do Abismo. Surgem Cobalto, Paládio, Mithril, Orichalcum, Titânio, Adamantita e inimigos elementais que dropam Essências.</li>
 <li><b>Tier 5/6</b>: Fragmentos Celestes → Forja Celeste. Invoque o <b>Colosso Estelar</b> e forje as espadas míticas com o Núcleo Mítico.</li></ol>
-<p style="color:var(--mut);margin-top:10px">As cores de raridade seguem o GDD: <b style="color:#10b981">T1</b> <b style="color:#0284c7">T2</b> <b style="color:#7c3aed">T3</b> <b style="color:#d97706">T4</b> <b style="color:#dc2626">T5</b> <b style="color:#818cf8">T6</b>. As espadas marcadas com ★ foram criadas para completar o catálogo (o PDF veio truncado).</p>
+<p style="color:var(--mut);margin-top:10px">Cores de raridade: <b style="color:#10b981">T1</b> <b style="color:#0284c7">T2</b> <b style="color:#7c3aed">T3</b> <b style="color:#d97706">T4</b> <b style="color:#dc2626">T5</b> <b style="color:#818cf8">T6</b>.</p>
 <div style="text-align:center;margin-top:12px"><button class="btn pri" id="help-close">Fechar</button></div>`;
 }
 function showHelp(show) { const h = $('help'); if (show) { $('help-box').innerHTML = helpHTML(); h.classList.remove('hidden'); $('help-close').onclick = () => showHelp(false); } else h.classList.add('hidden'); }
