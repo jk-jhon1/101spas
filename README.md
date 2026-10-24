@@ -8,7 +8,7 @@ documento **"GDD & MASTER PROMPT: SANDBOX 2D PLATFORMER"** (PDF enviado).
 > **Offline:** abra o arquivo **`index.html`** num navegador moderno (Chrome, Edge, Firefox, Safari). É um único
 > arquivo autocontido — sem instalação, sem internet, sem assets externos. Use teclado + mouse, um controle (gamepad) com mira analógica, ou **toque** (celular/tablet: direcional virtual e botão de ação com mira por arrasto).
 >
-> **Visual:** o jogo inteiro segue o estilo pixel-art do *Terraria mobile*: céu com nuvens e colinas de pixels, árvores com tronco de casca marcada, galhos e **copas redondas de folhas pontiagudas sobrepostas, com contorno escuro** (desenhadas por vizinhança em `05c_canopy.js`), tijolos chanfrados, paredes de toras, portas com almofadas, personagens de frente com dois olhos, cabelo, roupa e botas, itens e inimigos com contorno e luz vinda de cima à esquerda. Os **54 chefes** (os 4 originais e **50 novos**, cada um com visual e mecânica únicos) têm sprites próprios, pintados quadro a quadro (`05d_bosspaint.js`, `05e_bossart.js`, `05f..05j_bxart*.js`): corpo escuro e um brilho forte de uma cor para cada um (ciano, carmesim, brasa, ouro), com halo semitransparente que também soma luz no escuro, íris que acompanha o jogador, lanterna que balança e rachaduras que aparecem nas fases. A **interface** (painéis, abas, botões, balões, barra de itens na parte inferior, corações de pixel pequenos e controles de toque) é toda no **azul do Terraria mobile**. A cena é desenhada em baixa resolução (1 pixel do mundo = 1 pixel do canvas) e ampliada por um fator **inteiro** sem suavização, então os pixels ficam quadrados e nítidos em qualquer tela.
+> **Visual:** o jogo inteiro segue o estilo pixel-art do *Terraria mobile*: céu com nuvens e colinas de pixels, árvores com tronco de casca marcada, galhos e **copas redondas de folhas pontiagudas sobrepostas, com contorno escuro** (desenhadas por vizinhança em `05c_canopy.js`), tijolos chanfrados, paredes de toras, portas com almofadas, personagens de frente com dois olhos, cabelo, roupa e botas, itens e inimigos com contorno e luz vinda de cima à esquerda. Os **94 chefes** (os 4 originais e **90 novos**, cada um com visual e mecânica únicos) têm sprites próprios, pintados quadro a quadro (`05d_bosspaint.js`, `05e_bossart.js`, `05f..05l_bxart*.js`): corpo escuro e um brilho forte de uma cor para cada um (ciano, carmesim, brasa, ouro), com halo semitransparente que também soma luz no escuro, íris que acompanha o jogador, lanterna que balança e rachaduras que aparecem nas fases. A **interface** (painéis, abas, botões, balões, barra de itens na parte inferior, corações de pixel pequenos e controles de toque) é toda no **azul do Terraria mobile**. A cena é desenhada em baixa resolução (1 pixel do mundo = 1 pixel do canvas) e ampliada por um fator **inteiro** sem suavização, então os pixels ficam quadrados e nítidos em qualquer tela.
 
 ---
 
@@ -53,7 +53,7 @@ Catálogo do equipamento: [`docs/catalogo_equipamentos.md`](docs/catalogo_equipa
 
 ![Os 4 chefes no zoom do jogo: Rei Slime, Olho Colossal, Guardião do Abismo (fase 2) e Colosso Estelar (fase 3)](docs/img/12_chefes.png)
 
-![Os 50 chefes novos, em ordem de ato (Ato I a IV)](docs/img/13_chefes_novos.png)
+![Os 90 chefes novos, em ordem de ato (Ato I a VI)](docs/img/13_chefes_novos.png)
 
 ---
 
@@ -132,11 +132,11 @@ o navegador bloqueia a API (o jogo detecta isso e simplesmente ignora o controle
 **Modo Criativo:** Arsenal com todas as espadas/itens, Boneco de Treino (não morre e mostra o dano de cada golpe), invocação de qualquer
 inimigo/chefe (inclusive variantes elementais), controle de hora, teleporte, estágio do mundo, invencibilidade etc.
 
-### 50 chefes novos
-Além dos 4 chefes da progressão, há **50 chefes novos** em 4 atos (8 + 14 + 16 + 12), cada um com **visual próprio** e **uma mecânica única** (tabela completa, com vida, dano, receita e espada: [`docs/chefes_novos.md`](docs/chefes_novos.md)).
+### 90 chefes novos
+Além dos 4 chefes da progressão, há **90 chefes novos** em 6 atos (8 + 14 + 16 + 12 + 20 + 20), cada um com **visual próprio** e **uma mecânica única** (tabela completa, com vida, dano, receita e espada: [`docs/chefes_novos.md`](docs/chefes_novos.md)). Os dois últimos atos guardam os **Tiers 9 e 10**, que não são forjáveis: cada uma das 40 espadas cai do chefe que a protege.
 - **Como enfrentar:** no *Criativo*, Arsenal → *Inimigos & Chefes*. No modo *Aventura*, forje o **Sigilo** do chefe (receita na estação do ato: Bancada, Bigorna, Bigorna Avançada ou Forja Celeste) e use-o; alguns pedem local ou hora (selva, deserto, oceano, noite, cavernas, Inferno…) e cada ato só abre depois do chefe do ato anterior (Ato II depois do Olho, Ato III depois do Guardião, Ato IV depois do Colosso).
-- **Mecânicas únicas, em exemplos:** a *Rainha Vespa* cospe poças de mel que travam seus passos; o *Caranguejo-Rei* só fica vulnerável com as garras abertas; o *Rei Ossos* ressurge uma vez; a *Medusa* petrifica quem a olha de frente; a *Armadura Viva* só leva dano de verdade pelas costas; o *Dragão Adormecido* acorda a cada golpe que leva; o *Arauto do Vazio* inverte a gravidade; o *Titereiro* inverte seus comandos; e o *Mestre Forjador* aprende a resistir à espada que você mais usa.
-- **Recompensas:** moedas, materiais do ato, poções, às vezes um Cristal de Vida e **uma espada garantida** de cada chefe (as espadas continuam podendo ser forjadas).
+- **Mecânicas únicas, em exemplos:** a *Rainha Vespa* cospe poças de mel que travam seus passos; o *Caranguejo-Rei* só fica vulnerável com as garras abertas; o *Rei Ossos* ressurge uma vez; a *Medusa* petrifica quem a olha de frente; a *Armadura Viva* só leva dano de verdade pelas costas; o *Dragão Adormecido* acorda a cada golpe que leva; o *Arauto do Vazio* inverte a gravidade; o *Titereiro* inverte seus comandos; e o *Mestre Forjador* aprende a resistir à espada que você mais usa. No Ato V, o *Serafim* marca você com o veredito e só acertar o chefe anula a sentença; o *Coro dos Querubins* corta o dano em 80% enquanto os três cantam; a *Fênix* vira um ovo de cinzas antes de renascer. No Ato VI, o *Buraco Branco* empurra tudo para longe; o *Cosmos Vivo* tem quatro planetas que absorvem os golpes; o *Axioma* devolve metade do dano enquanto a pedra está acesa; e a **Apoteose**, a espada 200, tem **quatro estágios** — dois no chão (julgamento e selos) e dois no ar (asas e apoteose final), com um golpe novo em cada um.
+- **Recompensas:** moedas, materiais do ato, poções, às vezes um Cristal de Vida e **uma espada garantida** de cada chefe (as dos Atos I a IV também podem ser forjadas; **as dos Atos V e VI, Tiers 9 e 10, só caem do chefe**).
 - **Efeitos novos no jogador** (sempre temporários, somem ao morrer): lentidão, confusão (controles invertidos), atordoamento, silêncio (sem atacar), gravidade invertida, flutuar, maldição (sem cura), sangramento acumulável e tempo lento.
 
 ### Progressão
@@ -200,8 +200,8 @@ src/
   05c_canopy.js         copas das árvores desenhadas por vizinhança: silhueta redonda com contorno escuro, folhas pontiagudas sobrepostas e luz de cima à esquerda (só o desenho; a geração do mundo não muda)
   05d_bosspaint.js      ferramentas de pintura pixel a pixel dos chefes: formas (polígono, elipse, traço, curva), preenchimento com luz de cima à esquerda, borda, brilho com halo pontilhado e marcação dos pixels que emitem luz
   05e_bossart.js        sprites dos 4 chefes (corpo escuro + brilho de uma cor), quadros de animação em cache e peças móveis (lanterna, íris, anéis, orbes)
-  05f_bxart.js          base da arte dos 50 chefes novos: rampas de cor, ajudas de pintura (formas, espelho, brilho com halo, contorno), cache de quadros e variantes
-  05g..05j_bxart*.js    um pintor por chefe novo (Ato I a IV)
+  05f_bxart.js          base da arte dos 90 chefes novos: rampas de cor, ajudas de pintura (formas, espelho, brilho com halo, contorno), cache de quadros e variantes
+  05g..05l_bxart*.js    um pintor por chefe novo (Ato I a VI; a Apoteose tem 4 variantes, uma por estágio)
   14b_draw_bx.js        desenho dos chefes novos e dos lacaios (camadas móveis, sombra, tinta de dano)
   07_sky.js             céu em baixa resolução: faixas, sol/lua com halo, estrelas, nuvens de pixels, colinas em colunas
   08_phys.js            física AABB, partículas, drops · 08b_audio.js: SFX (WebAudio)
@@ -213,8 +213,8 @@ src/
   11c_gear_x.js         equipamentos: acessórios, armaduras, minérios, barras e picaretas (dados, efeitos e conjuntos)
   12_player.js          jogador, inventário, crafting, mineração, blocos
   13_enemies.js         inimigos, IA, spawn, drops · 13b_bosses.js: 4 chefes
-  13c_bossx.js          motor dos 50 chefes novos: registro (bx), laço de IA com golpes em geradores (yield), zonas de perigo, raios com aviso, lacaios, debuffs do jogador, loot e vitória
-  13d..13g_bx_*.js      os 50 chefes novos por ato (dados, mecânica única e golpes de cada um)
+  13c_bossx.js          motor dos 90 chefes novos: registro (bx), laço de IA com golpes em geradores (yield), zonas de perigo, raios com aviso, lacaios, debuffs do jogador, loot e vitória
+  13d..13i_bx_*.js      os 90 chefes novos por ato (dados, mecânica única e golpes de cada um; a Apoteose usa 4 fases)
   14_draw_enemies.js    sprites dos inimigos; `BOSSDRAW` monta cada chefe com as camadas de 05e e soma o brilho no passe aditivo
   15_ui.js / 15b_npc.js   HUD, inventário, arsenal, NPCs
   15c_save.js           biblioteca de mundos: IndexedDB, autosave, miniaturas, migração do save antigo

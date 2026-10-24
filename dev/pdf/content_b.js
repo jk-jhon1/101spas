@@ -1,11 +1,11 @@
 'use strict';
-// Conteúdo — parte 2: Parte III (a pasta src/, 46 módulos).
+// Conteúdo — parte 2: Parte III (a pasta src/, 50 módulos).
 const { C } = require('./engine.js');
 
 const COL = { base: '#64748b', world: '#0e7490', art: '#b45309', sim: '#1e3a8a', play: '#b91c1c', ui: '#6d28d9', main: '#0f172a' };
 
 function part3(doc) {
-  doc.partPage('III', 'A pasta src/', 'Os 46 módulos do jogo, na ordem em que são carregados: dados, mundo, arte, combate, conteúdo, interface e motor.');
+  doc.partPage('III', 'A pasta src/', 'Os 50 módulos do jogo, na ordem em que são carregados: dados, mundo, arte, combate, conteúdo, interface e motor.');
   doc.setPart('Parte III — A pasta src/');
 
   doc.h2('8.  Bloco 00–01 · base e dados', { mark: 's8' });
@@ -143,7 +143,7 @@ function part3(doc) {
   });
 
   doc.fileCard({
-    name: 'src/05f_bxart.js', lines: 68, tag: 'Arte', role: 'Infraestrutura da arte dos 50 chefes novos', color: COL.art,
+    name: 'src/05f_bxart.js', lines: 68, tag: 'Arte', role: 'Infraestrutura da arte dos 90 chefes novos', color: COL.art,
     summary: 'Registro `bxArt`, ajudas de pintura em coordenadas relativas ao centro, rampas de corpo (`RP`) e cache de sprites.',
     what: 'Define o “kit” usado pelos quatro arquivos seguintes. Cada chefe se declara com tamanho, centro de colisão, número de quadros e uma função de pintura. As ajudas (`h.P`, `h.E`, `h.S`, `h.C`, `h.F`, `h.D`, `h.G`, `h.eye`, `h.star`) desenham em coordenadas relativas ao centro da caixa de colisão, o que mantém o desenho alinhado independentemente do tamanho.',
     how: [
@@ -151,7 +151,7 @@ function part3(doc) {
       '`bxSpr(id, frame, variante)` pinta e cacheia; `bxWarmAll` pré-aquece todos.',
     ],
     funcs: 'bxArt · bxH · bxSpr · bxWarmAll · bxRamp · bxGlowRamp · RP',
-    deps: '00_util, 05d_bosspaint', used: '05g..05j_bxart*, 14b_draw_bx',
+    deps: '00_util, 05d_bosspaint', used: '05g..05l_bxart*, 14b_draw_bx',
   });
 
   doc.fileCard({
@@ -177,6 +177,20 @@ function part3(doc) {
     name: 'src/05j_bxart4.js', lines: 179, tag: 'Arte', role: 'Chefes novos do Ato IV (12)', color: COL.art,
     summary: 'Pintura dos 12 chefes do Além do Colosso — os mais altos e os mais ornamentados.',
     what: 'Usa as mesmas ajudas, com mais pixels emissivos, halos partidos e elementos flutuantes para passar a ideia de “fim de jogo”.',
+    deps: '05f_bxart, 05d_bosspaint', used: '14b_draw_bx',
+  });
+  doc.fileCard({
+    name: 'src/05k_bxart5.js', lines: 339, tag: 'Arte', role: 'Chefes novos do Ato V (20)', color: COL.art,
+    summary: 'Pintura dos 20 chefes do Julgamento — seres de luz, sinos, cálices, coroas e o fênix que renasce.',
+    what: 'O ato mais luminoso: asas, auréolas, vitrais e chamas com brilho alto. Cada chefe tem uma silhueta própria e partes animadas (asas que abrem, chamas que tremulam, selos que giram), e o fênix usa duas poses — corpo e ovo — trocadas pelo motor ao renascer.',
+    how: ['Mesmas ajudas de 05f, com mais camadas emissivas que os atos anteriores.', 'O fênix é o único com um segundo conjunto de quadros (ovo) desenhado à parte.'],
+    deps: '05f_bxart, 05d_bosspaint', used: '14b_draw_bx',
+  });
+  doc.fileCard({
+    name: 'src/05l_bxart6.js', lines: 302, tag: 'Arte', role: 'Chefes novos do Ato VI (20)', color: COL.art,
+    summary: 'Pintura dos 20 chefes do Fim de Tudo, do buraco branco à Apoteose — quatro variantes da Apoteose, uma por estágio.',
+    what: 'Usa as mesmas peças, mas com paletas quase monocromáticas (branco, vazio, dourado) e formas cósmicas: espirais, anéis, olhos, lâminas verticais. A Apoteose é o único chefe com `vars: 4`: o motor escolhe o desenho pelo estágio — sem asas nos dois primeiros (terrestres) e com asas nos dois últimos (voadores).',
+    how: ['`bxArt(id, W, H, cx, cy, frames, paint, { vars: 4 })` guarda quatro pinturas por chefe.', 'O motor pede `bxSpr(id, frame, variante)` com a variante = estágio − 1.'],
     deps: '05f_bxart, 05d_bosspaint', used: '14b_draw_bx',
   });
 
@@ -242,7 +256,7 @@ function part3(doc) {
     ['Jogador, NPCs, zumbis', '05b_pixel + 12_player', 'Vetor pixelizado, peças separadas'],
     ['Inimigos comuns', '14_draw_enemies', 'Formas simples + tinta de status'],
     ['4 chefes clássicos', '05e_bossart + 14_draw_enemies', 'Pintura pixel a pixel + camadas móveis'],
-    ['50 chefes novos', '05g..05j + 14b_draw_bx', 'Pintura pixel a pixel, uma silhueta por chefe'],
+    ['90 chefes novos', '05g..05l + 14b_draw_bx', 'Pintura pixel a pixel, uma silhueta por chefe'],
     ['Espadas 1–120 (ícones)', '06_icons', 'Vetor pixelizado a partir de `look`'],
     ['Espadas 121–200 (ícones e mundo)', '06b_swordart', 'Pintura pixel a pixel por família'],
     ['Minérios, barras, armaduras, acessórios, picaretas', '06c_gearart', 'Um desenho nomeado por peça + brasão da família'],

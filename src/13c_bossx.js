@@ -1,5 +1,5 @@
 /* ============================================================
-   13c_bossx: motor dos 50 chefes novos (dados em 13d..13g_bx_*.js, arte em 05f..05j_bxart*.js)
+   13c_bossx: motor dos 90 chefes novos (dados em 13d..13i_bx_*.js, arte em 05f..05l_bxart*.js)
    Cada chefe é um objeto em BX (registro bx(id, def)): atributos, sigilo de invocação, receita, loot,
    uma "mecânica única" (hooks: init, passive, hurt, after, lethal, death, draw) e um repertório de golpes
    escritos como geradores (function*): `yield 0.5` espera meio segundo, `yield` sozinho espera um quadro.
@@ -14,6 +14,8 @@ const BX_ACTS = [null,
   { n: 'Ato II · Pós-Olho', st: 'anvil', stage: 1, mat: [['platinum_bar', 6, 10], ['vamp_tooth', 2, 4]], pot: 'potion1' },
   { n: 'Ato III · Hardmode', st: 'advanvil', stage: 2, mat: [['hell_bar', 6, 10], ['celestial_frag', 5, 9]], pot: 'potion2' },
   { n: 'Ato IV · Além do Colosso', st: 'forge', stage: 3, mat: [['celestial_frag', 10, 18], ['e_time', 1, 2]], pot: 'potion3' },
+  { n: 'Ato V · Além do Firmamento', st: 'forge', stage: 3, mat: [['celestial_bar', 4, 8], ['e_light', 5, 9]], pot: 'potion3' },
+  { n: 'Ato VI · Fim de Tudo', st: 'forge', stage: 3, mat: [['celestial_bar', 6, 10], ['mythic_core', 1, 2]], pot: 'potion3' },
 ];
 const BX_BIO = { ocean: 'oceano', desert: 'deserto', forest: 'floresta', jungle: 'selva', snow: 'neve' };
 const BX_LAY = { sky: 'as ilhas do céu', surface: 'a superfície', cave: 'as cavernas', deep: 'as cavernas profundas', hell: 'o Inferno' };
@@ -22,6 +24,10 @@ function bx(id, d) {
   d.id = id; d.i = BXLIST.length; BX[id] = d; BXLIST.push(d); if (!d.acc && BXART[id]) d.acc = BXART[id].acc; if (!d.acc2 && BXART[id]) d.acc2 = BXART[id].acc2;
   d.glow = d.glow || d.acc; d.shot = d.shot || 'orb';
   enemy('bx_' + id, { n: d.n, kind: 'bx', draw: 'bx', boss: 1, bx: d, fly: d.fly ? 1 : 0, noclip: (d.noclip === undefined ? d.fly : d.noclip) ? 1 : 0, w: d.w, h: d.h, hp: d.hp, dmg: d.dmg, def: d.def || 0, spd: d.spd || 150, kbr: 1, mass: 10, col: d.acc2 || '#222', col2: d.acc, blood: d.acc, drops: [], coins: d.coin, glowc: d.glow });
+  if (d.sword && IT[d.sword] && IT[d.sword].sw) {   /* Tier 9/10: a espada não se forja, cai só do chefe */
+    const sw = IT[d.sword].sw; if (sw.tierLevel >= 9) { const k = RECIPES.findIndex(r => r.out === sw.id); if (k >= 0) RECIPES.splice(k, 1); sw.dropOnly = true; }
+    if (sw.dropOnly) { sw.dropFrom = id; sw.dropFromName = d.n; }
+  }
   const cond = d.cond ? ' Condição: ' + bxCondText(d) + '.' : '';
   item('sg_' + id, 'Sigilo: ' + (d.sigil || d.n), { type: 'use', tier: d.act + 1, stack: 20, ic: ['sigil', d.acc, d.i], use: 'boss_x:' + id, desc: 'Invoca ' + d.n + '.' + cond + ' Mecânica: ' + d.mech });
   rec('sg_' + id, 1, d.rec, d.st || BX_ACTS[d.act].st);

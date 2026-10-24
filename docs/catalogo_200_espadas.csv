@@ -159,43 +159,43 @@
 158;Véu da Meia-Noite;8;520;1.3;4;15%;ArcSwing;"Apaga a luz da tela, cega os inimigos e corta dos dois lados.";Inédita;Bigorna Avançada;1x Núcleo Mítico + 8x Barra de Celeste + 12x Essência de Sombra
 159;Ressonância Púrpura;8;548;1.2;5;15%;ArcSwing;"Acumula ressonância a cada golpe e libera tudo no quinto acerto.";Inédita;Bigorna Avançada;1x Núcleo Mítico + 9x Barra de Celeste + 8x Essência de Luz + 6x Essência do Tempo
 160;Coroa do Abismo;8;620;1;7;15%;ArcSwing;"A coroa abre uma fenda devoradora e puxa tudo para o seu centro.";Inédita;Bigorna Avançada;1x Núcleo Mítico + 10x Barra de Celeste + 12x Essência de Sombra + 8x Essência do Tempo
-161;Julgamento Seráfico;9;700;1.15;6;18%;ArcSwing;"Chuva de lâminas sagradas no cursor e um domínio de luz ao redor do jogador.";Inédita;Forja Celeste;1x Núcleo Mítico + 10x Barra de Celeste + 14x Essência de Luz + 6x Essência do Tempo
-162;Asas do Amanhecer;9;720;1.2;5;18%;ArcSwing;"Quatro asas de luz orbitam e golpeiam; o golpe abre uma nova dourada.";Inédita;Forja Celeste;1x Núcleo Mítico + 10x Barra de Celeste + 12x Essência de Luz + 6x Essência de Água
-163;Lei do Silêncio;9;690;1.35;4;18%;ArcSwing;"Impõe a lei: inimigos ficam lentos, marcados e detonam em silêncio.";Inédita;Forja Celeste;1x Núcleo Mítico + 10x Barra de Celeste + 14x Essência do Tempo + 8x Essência de Sombra
-164;Cetro do Sol Nascente;9;740;1.05;7;18%;ArcSwing;"Varre o horizonte com um arco solar e chama um cometa de fogo no cursor.";Inédita;Forja Celeste;1x Núcleo Mítico + 11x Barra de Celeste + 12x Essência de Luz + 10x Essência de Fogo
-165;Lança da Constelação;9;700;1.4;3;18%;ArcSwing;"Três lanças-estrela voam em linha reta e se partem em três ao acertar.";Inédita;Forja Celeste;1x Núcleo Mítico + 10x Barra de Celeste + 10x Essência de Luz + 8x Essência do Tempo
-166;Veredito Celeste;9;830;0.95;8;18%;ArcSwing;"Profere o veredito: dano em tela cheia e um colapso no ponto do golpe.";Inédita;Forja Celeste;1x Núcleo Mítico + 12x Barra de Celeste + 15x Essência de Luz + 8x Essência do Tempo
-167;Hino dos Querubins;9;705;1.3;4;18%;ArcSwing;"Um hino cura o jogador, dá escudo e fere lentamente tudo ao redor.";Inédita;Forja Celeste;1x Núcleo Mítico + 10x Barra de Celeste + 10x Essência de Luz + 6x Essência de Sangue
-168;Domínio do Trovão;9;760;1.15;5;18%;ArcSwing;"O domínio do trovão salta por quatro inimigos e chama três raios no cursor.";Inédita;Forja Celeste;1x Núcleo Mítico + 10x Barra de Celeste + 16x Essência de Raio
-169;Aurora Dourada;9;735;1.25;5;18%;ArcSwing;"Um arco dourado varre a frente e deixa dois ecos de aurora.";Inédita;Forja Celeste;1x Núcleo Mítico + 10x Barra de Celeste + 12x Essência de Luz + 4x Essência de Fogo
-170;Cálice da Eternidade;9;715;1.2;5;18%;ArcSwing;"Quatro acertos enchem o cálice e liberam uma onda eterna.";Inédita;Forja Celeste;1x Núcleo Mítico + 10x Barra de Celeste + 10x Essência do Tempo + 8x Essência de Água
-171;Coroa da Criação;9;745;1.25;5;18%;ArcSwing;"Cria um reflexo de cada golpe e três coroas orbitais que cortam sozinhas.";Inédita;Forja Celeste;1x Núcleo Mítico + 11x Barra de Celeste + 12x Essência de Luz + 6x Essência do Tempo
-172;Selo do Juízo Final;9;880;0.9;9;18%;ArcSwing;"O selo risca a tela com um feixe de julgamento e explode em luz.";Inédita;Forja Celeste;1x Núcleo Mítico + 12x Barra de Celeste + 14x Essência de Luz + 8x Essência de Terra
-173;Lâmina do Tempo Zero;9;690;1.45;4;18%;ArcSwing;"Críticos param o tempo por 1,2s; cada golpe deixa dois ecos.";Inédita;Forja Celeste;1x Núcleo Mítico + 10x Barra de Celeste + 14x Essência do Tempo + 6x Essência de Gelo
-174;Arauto da Luz;9;775;1.2;5;18%;ArcSwing;"Anuncia a luz: um feixe puro e um domínio que queima os ímpios.";Inédita;Forja Celeste;1x Núcleo Mítico + 11x Barra de Celeste + 16x Essência de Luz
-175;Sinfonia dos Céus;9;730;1.3;5;18%;ArcSwing;"Três ecos afinados e duas notas celestes caem do céu.";Inédita;Forja Celeste;1x Núcleo Mítico + 10x Barra de Celeste + 10x Essência de Luz + 8x Essência de Sangue
-176;Fênix Imortal;9;800;1.1;5;18%;ArcSwing;"Renasce a cada golpe: cura, incendeia a área e chama brasas do céu.";Inédita;Forja Celeste;1x Núcleo Mítico + 11x Barra de Celeste + 16x Essência de Fogo + 8x Essência de Sangue
-177;Escudo do Firmamento;9;850;0.95;8;18%;ArcSwing;"O firmamento protege: 150 de escudo e uma onda que afasta tudo.";Inédita;Forja Celeste;1x Núcleo Mítico + 12x Barra de Celeste + 14x Essência de Gelo + 10x Essência de Terra
-178;Chama Sagrada;9;765;1.2;5;18%;ArcSwing;"Uma chama sagrada queima sem parar tudo o que se aproxima.";Inédita;Forja Celeste;1x Núcleo Mítico + 11x Barra de Celeste + 14x Essência de Fogo + 8x Essência de Luz
-179;Nexo do Infinito;9;720;1.3;4;18%;ArcSwing;"O nexo dobra o espaço: um buraco negro perseguidor e três lâminas do vazio.";Inédita;Forja Celeste;1x Núcleo Mítico + 11x Barra de Celeste + 12x Essência do Tempo + 10x Essência de Sombra
-180;Trono de Ouro;9;840;1;7;18%;ArcSwing;"O trono chama raios dourados e dobra o espaço ao redor do impacto.";Inédita;Forja Celeste;1x Núcleo Mítico + 12x Barra de Celeste + 14x Essência de Luz + 8x Essência de Terra
-181;Primeira Luz;10;980;1.25;6;22%;ArcSwing;"A primeira luz do universo: dano em tela cheia, colapso e um domínio branco.";Inédita;Forja Celeste;2x Núcleo Mítico + 14x Barra de Celeste + 18x Essência de Luz + 10x Essência do Tempo
-182;Fim de Tudo;10;1150;1;8;22%;ArcSwing;"O fim: um buraco negro que cresce, uma fenda eterna e nada sobrevive.";Inédita;Forja Celeste;2x Núcleo Mítico + 15x Barra de Celeste + 18x Essência de Sombra + 12x Essência do Tempo
-183;Buraco Branco;10;1050;1.2;6;22%;ArcSwing;"Cospe matéria: uma nova branca gigante e quatro órbitas de luz pura.";Inédita;Forja Celeste;2x Núcleo Mítico + 15x Barra de Celeste + 20x Essência de Luz + 12x Essência do Tempo
-184;Cosmos Vivo;10;1080;1.15;6;22%;ArcSwing;"Um cosmos inteiro desaba: cinco estrelas caem e cada estilhaço se divide.";Inédita;Forja Celeste;2x Núcleo Mítico + 15x Barra de Celeste + 14x Essência de Luz + 12x Essência do Tempo + 8x Essência de Sombra
-185;Teorema Final;10;1120;1.1;7;22%;ArcSwing;"Prova o teorema: um feixe que atravessa tudo e o reflexo exato do golpe.";Inédita;Forja Celeste;2x Núcleo Mítico + 14x Barra de Celeste + 16x Essência de Raio + 10x Essência do Tempo
-186;O Último Nome;10;1200;1.3;5;22%;ArcSwing;"Diz o último nome do inimigo: executa os feridos e sela os vivos.";Inédita;Forja Celeste;2x Núcleo Mítico + 15x Barra de Celeste + 16x Essência de Sombra + 12x Essência do Tempo
-187;Origem do Vazio;10;1300;0.9;10;22%;ArcSwing;"Do nada, tudo: puxa o mundo para si e colapsa a tela em seguida.";Inédita;Forja Celeste;2x Núcleo Mítico + 16x Barra de Celeste + 18x Essência de Sombra + 12x Essência de Terra
-188;Relógio do Universo;10;1010;1.35;5;22%;ArcSwing;"Atrasa o tempo dos inimigos, acelera o seu e repete o golpe duas vezes.";Inédita;Forja Celeste;2x Núcleo Mítico + 14x Barra de Celeste + 18x Essência do Tempo + 8x Essência de Luz
-189;Semente Cósmica;10;1040;1.2;6;22%;ArcSwing;"Planta um mundo: um domínio vivo cura e três sementes caçam os inimigos.";Inédita;Forja Celeste;2x Núcleo Mítico + 14x Barra de Celeste + 14x Essência de Veneno + 12x Essência de Terra
-190;Axioma;10;1060;1.45;4;22%;ArcSwing;"Verdade absoluta: cinco agulhas perfeitas e cada uma se parte em três.";Inédita;Forja Celeste;2x Núcleo Mítico + 14x Barra de Celeste + 16x Essência de Luz + 10x Essência do Tempo
-191;Convergência Final;10;1090;1.15;6;22%;ArcSwing;"Três acertos bastam para convergir tudo num único golpe devastador.";Inédita;Forja Celeste;2x Núcleo Mítico + 15x Barra de Celeste + 16x Essência de Luz + 12x Essência do Tempo
-192;Espada do Autor;10;1250;0.95;9;22%;ArcSwing;"Reescreve a cena: dano na tela inteira, colapso e 200 de escudo divino.";Inédita;Forja Celeste;3x Núcleo Mítico + 18x Barra de Celeste + 20x Essência de Luz + 14x Essência do Tempo
-193;Nada Eterno;10;1180;1.25;5;22%;ArcSwing;"O vazio eterno: suga, retarda e apaga o que sobrar.";Inédita;Forja Celeste;2x Núcleo Mítico + 15x Barra de Celeste + 18x Essência de Sombra + 14x Essência do Tempo
-194;Tudo de Uma Vez;10;1210;1.2;6;22%;ArcSwing;"Faz tudo simultaneamente: ecos, órbitas e uma nova a cada golpe.";Inédita;Forja Celeste;2x Núcleo Mítico + 16x Barra de Celeste + 16x Essência de Luz + 12x Essência do Tempo + 8x Essência de Fogo
-195;Ponto Zero;10;1100;1.3;5;22%;ArcSwing;"Marca o ponto zero do alvo: ele detona em 1s enquanto o feixe varre a tela.";Inédita;Forja Celeste;2x Núcleo Mítico + 15x Barra de Celeste + 16x Essência do Tempo + 12x Essência de Gelo
-196;Coração do Multiverso;10;1130;1.2;6;22%;ArcSwing;"O coração pulsa em vários mundos: cura, explode em rosa e colapsa a tela.";Inédita;Forja Celeste;2x Núcleo Mítico + 16x Barra de Celeste + 18x Essência de Sangue + 12x Essência de Luz
-197;Lâmina Absoluta;10;1280;1;8;22%;ArcSwing;"Um corte absoluto: feixe branco que atravessa tudo e executa os feridos.";Inédita;Forja Celeste;3x Núcleo Mítico + 16x Barra de Celeste + 20x Essência de Luz + 10x Essência do Tempo
-198;Maré Cósmica;10;1160;1.15;6;22%;ArcSwing;"A maré cósmica cobre a arena e conduz raios entre os inimigos.";Inédita;Forja Celeste;2x Núcleo Mítico + 16x Barra de Celeste + 16x Essência de Água + 12x Essência de Raio
-199;Brado do Infinito;10;1220;1.1;7;22%;ArcSwing;"Um brado que chama seis lanças do céu e varre o horizonte em ouro.";Inédita;Forja Celeste;2x Núcleo Mítico + 16x Barra de Celeste + 14x Essência de Luz + 14x Essência de Fogo
-200;Apoteose;10;1400;1.05;10;26%;ArcSwing;"A espada final: dano em tela cheia, colapso, cinco órbitas e um domínio de luz eterna.";Inédita;Forja Celeste;4x Núcleo Mítico + 20x Barra de Celeste + 20x Essência de Luz + 16x Essência do Tempo + 12x Essência de Sombra
+161;Julgamento Seráfico;9;700;1.15;6;18%;ArcSwing;"Chuva de lâminas sagradas no cursor e um domínio de luz ao redor do jogador.";Inédita;Forja Celeste;cai do chefe Serafim da Balança
+162;Asas do Amanhecer;9;720;1.2;5;18%;ArcSwing;"Quatro asas de luz orbitam e golpeiam; o golpe abre uma nova dourada.";Inédita;Forja Celeste;cai do chefe Aurora do Amanhecer
+163;Lei do Silêncio;9;690;1.35;4;18%;ArcSwing;"Impõe a lei: inimigos ficam lentos, marcados e detonam em silêncio.";Inédita;Forja Celeste;cai do chefe Lei do Silêncio
+164;Cetro do Sol Nascente;9;740;1.05;7;18%;ArcSwing;"Varre o horizonte com um arco solar e chama um cometa de fogo no cursor.";Inédita;Forja Celeste;cai do chefe Cetro do Sol Nascente
+165;Lança da Constelação;9;700;1.4;3;18%;ArcSwing;"Três lanças-estrela voam em linha reta e se partem em três ao acertar.";Inédita;Forja Celeste;cai do chefe Arqueiro da Constelação
+166;Veredito Celeste;9;830;0.95;8;18%;ArcSwing;"Profere o veredito: dano em tela cheia e um colapso no ponto do golpe.";Inédita;Forja Celeste;cai do chefe Veredito Celeste
+167;Hino dos Querubins;9;705;1.3;4;18%;ArcSwing;"Um hino cura o jogador, dá escudo e fere lentamente tudo ao redor.";Inédita;Forja Celeste;cai do chefe Coro dos Querubins
+168;Domínio do Trovão;9;760;1.15;5;18%;ArcSwing;"O domínio do trovão salta por quatro inimigos e chama três raios no cursor.";Inédita;Forja Celeste;cai do chefe Domínio do Trovão
+169;Aurora Dourada;9;735;1.25;5;18%;ArcSwing;"Um arco dourado varre a frente e deixa dois ecos de aurora.";Inédita;Forja Celeste;cai do chefe Dragão da Aurora
+170;Cálice da Eternidade;9;715;1.2;5;18%;ArcSwing;"Quatro acertos enchem o cálice e liberam uma onda eterna.";Inédita;Forja Celeste;cai do chefe Cálice da Eternidade
+171;Coroa da Criação;9;745;1.25;5;18%;ArcSwing;"Cria um reflexo de cada golpe e três coroas orbitais que cortam sozinhas.";Inédita;Forja Celeste;cai do chefe Coroa da Criação
+172;Selo do Juízo Final;9;880;0.9;9;18%;ArcSwing;"O selo risca a tela com um feixe de julgamento e explode em luz.";Inédita;Forja Celeste;cai do chefe Selo do Juízo Final
+173;Lâmina do Tempo Zero;9;690;1.45;4;18%;ArcSwing;"Críticos param o tempo por 1,2s; cada golpe deixa dois ecos.";Inédita;Forja Celeste;cai do chefe Lâmina do Tempo Zero
+174;Arauto da Luz;9;775;1.2;5;18%;ArcSwing;"Anuncia a luz: um feixe puro e um domínio que queima os ímpios.";Inédita;Forja Celeste;cai do chefe Arauto da Luz
+175;Sinfonia dos Céus;9;730;1.3;5;18%;ArcSwing;"Três ecos afinados e duas notas celestes caem do céu.";Inédita;Forja Celeste;cai do chefe Sinfonia dos Céus
+176;Fênix Imortal;9;800;1.1;5;18%;ArcSwing;"Renasce a cada golpe: cura, incendeia a área e chama brasas do céu.";Inédita;Forja Celeste;cai do chefe Fênix Imortal
+177;Escudo do Firmamento;9;850;0.95;8;18%;ArcSwing;"O firmamento protege: 150 de escudo e uma onda que afasta tudo.";Inédita;Forja Celeste;cai do chefe Escudo do Firmamento
+178;Chama Sagrada;9;765;1.2;5;18%;ArcSwing;"Uma chama sagrada queima sem parar tudo o que se aproxima.";Inédita;Forja Celeste;cai do chefe Chama Sagrada
+179;Nexo do Infinito;9;720;1.3;4;18%;ArcSwing;"O nexo dobra o espaço: um buraco negro perseguidor e três lâminas do vazio.";Inédita;Forja Celeste;cai do chefe Nexo do Infinito
+180;Trono de Ouro;9;840;1;7;18%;ArcSwing;"O trono chama raios dourados e dobra o espaço ao redor do impacto.";Inédita;Forja Celeste;cai do chefe Trono de Ouro
+181;Primeira Luz;10;980;1.25;6;22%;ArcSwing;"A primeira luz do universo: dano em tela cheia, colapso e um domínio branco.";Inédita;Forja Celeste;cai do chefe Primeira Luz
+182;Fim de Tudo;10;1150;1;8;22%;ArcSwing;"O fim: um buraco negro que cresce, uma fenda eterna e nada sobrevive.";Inédita;Forja Celeste;cai do chefe Fim de Tudo
+183;Buraco Branco;10;1050;1.2;6;22%;ArcSwing;"Cospe matéria: uma nova branca gigante e quatro órbitas de luz pura.";Inédita;Forja Celeste;cai do chefe Buraco Branco
+184;Cosmos Vivo;10;1080;1.15;6;22%;ArcSwing;"Um cosmos inteiro desaba: cinco estrelas caem e cada estilhaço se divide.";Inédita;Forja Celeste;cai do chefe Cosmos Vivo
+185;Teorema Final;10;1120;1.1;7;22%;ArcSwing;"Prova o teorema: um feixe que atravessa tudo e o reflexo exato do golpe.";Inédita;Forja Celeste;cai do chefe Teorema Final
+186;O Último Nome;10;1200;1.3;5;22%;ArcSwing;"Diz o último nome do inimigo: executa os feridos e sela os vivos.";Inédita;Forja Celeste;cai do chefe O Último Nome
+187;Origem do Vazio;10;1300;0.9;10;22%;ArcSwing;"Do nada, tudo: puxa o mundo para si e colapsa a tela em seguida.";Inédita;Forja Celeste;cai do chefe Origem do Vazio
+188;Relógio do Universo;10;1010;1.35;5;22%;ArcSwing;"Atrasa o tempo dos inimigos, acelera o seu e repete o golpe duas vezes.";Inédita;Forja Celeste;cai do chefe Relógio do Universo
+189;Semente Cósmica;10;1040;1.2;6;22%;ArcSwing;"Planta um mundo: um domínio vivo cura e três sementes caçam os inimigos.";Inédita;Forja Celeste;cai do chefe Semente Cósmica
+190;Axioma;10;1060;1.45;4;22%;ArcSwing;"Verdade absoluta: cinco agulhas perfeitas e cada uma se parte em três.";Inédita;Forja Celeste;cai do chefe Axioma
+191;Convergência Final;10;1090;1.15;6;22%;ArcSwing;"Três acertos bastam para convergir tudo num único golpe devastador.";Inédita;Forja Celeste;cai do chefe Convergência Final
+192;Espada do Autor;10;1250;0.95;9;22%;ArcSwing;"Reescreve a cena: dano na tela inteira, colapso e 200 de escudo divino.";Inédita;Forja Celeste;cai do chefe Espada do Autor
+193;Nada Eterno;10;1180;1.25;5;22%;ArcSwing;"O vazio eterno: suga, retarda e apaga o que sobrar.";Inédita;Forja Celeste;cai do chefe Nada Eterno
+194;Tudo de Uma Vez;10;1210;1.2;6;22%;ArcSwing;"Faz tudo simultaneamente: ecos, órbitas e uma nova a cada golpe.";Inédita;Forja Celeste;cai do chefe Tudo de Uma Vez
+195;Ponto Zero;10;1100;1.3;5;22%;ArcSwing;"Marca o ponto zero do alvo: ele detona em 1s enquanto o feixe varre a tela.";Inédita;Forja Celeste;cai do chefe Ponto Zero
+196;Coração do Multiverso;10;1130;1.2;6;22%;ArcSwing;"O coração pulsa em vários mundos: cura, explode em rosa e colapsa a tela.";Inédita;Forja Celeste;cai do chefe Coração do Multiverso
+197;Lâmina Absoluta;10;1280;1;8;22%;ArcSwing;"Um corte absoluto: feixe branco que atravessa tudo e executa os feridos.";Inédita;Forja Celeste;cai do chefe Lâmina Absoluta
+198;Maré Cósmica;10;1160;1.15;6;22%;ArcSwing;"A maré cósmica cobre a arena e conduz raios entre os inimigos.";Inédita;Forja Celeste;cai do chefe Maré Cósmica
+199;Brado do Infinito;10;1220;1.1;7;22%;ArcSwing;"Um brado que chama seis lanças do céu e varre o horizonte em ouro.";Inédita;Forja Celeste;cai do chefe Brado do Infinito
+200;Apoteose;10;1400;1.05;10;26%;ArcSwing;"A espada final: dano em tela cheia, colapso, cinco órbitas e um domínio de luz eterna.";Inédita;Forja Celeste;cai do chefe Apoteose

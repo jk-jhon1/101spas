@@ -1,7 +1,7 @@
 # Catálogo mestre — 200 espadas
 
 > Gerado automaticamente a partir dos dados do jogo (`src/11_swords.js` e `src/11b_swords_x.js`).
-> **Origem:** `GDD` = texto original do documento de design · `Inédita` = criada para o jogo seguindo as regras do tier. Os **Tiers 7–10 são novos**, 20 espadas cada, com arte pintada pixel a pixel em `src/06b_swordart.js`.
+> **Origem:** `GDD` = texto original do documento de design · `Inédita` = criada para o jogo seguindo as regras do tier. Os **Tiers 7–10 são novos**, 20 espadas cada, com arte pintada pixel a pixel em `src/06b_swordart.js`. As dos **Tiers 9 e 10 não são forjáveis: cada uma cai do chefe do Ato V/VI que a guarda** (`src/13h_bx_a5.js` e `src/13i_bx_a6.js`).
 
 ## TIER 1 — Início de jogo & Básico (001–020)
 
@@ -243,26 +243,26 @@
 
 | # | Espada | Dano | Vel | KB | Crít | Mecânica única | Receita |
 |---|---|---|---|---|---|---|---|
-| 161 | **Julgamento Seráfico** | 700 | 1.15 | 6 | 18% | Chuva de lâminas sagradas no cursor e um domínio de luz ao redor do jogador. | 1× Núcleo Mítico, 10× Barra de Celeste, 14× Essência de Luz, 6× Essência do Tempo _(Forja Celeste)_ |
-| 162 | **Asas do Amanhecer** | 720 | 1.2 | 5 | 18% | Quatro asas de luz orbitam e golpeiam; o golpe abre uma nova dourada. | 1× Núcleo Mítico, 10× Barra de Celeste, 12× Essência de Luz, 6× Essência de Água _(Forja Celeste)_ |
-| 163 | **Lei do Silêncio** | 690 | 1.35 | 4 | 18% | Impõe a lei: inimigos ficam lentos, marcados e detonam em silêncio. | 1× Núcleo Mítico, 10× Barra de Celeste, 14× Essência do Tempo, 8× Essência de Sombra _(Forja Celeste)_ |
-| 164 | **Cetro do Sol Nascente** | 740 | 1.05 | 7 | 18% | Varre o horizonte com um arco solar e chama um cometa de fogo no cursor. | 1× Núcleo Mítico, 11× Barra de Celeste, 12× Essência de Luz, 10× Essência de Fogo _(Forja Celeste)_ |
-| 165 | **Lança da Constelação** | 700 | 1.4 | 3 | 18% | Três lanças-estrela voam em linha reta e se partem em três ao acertar. | 1× Núcleo Mítico, 10× Barra de Celeste, 10× Essência de Luz, 8× Essência do Tempo _(Forja Celeste)_ |
-| 166 | **Veredito Celeste** | 830 | 0.95 | 8 | 18% | Profere o veredito: dano em tela cheia e um colapso no ponto do golpe. | 1× Núcleo Mítico, 12× Barra de Celeste, 15× Essência de Luz, 8× Essência do Tempo _(Forja Celeste)_ |
-| 167 | **Hino dos Querubins** | 705 | 1.3 | 4 | 18% | Um hino cura o jogador, dá escudo e fere lentamente tudo ao redor. | 1× Núcleo Mítico, 10× Barra de Celeste, 10× Essência de Luz, 6× Essência de Sangue _(Forja Celeste)_ |
-| 168 | **Domínio do Trovão** | 760 | 1.15 | 5 | 18% | O domínio do trovão salta por quatro inimigos e chama três raios no cursor. | 1× Núcleo Mítico, 10× Barra de Celeste, 16× Essência de Raio _(Forja Celeste)_ |
-| 169 | **Aurora Dourada** | 735 | 1.25 | 5 | 18% | Um arco dourado varre a frente e deixa dois ecos de aurora. | 1× Núcleo Mítico, 10× Barra de Celeste, 12× Essência de Luz, 4× Essência de Fogo _(Forja Celeste)_ |
-| 170 | **Cálice da Eternidade** | 715 | 1.2 | 5 | 18% | Quatro acertos enchem o cálice e liberam uma onda eterna. | 1× Núcleo Mítico, 10× Barra de Celeste, 10× Essência do Tempo, 8× Essência de Água _(Forja Celeste)_ |
-| 171 | **Coroa da Criação** | 745 | 1.25 | 5 | 18% | Cria um reflexo de cada golpe e três coroas orbitais que cortam sozinhas. | 1× Núcleo Mítico, 11× Barra de Celeste, 12× Essência de Luz, 6× Essência do Tempo _(Forja Celeste)_ |
-| 172 | **Selo do Juízo Final** | 880 | 0.9 | 9 | 18% | O selo risca a tela com um feixe de julgamento e explode em luz. | 1× Núcleo Mítico, 12× Barra de Celeste, 14× Essência de Luz, 8× Essência de Terra _(Forja Celeste)_ |
-| 173 | **Lâmina do Tempo Zero** | 690 | 1.45 | 4 | 18% | Críticos param o tempo por 1,2s; cada golpe deixa dois ecos. | 1× Núcleo Mítico, 10× Barra de Celeste, 14× Essência do Tempo, 6× Essência de Gelo _(Forja Celeste)_ |
-| 174 | **Arauto da Luz** | 775 | 1.2 | 5 | 18% | Anuncia a luz: um feixe puro e um domínio que queima os ímpios. | 1× Núcleo Mítico, 11× Barra de Celeste, 16× Essência de Luz _(Forja Celeste)_ |
-| 175 | **Sinfonia dos Céus** | 730 | 1.3 | 5 | 18% | Três ecos afinados e duas notas celestes caem do céu. | 1× Núcleo Mítico, 10× Barra de Celeste, 10× Essência de Luz, 8× Essência de Sangue _(Forja Celeste)_ |
-| 176 | **Fênix Imortal** | 800 | 1.1 | 5 | 18% | Renasce a cada golpe: cura, incendeia a área e chama brasas do céu. | 1× Núcleo Mítico, 11× Barra de Celeste, 16× Essência de Fogo, 8× Essência de Sangue _(Forja Celeste)_ |
-| 177 | **Escudo do Firmamento** | 850 | 0.95 | 8 | 18% | O firmamento protege: 150 de escudo e uma onda que afasta tudo. | 1× Núcleo Mítico, 12× Barra de Celeste, 14× Essência de Gelo, 10× Essência de Terra _(Forja Celeste)_ |
-| 178 | **Chama Sagrada** | 765 | 1.2 | 5 | 18% | Uma chama sagrada queima sem parar tudo o que se aproxima. | 1× Núcleo Mítico, 11× Barra de Celeste, 14× Essência de Fogo, 8× Essência de Luz _(Forja Celeste)_ |
-| 179 | **Nexo do Infinito** | 720 | 1.3 | 4 | 18% | O nexo dobra o espaço: um buraco negro perseguidor e três lâminas do vazio. | 1× Núcleo Mítico, 11× Barra de Celeste, 12× Essência do Tempo, 10× Essência de Sombra _(Forja Celeste)_ |
-| 180 | **Trono de Ouro** | 840 | 1 | 7 | 18% | O trono chama raios dourados e dobra o espaço ao redor do impacto. | 1× Núcleo Mítico, 12× Barra de Celeste, 14× Essência de Luz, 8× Essência de Terra _(Forja Celeste)_ |
+| 161 | **Julgamento Seráfico** | 700 | 1.15 | 6 | 18% | Chuva de lâminas sagradas no cursor e um domínio de luz ao redor do jogador. | **Cai do chefe Serafim da Balança** |
+| 162 | **Asas do Amanhecer** | 720 | 1.2 | 5 | 18% | Quatro asas de luz orbitam e golpeiam; o golpe abre uma nova dourada. | **Cai do chefe Aurora do Amanhecer** |
+| 163 | **Lei do Silêncio** | 690 | 1.35 | 4 | 18% | Impõe a lei: inimigos ficam lentos, marcados e detonam em silêncio. | **Cai do chefe Lei do Silêncio** |
+| 164 | **Cetro do Sol Nascente** | 740 | 1.05 | 7 | 18% | Varre o horizonte com um arco solar e chama um cometa de fogo no cursor. | **Cai do chefe Cetro do Sol Nascente** |
+| 165 | **Lança da Constelação** | 700 | 1.4 | 3 | 18% | Três lanças-estrela voam em linha reta e se partem em três ao acertar. | **Cai do chefe Arqueiro da Constelação** |
+| 166 | **Veredito Celeste** | 830 | 0.95 | 8 | 18% | Profere o veredito: dano em tela cheia e um colapso no ponto do golpe. | **Cai do chefe Veredito Celeste** |
+| 167 | **Hino dos Querubins** | 705 | 1.3 | 4 | 18% | Um hino cura o jogador, dá escudo e fere lentamente tudo ao redor. | **Cai do chefe Coro dos Querubins** |
+| 168 | **Domínio do Trovão** | 760 | 1.15 | 5 | 18% | O domínio do trovão salta por quatro inimigos e chama três raios no cursor. | **Cai do chefe Domínio do Trovão** |
+| 169 | **Aurora Dourada** | 735 | 1.25 | 5 | 18% | Um arco dourado varre a frente e deixa dois ecos de aurora. | **Cai do chefe Dragão da Aurora** |
+| 170 | **Cálice da Eternidade** | 715 | 1.2 | 5 | 18% | Quatro acertos enchem o cálice e liberam uma onda eterna. | **Cai do chefe Cálice da Eternidade** |
+| 171 | **Coroa da Criação** | 745 | 1.25 | 5 | 18% | Cria um reflexo de cada golpe e três coroas orbitais que cortam sozinhas. | **Cai do chefe Coroa da Criação** |
+| 172 | **Selo do Juízo Final** | 880 | 0.9 | 9 | 18% | O selo risca a tela com um feixe de julgamento e explode em luz. | **Cai do chefe Selo do Juízo Final** |
+| 173 | **Lâmina do Tempo Zero** | 690 | 1.45 | 4 | 18% | Críticos param o tempo por 1,2s; cada golpe deixa dois ecos. | **Cai do chefe Lâmina do Tempo Zero** |
+| 174 | **Arauto da Luz** | 775 | 1.2 | 5 | 18% | Anuncia a luz: um feixe puro e um domínio que queima os ímpios. | **Cai do chefe Arauto da Luz** |
+| 175 | **Sinfonia dos Céus** | 730 | 1.3 | 5 | 18% | Três ecos afinados e duas notas celestes caem do céu. | **Cai do chefe Sinfonia dos Céus** |
+| 176 | **Fênix Imortal** | 800 | 1.1 | 5 | 18% | Renasce a cada golpe: cura, incendeia a área e chama brasas do céu. | **Cai do chefe Fênix Imortal** |
+| 177 | **Escudo do Firmamento** | 850 | 0.95 | 8 | 18% | O firmamento protege: 150 de escudo e uma onda que afasta tudo. | **Cai do chefe Escudo do Firmamento** |
+| 178 | **Chama Sagrada** | 765 | 1.2 | 5 | 18% | Uma chama sagrada queima sem parar tudo o que se aproxima. | **Cai do chefe Chama Sagrada** |
+| 179 | **Nexo do Infinito** | 720 | 1.3 | 4 | 18% | O nexo dobra o espaço: um buraco negro perseguidor e três lâminas do vazio. | **Cai do chefe Nexo do Infinito** |
+| 180 | **Trono de Ouro** | 840 | 1 | 7 | 18% | O trono chama raios dourados e dobra o espaço ao redor do impacto. | **Cai do chefe Trono de Ouro** |
 
 ## TIER 10 — Origem · Supremo (181–200)
 
@@ -272,24 +272,24 @@
 
 | # | Espada | Dano | Vel | KB | Crít | Mecânica única | Receita |
 |---|---|---|---|---|---|---|---|
-| 181 | **Primeira Luz** | 980 | 1.25 | 6 | 22% | A primeira luz do universo: dano em tela cheia, colapso e um domínio branco. | 2× Núcleo Mítico, 14× Barra de Celeste, 18× Essência de Luz, 10× Essência do Tempo _(Forja Celeste)_ |
-| 182 | **Fim de Tudo** | 1150 | 1 | 8 | 22% | O fim: um buraco negro que cresce, uma fenda eterna e nada sobrevive. | 2× Núcleo Mítico, 15× Barra de Celeste, 18× Essência de Sombra, 12× Essência do Tempo _(Forja Celeste)_ |
-| 183 | **Buraco Branco** | 1050 | 1.2 | 6 | 22% | Cospe matéria: uma nova branca gigante e quatro órbitas de luz pura. | 2× Núcleo Mítico, 15× Barra de Celeste, 20× Essência de Luz, 12× Essência do Tempo _(Forja Celeste)_ |
-| 184 | **Cosmos Vivo** | 1080 | 1.15 | 6 | 22% | Um cosmos inteiro desaba: cinco estrelas caem e cada estilhaço se divide. | 2× Núcleo Mítico, 15× Barra de Celeste, 14× Essência de Luz, 12× Essência do Tempo, 8× Essência de Sombra _(Forja Celeste)_ |
-| 185 | **Teorema Final** | 1120 | 1.1 | 7 | 22% | Prova o teorema: um feixe que atravessa tudo e o reflexo exato do golpe. | 2× Núcleo Mítico, 14× Barra de Celeste, 16× Essência de Raio, 10× Essência do Tempo _(Forja Celeste)_ |
-| 186 | **O Último Nome** | 1200 | 1.3 | 5 | 22% | Diz o último nome do inimigo: executa os feridos e sela os vivos. | 2× Núcleo Mítico, 15× Barra de Celeste, 16× Essência de Sombra, 12× Essência do Tempo _(Forja Celeste)_ |
-| 187 | **Origem do Vazio** | 1300 | 0.9 | 10 | 22% | Do nada, tudo: puxa o mundo para si e colapsa a tela em seguida. | 2× Núcleo Mítico, 16× Barra de Celeste, 18× Essência de Sombra, 12× Essência de Terra _(Forja Celeste)_ |
-| 188 | **Relógio do Universo** | 1010 | 1.35 | 5 | 22% | Atrasa o tempo dos inimigos, acelera o seu e repete o golpe duas vezes. | 2× Núcleo Mítico, 14× Barra de Celeste, 18× Essência do Tempo, 8× Essência de Luz _(Forja Celeste)_ |
-| 189 | **Semente Cósmica** | 1040 | 1.2 | 6 | 22% | Planta um mundo: um domínio vivo cura e três sementes caçam os inimigos. | 2× Núcleo Mítico, 14× Barra de Celeste, 14× Essência de Veneno, 12× Essência de Terra _(Forja Celeste)_ |
-| 190 | **Axioma** | 1060 | 1.45 | 4 | 22% | Verdade absoluta: cinco agulhas perfeitas e cada uma se parte em três. | 2× Núcleo Mítico, 14× Barra de Celeste, 16× Essência de Luz, 10× Essência do Tempo _(Forja Celeste)_ |
-| 191 | **Convergência Final** | 1090 | 1.15 | 6 | 22% | Três acertos bastam para convergir tudo num único golpe devastador. | 2× Núcleo Mítico, 15× Barra de Celeste, 16× Essência de Luz, 12× Essência do Tempo _(Forja Celeste)_ |
-| 192 | **Espada do Autor** | 1250 | 0.95 | 9 | 22% | Reescreve a cena: dano na tela inteira, colapso e 200 de escudo divino. | 3× Núcleo Mítico, 18× Barra de Celeste, 20× Essência de Luz, 14× Essência do Tempo _(Forja Celeste)_ |
-| 193 | **Nada Eterno** | 1180 | 1.25 | 5 | 22% | O vazio eterno: suga, retarda e apaga o que sobrar. | 2× Núcleo Mítico, 15× Barra de Celeste, 18× Essência de Sombra, 14× Essência do Tempo _(Forja Celeste)_ |
-| 194 | **Tudo de Uma Vez** | 1210 | 1.2 | 6 | 22% | Faz tudo simultaneamente: ecos, órbitas e uma nova a cada golpe. | 2× Núcleo Mítico, 16× Barra de Celeste, 16× Essência de Luz, 12× Essência do Tempo, 8× Essência de Fogo _(Forja Celeste)_ |
-| 195 | **Ponto Zero** | 1100 | 1.3 | 5 | 22% | Marca o ponto zero do alvo: ele detona em 1s enquanto o feixe varre a tela. | 2× Núcleo Mítico, 15× Barra de Celeste, 16× Essência do Tempo, 12× Essência de Gelo _(Forja Celeste)_ |
-| 196 | **Coração do Multiverso** | 1130 | 1.2 | 6 | 22% | O coração pulsa em vários mundos: cura, explode em rosa e colapsa a tela. | 2× Núcleo Mítico, 16× Barra de Celeste, 18× Essência de Sangue, 12× Essência de Luz _(Forja Celeste)_ |
-| 197 | **Lâmina Absoluta** | 1280 | 1 | 8 | 22% | Um corte absoluto: feixe branco que atravessa tudo e executa os feridos. | 3× Núcleo Mítico, 16× Barra de Celeste, 20× Essência de Luz, 10× Essência do Tempo _(Forja Celeste)_ |
-| 198 | **Maré Cósmica** | 1160 | 1.15 | 6 | 22% | A maré cósmica cobre a arena e conduz raios entre os inimigos. | 2× Núcleo Mítico, 16× Barra de Celeste, 16× Essência de Água, 12× Essência de Raio _(Forja Celeste)_ |
-| 199 | **Brado do Infinito** | 1220 | 1.1 | 7 | 22% | Um brado que chama seis lanças do céu e varre o horizonte em ouro. | 2× Núcleo Mítico, 16× Barra de Celeste, 14× Essência de Luz, 14× Essência de Fogo _(Forja Celeste)_ |
-| 200 | **Apoteose** | 1400 | 1.05 | 10 | 26% | A espada final: dano em tela cheia, colapso, cinco órbitas e um domínio de luz eterna. | 4× Núcleo Mítico, 20× Barra de Celeste, 20× Essência de Luz, 16× Essência do Tempo, 12× Essência de Sombra _(Forja Celeste)_ |
+| 181 | **Primeira Luz** | 980 | 1.25 | 6 | 22% | A primeira luz do universo: dano em tela cheia, colapso e um domínio branco. | **Cai do chefe Primeira Luz** |
+| 182 | **Fim de Tudo** | 1150 | 1 | 8 | 22% | O fim: um buraco negro que cresce, uma fenda eterna e nada sobrevive. | **Cai do chefe Fim de Tudo** |
+| 183 | **Buraco Branco** | 1050 | 1.2 | 6 | 22% | Cospe matéria: uma nova branca gigante e quatro órbitas de luz pura. | **Cai do chefe Buraco Branco** |
+| 184 | **Cosmos Vivo** | 1080 | 1.15 | 6 | 22% | Um cosmos inteiro desaba: cinco estrelas caem e cada estilhaço se divide. | **Cai do chefe Cosmos Vivo** |
+| 185 | **Teorema Final** | 1120 | 1.1 | 7 | 22% | Prova o teorema: um feixe que atravessa tudo e o reflexo exato do golpe. | **Cai do chefe Teorema Final** |
+| 186 | **O Último Nome** | 1200 | 1.3 | 5 | 22% | Diz o último nome do inimigo: executa os feridos e sela os vivos. | **Cai do chefe O Último Nome** |
+| 187 | **Origem do Vazio** | 1300 | 0.9 | 10 | 22% | Do nada, tudo: puxa o mundo para si e colapsa a tela em seguida. | **Cai do chefe Origem do Vazio** |
+| 188 | **Relógio do Universo** | 1010 | 1.35 | 5 | 22% | Atrasa o tempo dos inimigos, acelera o seu e repete o golpe duas vezes. | **Cai do chefe Relógio do Universo** |
+| 189 | **Semente Cósmica** | 1040 | 1.2 | 6 | 22% | Planta um mundo: um domínio vivo cura e três sementes caçam os inimigos. | **Cai do chefe Semente Cósmica** |
+| 190 | **Axioma** | 1060 | 1.45 | 4 | 22% | Verdade absoluta: cinco agulhas perfeitas e cada uma se parte em três. | **Cai do chefe Axioma** |
+| 191 | **Convergência Final** | 1090 | 1.15 | 6 | 22% | Três acertos bastam para convergir tudo num único golpe devastador. | **Cai do chefe Convergência Final** |
+| 192 | **Espada do Autor** | 1250 | 0.95 | 9 | 22% | Reescreve a cena: dano na tela inteira, colapso e 200 de escudo divino. | **Cai do chefe Espada do Autor** |
+| 193 | **Nada Eterno** | 1180 | 1.25 | 5 | 22% | O vazio eterno: suga, retarda e apaga o que sobrar. | **Cai do chefe Nada Eterno** |
+| 194 | **Tudo de Uma Vez** | 1210 | 1.2 | 6 | 22% | Faz tudo simultaneamente: ecos, órbitas e uma nova a cada golpe. | **Cai do chefe Tudo de Uma Vez** |
+| 195 | **Ponto Zero** | 1100 | 1.3 | 5 | 22% | Marca o ponto zero do alvo: ele detona em 1s enquanto o feixe varre a tela. | **Cai do chefe Ponto Zero** |
+| 196 | **Coração do Multiverso** | 1130 | 1.2 | 6 | 22% | O coração pulsa em vários mundos: cura, explode em rosa e colapsa a tela. | **Cai do chefe Coração do Multiverso** |
+| 197 | **Lâmina Absoluta** | 1280 | 1 | 8 | 22% | Um corte absoluto: feixe branco que atravessa tudo e executa os feridos. | **Cai do chefe Lâmina Absoluta** |
+| 198 | **Maré Cósmica** | 1160 | 1.15 | 6 | 22% | A maré cósmica cobre a arena e conduz raios entre os inimigos. | **Cai do chefe Maré Cósmica** |
+| 199 | **Brado do Infinito** | 1220 | 1.1 | 7 | 22% | Um brado que chama seis lanças do céu e varre o horizonte em ouro. | **Cai do chefe Brado do Infinito** |
+| 200 | **Apoteose** | 1400 | 1.05 | 10 | 26% | A espada final: dano em tela cheia, colapso, cinco órbitas e um domínio de luz eterna. | **Cai do chefe Apoteose** |
 

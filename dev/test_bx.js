@@ -1,5 +1,5 @@
 'use strict';
-// Chefes novos (13c_bossx.js, 13d..13g_bx_*.js): cada um é invocado, luta (3 fases) contra um jogador invencível, executa TODOS os golpes,
+// Chefes novos (13c_bossx.js, 13d..13i_bx_*.js): cada um é invocado, luta (3 fases; a Apoteose tem 4) contra um jogador invencível, executa TODOS os golpes,
 // é desenhado em todas as variantes, morre, solta o loot e limpa lacaios/zonas. Uso: node dev/test_bx.js [id1,id2,...] [--shots pasta] [--secs N]
 const { launch, INDEX_URL, run, startWorld, collectErrors } = require('./lib');
 const args = process.argv.slice(2); const ids = args.find(a => !a.startsWith('--')) || '';
