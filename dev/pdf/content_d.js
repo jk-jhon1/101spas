@@ -254,13 +254,41 @@ function part6(doc) {
   ], [0.22, 0.44, 0.34], { size: 8.1 });
 }
 
+function achievements(doc) {
+  doc.h2('22.  Conquistas e os itens de invocação de NPC', { mark: 's22', break: true });
+  doc.para('A última camada de conteúdo: **429 conquistas** em 10 categorias, com quatro raridades, e **quatro itens** que chamam um NPC para o seu lado — mas só no Modo Criativo.');
+  doc.callout('ok', 'Resultado', '429 conquistas (200 de espada e 94 de chefe geradas das tabelas do jogo), duas entradas para o painel, perfil que nunca regride e quatro itens de invocação restritos ao Criativo — tudo coberto por teste em Node (`dev/transfer.js` valida o arquivo, e o painel é exercitado no jogo).');
+  doc.h3('Como uma conquista é definida');
+  doc.para('Uma conquista não é uma variável solta: é um objeto com `id`, `cat`, `n` (nome), `d` (descrição), `r` (raridade 1–4) e `p()`, uma função que devolve `[atual, meta]`. O progresso sai do estado do jogo na hora de desenhar — por isso uma conquista nunca “desanda” e nunca precisa ser reescrita quando um número muda. Quem não tem meta fixa (as de “tenha esta espada”, “derrote este chefe”) devolve `[0 ou 1, 1]`.');
+  doc.table(['Categoria', 'Quantas', 'O que cobre'], [
+    ['Espadas', '200', 'Uma por espada, geradas de `SWORDS`'],
+    ['Chefes', '94', '4 clássicos (bandeiras) + 90 novos, gerados de `BXLIST`'],
+    ['Progressão', '35', 'Tiers completos, atos, estágios, sigilos, forja, cristais'],
+    ['Combate', '18', 'Abates, maior golpe, mortes, dia/noite, chefes'],
+    ['Mineração e construção', '15', 'Blocos minerados/colocados, minérios, picaretas, profundidade'],
+    ['Equipamento', '15', 'Acessórios, armaduras, conjuntos, Tier 10, barras'],
+    ['Exploração', '19', 'Biomas, camadas, dias, distância, cogumelos, mapa, baús'],
+    ['Economia e NPCs', '13', 'Moedas, compras, vendas, enfermeira, moradores e invocações'],
+    ['Mundos', '8', 'Mundos criados, tempo jogado, salvar, exportar, importar, modos'],
+    ['Segredos', '12', 'Fênix, Axioma, Trono, Coroa, Convergência, Maré, 300 itens vistos'],
+  ], [0.24, 0.1, 0.66], { size: 8.4 });
+  doc.h3('O laço e o aviso');
+  doc.para('`achTick(dt)` é chamado dentro do `step`. A cada quadro ele mede a distância andada (ignorando saltos maiores que 420 px, para teleporte não contar), registra bioma, camada, profundidade máxima, tempo de jogo e a passagem pela área dos cogumelos. A cada **0,6 s** roda a checagem completa: para cada conquista ainda bloqueada, chama `p()` e, se chegou na meta, desbloqueia, mostra o aviso dourado com som e atualiza o rótulo dos dois botões.');
+  doc.h3('Onde o progresso fica guardado');
+  doc.para('Em dois lugares: no **perfil do navegador** (`localStorage`, gravado a cada 12 s quando muda) e **dentro de cada mundo salvo** — o arquivo exportado leva as conquistas junto. Ao abrir um mundo antigo ou importar um arquivo, `achMerge` faz a união por conquista, contador e recorde: o perfil nunca regride. `achClean` valida o que vem de fora (ids de conquista, itens, biomas, camadas, tipos de NPC e números com teto), de modo que um arquivo adulterado não injeta conquista inventada.');
+  doc.h3('O painel');
+  doc.para('Duas entradas, como pedido: **Conquistas** no menu principal (com o contador `x / 429` e a porcentagem) e **Conquistas** na pausa. O painel é HTML em DOM, com uma aba por categoria, barra de progresso geral e ordenação “em progresso → não iniciadas → concluídas”; cada linha traz ícone, nome, raridade, descrição e o progresso (`37/200`), com `escHtml` em todo texto.');
+  doc.h3('Os itens de invocação de NPC');
+  doc.para('Quatro itens usáveis — **Sino do Guia**, **Baú do Mercador**, **Maleta da Enfermeira** e **Martelo do Armeiro** — chamam o morador para o lado do jogador sem exigir casa válida. Eles só funcionam no **Modo Criativo**: no modo Aventura a mensagem explica a restrição e o item **não é consumido**. O NPC invocado ganha `free: true`, não conta como morador sem casa (não “vai embora”), fica perto de onde foi chamado e é salvo no mundo e no arquivo exportado (com a marca `free`).');
+}
+
 function appendix(doc) {
   doc.setPart('Apêndices');
   doc.h2('A.  Todos os módulos em uma tabela', { mark: 'sa', break: true });
-  doc.para('Referência rápida: nome, linhas e papel de cada um dos 50 módulos, na ordem de carga.');
+  doc.para('Referência rápida: nome, linhas e papel de cada um dos 51 módulos, na ordem de carga.');
   const mods = [
     ['00_util.js', 84, 'Matemática, RNG determinístico, Perlin, cores'],
-    ['01_data.js', 259, 'Tiers, tiles, paredes, itens, receitas'],
+    ['01_data.js', 266, 'Tiers, tiles, paredes, itens, receitas'],
     ['02_world.js', 230, 'Matriz de blocos, líquidos, quedas, árvores'],
     ['03_worldgen.js', 439, 'Gerador procedural em fatias'],
     ['04_light.js', 106, 'Iluminação dinâmica por opacidade'],
@@ -276,23 +304,23 @@ function appendix(doc) {
     ['05j_bxart4.js', 179, 'Arte dos chefes do Ato IV (12)'],
     ['05k_bxart5.js', 339, 'Arte dos chefes do Ato V (20)'],
     ['05l_bxart6.js', 302, 'Arte dos chefes do Ato VI (20), 4 variantes da Apoteose'],
-    ['06_icons.js', 243, 'Ícones de itens e sprites das espadas 1–120'],
+    ['06_icons.js', 260, 'Ícones de itens e sprites das espadas 1–120'],
     ['06b_swordart.js', 649, 'Arte pixel a pixel das espadas 121–200'],
     ['06c_gearart.js', 760, 'Arte própria de cada peça de equipamento'],
     ['07_sky.js', 100, 'Céu, astros, nuvens e colinas'],
     ['08_phys.js', 145, 'Estado global G, colisão, partículas, drops'],
     ['08b_audio.js', 60, 'Efeitos sonoros sintetizados'],
-    ['09_combat.js', 334, 'Dano, status, projéteis, explosões'],
+    ['09_combat.js', 335, 'Dano, status, projéteis, explosões'],
     ['09b_swing.js', 95, 'Arco do golpe, ápice, colisão da lâmina'],
     ['10_fx.js', 276, 'Biblioteca de 101 efeitos de espada'],
     ['11_swords.js', 157, 'Catálogo das 120 primeiras espadas'],
     ['11b_swords_x.js', 425, 'Tiers 7–10: 80 espadas + 25 efeitos'],
     ['10b_gear_fx.js', 498, 'Mecânicas de acessórios, armaduras e conjuntos'],
     ['11c_gear_x.js', 256, '50 minérios, 50 armaduras, 50 acessórios, 5 picaretas'],
-    ['12_player.js', 360, 'Jogador, inventário, criação, mineração'],
+    ['12_player.js', 367, 'Jogador, inventário, criação, mineração'],
     ['13_enemies.js', 334, 'Inimigos, IA, spawn e drops'],
     ['13b_bosses.js', 78, 'Os 4 chefes clássicos'],
-    ['13c_bossx.js', 312, 'Motor dos 90 chefes novos'],
+    ['13c_bossx.js', 324, 'Motor dos 90 chefes novos'],
     ['13d_bx_a1.js', 120, 'Chefes novos do Ato I (8)'],
     ['13e_bx_a2.js', 269, 'Chefes novos do Ato II (14)'],
     ['13f_bx_a3.js', 263, 'Chefes novos do Ato III (16)'],
@@ -301,17 +329,18 @@ function appendix(doc) {
     ['13i_bx_a6.js', 442, 'Chefes novos do Ato VI (20) — inclui a Apoteose'],
     ['14_draw_enemies.js', 236, 'Desenho de inimigos e chefes'],
     ['14b_draw_bx.js', 36, 'Desenho dos chefes novos'],
-    ['15_ui.js', 319, 'HUD, inventário, catálogo, mapa, ajuda'],
-    ['15b_npc.js', 145, 'Moradia, NPCs e lojas'],
-    ['15c_save.js', 241, 'Biblioteca de mundos (IndexedDB, RLE)'],
+    ['15_ui.js', 320, 'HUD, inventário, catálogo, mapa, ajuda'],
+    ['15b_npc.js', 168, 'Moradia, NPCs e lojas'],
+    ['15c_save.js', 244, 'Biblioteca de mundos (IndexedDB, RLE)'],
     ['15d_gamepad.js', 204, 'Suporte a controle'],
     ['15e_worlds.js', 179, 'Menu do título e “Meus Mundos”'],
-    ['15f_transfer.js', 261, 'Aparelho, proteção e arquivo de mundo'],
+    ['15f_transfer.js', 263, 'Aparelho, proteção e arquivo de mundo'],
     ['15g_touch.js', 80, 'Controles de toque'],
-    ['16_main.js', 270, 'Loop, render, input, câmera'],
+    ['15h_ach.js', 342, 'Conquistas: 429, painel, perfil e saneamento'],
+    ['16_main.js', 281, 'Loop, render, input, câmera'],
   ];
   doc.table(['Módulo', 'Linhas', 'Papel'], mods.map(m => [m[0], String(m[1]), m[2]]), [0.28, 0.1, 0.62], { size: 7.9 });
-  doc.para('Total: **50 módulos · 12.505 linhas** de JavaScript, mais 404 linhas de CSS e template.');
+  doc.para('Total: **51 módulos · 12.930 linhas** de JavaScript, mais 419 linhas de CSS e template.');
 
   doc.h2('B.  Comandos e ganchos de teste', { mark: 'sb' });
   doc.table(['Comando', 'Efeito'], [
@@ -325,7 +354,7 @@ function appendix(doc) {
   ], [0.42, 0.58], { size: 8.4 });
   doc.h3('Ganchos expostos no navegador');
   doc.para('O `16_main.js` publica alguns atalhos em `window` para que os testes dirijam o jogo sem depender de cliques: `__G` (estado), `__step(dt)`, `__render()`, `__start(opções)`, `__SW` (catálogo), `__IT` (itens), `__Worlds`, `__chooseSeed`, `__PAD` e `__padUpdate`. Eles não afetam o jogador — são a interface de automação do projeto.');
-  doc.callout('ok', 'Resumo final', 'O 101spas é um jogo de navegador em arquivo único, construído por concatenação de 50 módulos globais. Os dados de conteúdo estão separados do motor; o desenho é gerado por código em dois pipelines (vetorial pixelizado e pintura pixel a pixel); o estado vive em G; a interface é DOM sobre um canvas de baixa resolução ampliado por fator inteiro; e a verificação é feita em duas camadas — Node para dados e lógica, Chromium para o jogo de verdade.');
+  doc.callout('ok', 'Resumo final', 'O 101spas é um jogo de navegador em arquivo único, construído por concatenação de 51 módulos globais. Os dados de conteúdo estão separados do motor; o desenho é gerado por código em dois pipelines (vetorial pixelizado e pintura pixel a pixel); o estado vive em G; a interface é DOM sobre um canvas de baixa resolução ampliado por fator inteiro; e a verificação é feita em duas camadas — Node para dados e lógica, Chromium para o jogo de verdade.');
 }
 
-module.exports = { part4, part6, appendix };
+module.exports = { part4, part6, artifacts: achievements, appendix };

@@ -95,7 +95,7 @@ function bossLoot(e) {
   else if (k === 'boss_colossus') { rain('coin', rndi(700, 1000)); dropItem('mythic_core', 3, x, y, 0, -200); rain('celestial_frag', rndi(26, 36)); dropItem('life_crystal', 3, x, y); dropItem('potion3', 6, x - 10, y); dropItem('acc_star', 1, x + 12, y); }
 }
 function bossDefeated(e) {
-  const k = e.k; G.boss = null; flash('#ffffff', .6, .8); shake(14); sfx('boom', 1);
+  const k = e.k; G.boss = null; achBoss(); flash('#ffffff', .6, .8); shake(14); sfx('boom', 1);
   burst(ecx(e), ecy(e), 60, { col: [e.d.col2, '#fff', e.d.col], spd: 340, g: 120, life: 1.1, size: 4, glow: true });
   if (k === 'boss_slime') { G.flags.slime = true; toast('O Rei Slime foi derrotado!', '#4ade80'); }
   else if (k === 'boss_eye') { G.flags.eye = true; G.stage = Math.max(G.stage, 1); toast('O Olho Colossal foi derrotado! As cavernas ficaram mais perigosas...', '#f87171'); }

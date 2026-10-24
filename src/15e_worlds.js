@@ -95,7 +95,7 @@ async function renderDeviceBox() {
 async function exportWorldUI(id, btn) {
   btn.disabled = true;
   try {
-    const f = await Worlds.exportFile(id); downloadFile(f.name, f.text);
+    const f = await Worlds.exportFile(id); downloadFile(f.name, f.text); achStat('exported');
     worldsMsg('Arquivo "' + f.name + '" gerado (' + fmtMB(f.text.length) + '). Guarde-o: ele recria este mapa em qualquer aparelho, com "Importar mapa".', 'ok');
   } catch (e) { worldsMsg('Não foi possível exportar: ' + ((e && e.message) || e), 'err'); }
   btn.disabled = false;
@@ -116,7 +116,7 @@ async function importFiles(files) {
       if (f.size > WORLD_FILE_MAX) r = { ok: false, action: 'error', reason: 'arquivo grande demais' };
       else r = await Worlds.importText(await f.text());
     } catch (e) { r = { ok: false, action: 'error', reason: 'não foi possível ler o arquivo (' + ((e && e.message) || e) + ')' }; }
-    lines.push(importLine(r, f.name)); if (r.action === 'added' || r.action === 'updated') ok++; else if (r.action === 'error') bad++;
+    lines.push(importLine(r, f.name)); if (r.action === 'added' || r.action === 'updated') { ok++; achStat('imported'); } else if (r.action === 'error') bad++;
   }
   updateTitleMenu(); renderWorlds();
   worldsMsg(lines, bad ? 'err' : ok ? 'ok' : 'warn');
@@ -127,7 +127,7 @@ async function newWorld(mode) {
   const bs = [$('btn-adv'), $('btn-cre'), $('btn-load')]; bs.forEach(b => b.disabled = true);   // evita clique duplo durante o sorteio
   try {
     await Worlds.init();
-    const w = await Worlds.allocate(mode);
+    const w = await Worlds.allocate(mode); achStat('worlds');
     startGame({ mode, seed: w.seed, id: w.id, name: w.name });
   } finally { bs.forEach(b => b.disabled = false); }
 }

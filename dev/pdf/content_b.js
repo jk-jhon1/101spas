@@ -1,11 +1,11 @@
 'use strict';
-// Conteúdo — parte 2: Parte III (a pasta src/, 50 módulos).
+// Conteúdo — parte 2: Parte III (a pasta src/, 51 módulos).
 const { C } = require('./engine.js');
 
 const COL = { base: '#64748b', world: '#0e7490', art: '#b45309', sim: '#1e3a8a', play: '#b91c1c', ui: '#6d28d9', main: '#0f172a' };
 
 function part3(doc) {
-  doc.partPage('III', 'A pasta src/', 'Os 50 módulos do jogo, na ordem em que são carregados: dados, mundo, arte, combate, conteúdo, interface e motor.');
+  doc.partPage('III', 'A pasta src/', 'Os 51 módulos do jogo, na ordem em que são carregados: dados, mundo, arte, combate, conteúdo, interface e motor.');
   doc.setPart('Parte III — A pasta src/');
 
   doc.h2('8.  Bloco 00–01 · base e dados', { mark: 's8' });

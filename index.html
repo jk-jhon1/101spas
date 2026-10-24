@@ -275,6 +275,21 @@ body.touch-on #boss-name{font-size:13px}
   #item-name{left:140px;transform:none}
 }
 
+/* ---------- conquistas ---------- */
+#ach{z-index:46;background:rgba(3,5,12,.9);padding:10px}
+#ach .box{width:min(880px,96vw);max-width:none;max-height:92vh;padding:16px 18px}
+.ach-tabs{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 10px}
+.ach-tabs .tab{font-size:11.5px;cursor:pointer}
+.ach-row{display:flex;gap:10px;align-items:center;padding:7px 9px;border-radius:6px;background:rgba(255,255,255,.05);margin-bottom:5px;border-left:4px solid #334155}
+.ach-row.on{background:rgba(251,191,36,.10)}
+.ach-row.off{opacity:.68}
+.ach-ic{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:14px;flex:0 0 26px}
+.ach-nm{font-weight:800;font-size:13px;line-height:1.25}
+.ach-ds{font-size:11.5px;color:var(--mut);line-height:1.35;margin-top:1px}
+.ach-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:4px}
+.ach-bar i{display:block;height:100%;background:var(--acc)}
+.ach-pct{font-size:11px;color:var(--mut);margin-left:auto;white-space:nowrap;flex:0 0 auto}
+
 </style>
 </head>
 <body>
@@ -350,6 +365,7 @@ body.touch-on #boss-name{font-size:13px}
     <button class="menu-btn" id="btn-adv">Nova Aventura<small>Mine, crie, derrote chefes e forje as 200 espadas · cada mundo é único</small></button>
     <button class="menu-btn" id="btn-cre">Modo Criativo<small>Arsenal completo: todas as espadas, inimigos e bonecos de treino</small></button>
     <button class="menu-btn" id="btn-worlds">Meus Mundos<small id="btn-worlds-sub">Nenhum mundo salvo ainda</small></button>
+    <button class="menu-btn" id="btn-ach">Conquistas<small id="btn-ach-sub">0 / 0 desbloqueadas</small></button>
     <button class="menu-btn" id="btn-help">Controles e Guia</button>
     <div id="pad-hint">Aceita controle (gamepad): aperte um botão para ativar</div>
   </div>
@@ -384,6 +400,7 @@ body.touch-on #boss-name{font-size:13px}
       <h2>Pausado</h2>
       <div id="pause-world"></div>
       <button class="menu-btn" id="p-resume" style="font-size:15px">Continuar</button>
+      <button class="menu-btn" id="p-ach" style="font-size:15px">Conquistas</button>
       <button class="menu-btn" id="p-help" style="font-size:15px">Controles e Guia</button>
       <button class="menu-btn" id="p-sound" style="font-size:15px">Som: ligado</button>
       <button class="menu-btn" id="p-touch" style="font-size:15px">Controles de toque: automático</button>
@@ -393,6 +410,7 @@ body.touch-on #boss-name{font-size:13px}
   </div>
 
   <div id="help" class="screen hidden"><div class="box" id="help-box"></div></div>
+  <div id="ach" class="screen hidden"><div class="box" id="ach-box"></div></div>
 </div>
 <script>
 /* ===== 00_util.js ===== */
@@ -672,6 +690,13 @@ item('summon_slime', 'Coroa de Gosma', { type: 'use', tier: 1, stack: 20, ic: ['
 item('summon_eye', 'Lente Suspeita', { type: 'use', tier: 2, stack: 20, ic: ['summon', 'eye', '#f87171'], use: 'boss_eye', desc: 'Invoca o Olho Colossal (somente à noite).' });
 item('summon_guardian', 'Boneco Infernal', { type: 'use', tier: 2, stack: 20, ic: ['summon', 'imp', '#fb923c'], use: 'boss_guardian', desc: 'Invoca o Guardião do Abismo (somente no Inferno). Derrotá-lo inicia o Hardmode.' });
 item('summon_colossus', 'Coração Estelar', { type: 'use', tier: 5, stack: 20, ic: ['summon', 'star', '#fbbf24'], use: 'boss_colossus', desc: 'Invoca o Colosso Estelar (chefe final).' });
+// ---- Itens de invocar NPC (exclusivos do Modo Criativo) ----
+// No Criativo, o Arsenal entrega qualquer item: estes quatro chamam o Guia, o Mercador, a Enfermeira e o Armeiro
+// para o seu lado, sem precisar de casa válida. No modo Aventura eles existem, mas não fazem nada.
+item('npc_guide', 'Sino do Guia', { type: 'use', tier: 6, stack: 5, creativeOnly: true, ic: ['npcp', 'guide', '#2f9a3a', '#7a4a22'], use: 'npc:guide', desc: 'Invoca o Guia ao seu lado. Só funciona no modo Criativo.' });
+item('npc_trader', 'Baú do Mercador', { type: 'use', tier: 6, stack: 5, creativeOnly: true, ic: ['npcp', 'trader', '#7c3aed', '#2a2a2a'], use: 'npc:trader', desc: 'Invoca o Mercador ao seu lado. Só funciona no modo Criativo.' });
+item('npc_nurse', 'Maleta da Enfermeira', { type: 'use', tier: 6, stack: 5, creativeOnly: true, ic: ['npcp', 'nurse', '#f8fafc', '#f5c16c'], use: 'npc:nurse', desc: 'Invoca a Enfermeira ao seu lado. Só funciona no modo Criativo.' });
+item('npc_smith', 'Martelo do Armeiro', { type: 'use', tier: 6, stack: 5, creativeOnly: true, ic: ['npcp', 'smith', '#8a5c2c', '#6b4a2a'], use: 'npc:smith', desc: 'Invoca o Armeiro ao seu lado. Só funciona no modo Criativo.' });
 // picaretas: pow = poder, spd = velocidade de mineração
 const PICKS = [
   ['pick_copper', 'Picareta de Cobre', 1, 1.0, '#d9772f', 1], ['pick_iron', 'Picareta de Ferro', 2, 1.35, '#c9b8a8', 1], ['pick_gold', 'Picareta de Ouro', 3, 1.7, '#f6c93a', 1],
@@ -4262,6 +4287,23 @@ function drawIconSpec(g, spec, it) {
       else { const pts = []; for (let i = 0; i < 10; i++) { const a = -PI / 2 + i / 10 * TAU, r = i % 2 ? 5 : 13; pts.push([16 + Math.cos(a) * r, 16 + Math.sin(a) * r]); } poly(g, pts, '#fbbf24'); circ(g, 16, 16, 3, '#4f46e5', '#1e1b4b'); }
       break;
     }
+    case 'npcp': {   // item de invocar NPC: estátua/retrato em pixel-art do morador (um por profissão)
+      const t = spec[1], shirt = spec[2] || '#2f9a3a', hair = spec[3] || '#7a4a22';
+      glowDot(g, 16, 17, 15, shirt, .4);
+      rrect(g, 5, 21, 22, 8, 2, '#2a3348', '#0b1020');                          // pedestal
+      g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(7, 22, 18, 2);
+      rrect(g, 9, 9, 14, 14, 4, shirt, 'rgba(0,0,0,.6)');                      // corpo/roupa
+      if (t === 'smith') { g.fillStyle = '#e7e2d8'; g.fillRect(11, 13, 10, 9); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(11, 13, 10, 1); }  // avental
+      if (t === 'nurse') { g.fillStyle = '#ef4444'; g.fillRect(14.5, 14, 3, 8); g.fillRect(12, 16.5, 8, 3); }                                     // cruz
+      circ(g, 16, 8, 5.5, '#f2c69a', 'rgba(0,0,0,.6)');                        // cabeça
+      g.fillStyle = '#1b2333'; g.fillRect(13, 7, 1.6, 2); g.fillRect(17.4, 7, 1.6, 2);
+      if (t === 'guide') { g.fillStyle = hair; g.fillRect(10.5, 2.6, 11, 4.4); g.fillRect(9.6, 5.4, 12.8, 1.6); }
+      else if (t === 'trader') { g.fillStyle = '#a78bfa'; g.fillRect(10, 1.8, 12, 3); g.fillRect(13, -1.2 + 4, 6, 2.2); g.fillStyle = hair; g.fillRect(11, 6, 2, 3); g.fillRect(19, 6, 2, 3); }
+      else if (t === 'nurse') { g.fillStyle = hair; g.fillRect(10, 2.4, 12, 4); g.fillRect(8.6, 5, 3, 7); g.fillRect(20.4, 5, 3, 7); g.fillStyle = '#fff'; g.fillRect(13, 2, 6, 1.6); }
+      else { g.fillStyle = hair; g.fillRect(11, 5.4, 10, 2.6); g.fillRect(12, 8.6, 8, 1.4); }
+      rrect(g, 5, 21, 22, 8, 2, null, 'rgba(0,0,0,.55)');
+      break;
+    }
     case 'sigil': {   // pedra de invocação dos chefes novos: disco escuro com runa luminosa (única por chefe)
       const n = spec[2] || 0; glowDot(g, 16, 16, 15, col, .5); circ(g, 16, 16, 12, '#14121c', dk, 1.4); circ(g, 16, 16, 9.5, '#262035', null);
       const k = 4 + n % 3, pts = []; for (let i = 0; i < k; i++) { const a = hash2(n, i, 3) * TAU, r = 3 + hash2(n, i, 4) * 6; pts.push([16 + Math.cos(a) * r, 16 + Math.sin(a) * r]); }
@@ -6267,6 +6309,7 @@ function hitEnemy(e, h) {
   if (st.exec && !e.boss && e.hpMax && e.hp / e.hpMax < st.exec) dmg *= 1.5;   /* execução (armaduras/acessórios) */
   const bxh = e.bxh; if (bxh && bxh.hurt) { dmg = bxh.hurt(e.ai.x, e, dmg, h); if (!(dmg > 0)) { addText(ecx(e), e.y - 4, 'Imune', '#94a3b8', 12, .6); sfx('hit'); return { dmg: 0, crit: false, e, killed: false }; } }   /* chefes novos: mecânica própria de dano */
   dmg = Math.max(1, Math.round(dmg));
+  achMax('hit', dmg);   /* conquistas: maior golpe */
   e.hp -= dmg; e.hurtT = .12; e.flash = .1; e.lastHit = G.t; if (bxh && bxh.after) bxh.after(e.ai.x, e, dmg, h);
   if (e.isDummy) { e.hp = e.hpMax; } if (G.opts.showDps || e.isDummy) dpsPush(dmg, e);
   // números
@@ -6304,7 +6347,7 @@ function killEnemy(e, h) {
     if (h && h.sword && !h.noHooks) fxCall(h.sword, 'onKill', P, e, h);
     if (!(h && h.gear)) gearCall('onKill', P, e, h);
     rollDrops(e, h);
-    G.kills = (G.kills || 0) + 1;
+    G.kills = (G.kills || 0) + 1; achKill(e);
   }
   if (e.boss) bossDefeated(e);
 }
@@ -8248,6 +8291,7 @@ function invCanAdd(id, n) {
 }
 function invAdd(id, n, meta) {
   const P = G.P, sm = stackMax(id);
+  achSee(id); if (id === 'coin') achStat('coins', n);   /* conquistas: histórico de itens e moedas ganhas */
   if (sm > 1) for (const s of P.inv) { if (s && s.id === id && s.n < sm) { const k = Math.min(n, sm - s.n); s.n += k; n -= k; if (n <= 0) break; } }
   while (n > 0) {
     const i = P.inv.indexOf(null); if (i < 0) break;
@@ -8286,6 +8330,7 @@ function doCraft(r) {
   if (!free) for (const k in r.ing) invRemove(k, r.ing[k]);
   const left = invAdd(r.out, r.n);
   if (left > 0) dropItem(r.out, left, G.P.x, G.P.y);
+  achStat('crafted', 1); if (r.st === 'forge') achStat('forge', 1);
   sfx('craft'); return true;
 }
 
@@ -8330,6 +8375,7 @@ function breakTile(x, y, byPlayer) {
   if (d.unb) return false;
   if (id === T.chest) { const ch = wd.chests.get(wd.idx(x, y)); if (ch && ch.some(s => s)) { toast('Esvazie o baú primeiro.', '#fbbf24'); return false; } wd.chests.delete(wd.idx(x, y)); }
   let drop = null, wood = 0;
+  if (byPlayer) achStat('mined', 1);
   if (id === T.trunk) { wood = wd.fellTree(x, y); dropItem('wood', wood, x * TS + 4, y * TS); sfx('break'); tileBits(x, y, id); return true; }
   if (d.door) { const [a, b] = wd.doorColumn(x, y); for (let yy = a; yy <= b; yy++) wd.set(x, yy, 0, true); dropItem('door', 1, x * TS + 4, y * TS + 4); wd.checkSupport(x, a - 1); sfx('break'); tileBits(x, y, id); return true; }
   drop = tileDropFor(id, x, y);
@@ -8368,12 +8414,12 @@ function placeTile(tx, ty, itemId) {
     if (!canPlaceTile(tx, ty, it.tile)) return false;
     if (it.tile === T.doorC) { for (let k = 0; k < 3; k++) wd.set(tx, ty - k, T.doorC, true); wd.checkSupport(tx, ty); }
     else { const cur = wd.get(tx, ty); if (cur) { onWorldBreak(tx, ty, cur); } wd.set(tx, ty, it.tile); }
-    sfx('place'); return true;
+    sfx('place'); achStat('placed', 1); return true;
   }
   if (it.type === 'wall') {
     if (wd.wallAt(tx, ty) === it.wall) return false; if (wd.get(tx, ty) && SOLID[wd.get(tx, ty)]) return false;
     const adj = wd.wallAt(tx - 1, ty) || wd.wallAt(tx + 1, ty) || wd.wallAt(tx, ty - 1) || wd.wallAt(tx, ty + 1) || SOLID[wd.get(tx - 1, ty)] || SOLID[wd.get(tx + 1, ty)] || SOLID[wd.get(tx, ty - 1)] || SOLID[wd.get(tx, ty + 1)];
-    if (!adj) return false; wd.setWall(tx, ty, it.wall); sfx('place'); return true;
+    if (!adj) return false; wd.setWall(tx, ty, it.wall); sfx('place'); achStat('placed', 1); return true;
   }
   return false;
 }
@@ -8422,6 +8468,10 @@ function useConsumable(P, s, it) {
   if (it.use === 'heal') { if (P.buffs.curse) { toast('Maldição: você não consegue se curar!', '#c084fc'); return; } if (P.potionCd > 0) { toast('Poção em recarga (' + Math.ceil(P.potionCd) + 's)', '#fbbf24'); return; } if (P.hp >= P.maxHp) return; gearCall('onPotion', P); healPlayer(it.heal); P.potionCd = creative ? 2 : 30 * (1 - (P.stats.cdr || 0)); sfx('heal'); burst(P.x + P.w / 2, P.y + P.h / 2, 14, { col: ['#4ade80', '#bbf7d0'], spd: 90, g: -60, glow: true, life: .6 }); consume(); }
   else if (it.use === 'life') { if (P.crystals >= 15) { toast('Vida máxima já no limite.', '#fbbf24'); return; } P.crystals++; recalcStats(); P.hp = P.maxHp; sfx('heal'); toast('Vida máxima aumentada! (' + P.maxHp + ')', '#f472b6'); consume(); }
   else if (it.use.startsWith('boss_')) { if (summonBoss(it.use.slice(5))) consume(); }
+  else if (it.use.startsWith('npc:')) {   /* itens de invocar NPC: exclusivos do Modo Criativo */
+    if (G.mode !== 'creative') { toast('"' + it.n + '" só funciona no Modo Criativo.', '#fbbf24', 4); sfx('tick'); return; }
+    summonNpcItem(it.use.slice(4));
+  }
 }
 
 // ---------- atualização do jogador ----------
@@ -8524,7 +8574,7 @@ function interact(P) {
   const n = nearestNpcAt(m.wx, m.wy); if (n) openNpc(n);
 }
 function killPlayer() {
-  const P = G.P; if (P.dead) return; P.dead = true; P.hp = 0; P.respawnT = G.mode === 'creative' ? .6 : 4;
+  const P = G.P; if (P.dead) return; P.dead = true; P.hp = 0; P.respawnT = G.mode === 'creative' ? .6 : 4; achStat('deaths', 1);
   burst(P.x + P.w / 2, P.y + P.h / 2, 30, { col: ['#c0392b', '#e74c3c', '#f2c28b'], spd: 220, g: 500, life: .9, size: 3.4 });
   sfx('boom', .6); shake(10);
   for (const inst of P.cb.inst) inst.dead = true; P.cb.inst.length = 0;
@@ -8681,7 +8731,7 @@ function bossLoot(e) {
   else if (k === 'boss_colossus') { rain('coin', rndi(700, 1000)); dropItem('mythic_core', 3, x, y, 0, -200); rain('celestial_frag', rndi(26, 36)); dropItem('life_crystal', 3, x, y); dropItem('potion3', 6, x - 10, y); dropItem('acc_star', 1, x + 12, y); }
 }
 function bossDefeated(e) {
-  const k = e.k; G.boss = null; flash('#ffffff', .6, .8); shake(14); sfx('boom', 1);
+  const k = e.k; G.boss = null; achBoss(); flash('#ffffff', .6, .8); shake(14); sfx('boom', 1);
   burst(ecx(e), ecy(e), 60, { col: [e.d.col2, '#fff', e.d.col], spd: 340, g: 120, life: 1.1, size: 4, glow: true });
   if (k === 'boss_slime') { G.flags.slime = true; toast('O Rei Slime foi derrotado!', '#4ade80'); }
   else if (k === 'boss_eye') { G.flags.eye = true; G.stage = Math.max(G.stage, 1); toast('O Olho Colossal foi derrotado! As cavernas ficaram mais perigosas...', '#f87171'); }
@@ -9031,6 +9081,7 @@ function bx(id, d) {
   if (d.sword && IT[d.sword] && IT[d.sword].sw) {   /* Tier 9/10: a espada não se forja, cai só do chefe */
     const sw = IT[d.sword].sw; if (sw.tierLevel >= 9) { const k = RECIPES.findIndex(r => r.out === sw.id); if (k >= 0) RECIPES.splice(k, 1); sw.dropOnly = true; }
     if (sw.dropOnly) { sw.dropFrom = id; sw.dropFromName = d.n; }
+    if (id === 'axioma') sw.sealedAll = true;   /* a espada 190 só cai com todos os chefes derrotados (bxLoot) */
   }
   const cond = d.cond ? ' Condição: ' + bxCondText(d) + '.' : '';
   item('sg_' + id, 'Sigilo: ' + (d.sigil || d.n), { type: 'use', tier: d.act + 1, stack: 20, ic: ['sigil', d.acc, d.i], use: 'boss_x:' + id, desc: 'Invoca ' + d.n + '.' + cond + ' Mecânica: ' + d.mech });
@@ -9302,18 +9353,29 @@ function bxLoot(e) {
   const rain = (id, n) => { for (let i = 0; i < n; i += Math.max(1, Math.ceil(n / 8))) dropItem(id, Math.min(Math.ceil(n / 8) || 1, n - i), x + rnd(-30, 30), y + rnd(-20, 10), rnd(-120, 120), rnd(-300, -150)); };
   rain('coin', rndi(d.coin[0], d.coin[1]));
   for (const [id, a, b] of A.mat) { const n = rndi(a, b); rain(id, n); }
-  if (d.sword) dropItem(d.sword, 1, x, y);
+  if (d.sword && d.id === 'axioma') {
+    // Axioma é o guardião da última espada: ela só cai quando todos os chefes do jogo já caíram.
+    // (o Axioma ainda não tem a bandeira marcada neste instante — ele conta como o que está morrendo agora)
+    const miss = bossesLeft() - 1;
+    if (miss > 0) toast('A espada ' + (IT[d.sword] ? IT[d.sword].n : d.sword) + ' não cai ainda: faltam ' + miss + (miss === 1 ? ' chefe' : ' chefes') + ' para derrotar no jogo.', '#fbbf24', 8);
+    else dropItem(d.sword, 1, x, y);
+  } else if (d.sword) dropItem(d.sword, 1, x, y);
   gearBossDrop(d, dropItem, x, y);   /* acessório exclusivo do chefe (11c_gear_x.js) */
   if (d.i % 3 === 0) dropItem('life_crystal', 1, x + 8, y);
   dropItem(A.pot, 2 + d.act, x - 10, y);
   if (d.loot) d.loot(e, rain);
 }
 function bxDefeated(e) {
-  const d = e.d.bx; G.flags[d.id] = true; bxCleanup(e);
-  toast(d.n + ' foi derrotado!' + (d.sword ? ' Espada: ' + (IT[d.sword] ? IT[d.sword].n : d.sword) + '.' : ''), d.acc, 6);
+  const d = e.d.bx; G.flags[d.id] = true; bxCleanup(e); achBoss();
+  const sw = d.sword && IT[d.sword] ? IT[d.sword].n : null;
+  const swTxt = !sw ? '' : (d.id === 'axioma' && bossesLeft() > 0) ? ' A espada ' + sw + ' continua selada: faltam ' + bossesLeft() + ' chefes.' : ' Espada: ' + sw + '.';
+  toast(d.n + ' foi derrotado!' + swTxt, d.acc, 6);
   if (d.death) d.death(e);
 }
 function bxDefeatedCount() { let n = 0; for (const d of BXLIST) if (G.flags && G.flags[d.id]) n++; return n; }
+// Quantos chefes do jogo ainda faltam (os 4 clássicos + os 90 novos). O Axioma usa isto: a espada 190 só cai depois de todos.
+const CLASSIC_KEYS = ['slime', 'eye', 'guardian', 'colossus'];
+function bossesLeft() { let n = BXLIST.length + CLASSIC_KEYS.length; for (const d of BXLIST) if (G.flags && G.flags[d.id]) n--; for (const k of CLASSIC_KEYS) if (G.flags && G.flags[k]) n--; return n; }
 
 ;
 /* ===== 13d_bx_a1.js ===== */
@@ -11412,7 +11474,7 @@ function tipHTML(id, o) {
   if (it.type === 'sword') {
     const sw = it.sw, dps = (sw.baseDamage * sw.attackSpeed).toFixed(0), cc = Math.round(sw.critChance * 100), P = G.P;
     h += `<div class="ts">${TYPE_PT.sword} · ${T_.n} · #${String(sw.num).padStart(3, '0')}</div><div class="st2"><span>Dano</span><b>${sw.baseDamage}${P && P.stats.dmg ? ' <span style="color:#86efac">(+' + P.stats.dmg + ')</span>' : ''}</b><span>Velocidade</span><b>${sw.attackSpeed} golpes/s</b><span>Repulsão</span><b>${sw.knockbackForce}</b><span>Crítico</span><b>${cc}%</b><span>DPS base</span><b>≈ ${dps}</b><span>Ataque</span><b>${{ ArcSwing: 'Arco', Thrust: 'Estocada', Beam: 'Feixe', Orbital: 'Orbital' }[sw.attackType]}</b></div><div class="mech">${escHtml(sw.txt)}</div>`;
-    if (sw.dropFromName) h += `<div class="rcp" style="color:#fbbf24">Não se forja: cai do chefe <b>${escHtml(sw.dropFromName)}</b>. Invoque-o com o sigilo.</div>`;
+    if (sw.dropFromName) h += `<div class="rcp" style="color:#fbbf24">Não se forja: cai do chefe <b>${escHtml(sw.dropFromName)}</b>. Invoque-o com o sigilo.` + (sw.sealedAll ? '<br><b>SELADA:</b> só cai depois de derrotar <b>todos os chefes do jogo</b> (os 4 clássicos e os 90 novos).' : '') + `</div>`;
     if (!(o && o.noRecipe)) { const rt = recipeText(id); if (rt) h += `<div class="rcp">${rt}</div>`; }
   } else {
     h += `<div class="ts">${TYPE_PT[it.type] || ''}${it.tier ? ' · ' + T_.n : ''}</div>`;
@@ -11522,7 +11584,7 @@ function openPanel(name) {
   closePanels(true); G.ui.open = name; setBlocking();
   if (name === 'inv') { $('panel-inv').classList.remove('hidden'); G.ui.craftDirty = true; refreshInvUI(); }
   else if (name === 'arsenal') { $('panel-arsenal').classList.remove('hidden'); renderArsenal(); }
-  else if (name === 'map') { $('panel-map').classList.remove('hidden'); drawBigMap(); }
+  else if (name === 'map') { $('panel-map').classList.remove('hidden'); drawBigMap(); achStat('map'); }
   else if (name === 'npc') $('npc-panel').classList.remove('hidden');
   sfx('tick');
 }
@@ -11533,7 +11595,7 @@ function closePanels(silent) {
   ['panel-inv', 'panel-arsenal', 'panel-map', 'npc-panel'].forEach(id => { const e = $(id); if (e) e.classList.add('hidden'); });
   G.ui.open = null; setBlocking(); hideTip(); G.invChanged = true;
 }
-function openChest(tx, ty) { const wd = G.world, k = wd.idx(tx, ty); let c = wd.chests.get(k); if (!c) { c = new Array(20).fill(null); wd.chests.set(k, c); } G.chestSlots = c; G.chestPos = k; openPanel('inv'); G.chestSlots = c; G.chestPos = k; refreshInvUI(); sfx('door'); }
+function openChest(tx, ty) { const wd = G.world, k = wd.idx(tx, ty); let c = wd.chests.get(k); if (!c) { c = new Array(20).fill(null); wd.chests.set(k, c); achStat('chests'); } G.chestSlots = c; G.chestPos = k; openPanel('inv'); G.chestSlots = c; G.chestPos = k; refreshInvUI(); sfx('door'); }
 // ---------- Arsenal / Catálogo ----------
 const ARS_TABS = [['T1', 'Tier 1'], ['T2', 'Tier 2'], ['T3', 'Tier 3'], ['T4', 'Tier 4'], ['T5', 'Tier 5'], ['T6', 'Tier 6'], ['T7', 'Tier 7'], ['T8', 'Tier 8'], ['T9', 'Tier 9'], ['T10', 'Tier 10'], ['ALL', 'Todas'], ['items', 'Itens'], ['enemies', 'Inimigos & Chefes'], ['world', 'Mundo']];
 function arsGive(id, n) { const left = invAdd(id, n || 1); if (left) dropItem(id, left, G.P.x, G.P.y); sfx('pickup'); G.ui.craftDirty = true; }
@@ -11562,7 +11624,7 @@ function renderArsenal() {
   } else if (tab === 'world') {
     const P = G.P, row = (title, btns) => { const s = document.createElement('div'); s.className = 'sect'; s.textContent = title; body.appendChild(s); const r = document.createElement('div'); r.className = 'bar-row'; btns.forEach(([n, f, on]) => { const b = document.createElement('button'); b.className = 'btn' + (on ? ' on' : ''); b.textContent = n; b.onclick = () => { f(b); sfx('tick'); renderArsenal(); }; r.appendChild(b); }); body.appendChild(r); };
     row('Hora do dia', [['Amanhecer', () => G.time = .05], ['Meio-dia', () => G.time = .3], ['Entardecer', () => G.time = .58], ['Meia-noite', () => G.time = .82]]);
-    row('Opções de teste', [['Invencível', () => G.opts.god = !G.opts.god, G.opts.god], ['Sem spawn de inimigos', () => G.opts.noSpawn = !G.opts.noSpawn, G.opts.noSpawn], ['Criação grátis', () => G.opts.freeCraft = !G.opts.freeCraft, G.opts.freeCraft]]);
+    row('Opções de teste', [['Invencível', () => { G.opts.god = !G.opts.god; if (G.opts.god) achStat('god'); }, G.opts.god], ['Sem spawn de inimigos', () => G.opts.noSpawn = !G.opts.noSpawn, G.opts.noSpawn], ['Criação grátis', () => G.opts.freeCraft = !G.opts.freeCraft, G.opts.freeCraft]]);
     row('Ações', [['Curar tudo', () => { P.hp = P.maxHp; }], ['Remover inimigos', () => { G.enemies.length = 0; G.projs = G.projs.filter(p => p.friendly); G.boss = null; }], ['+500 moedas', () => arsGive('coin', 500)], ['+4 Cristais de Vida', () => { P.crystals = Math.min(15, P.crystals + 4); recalcStats(); P.hp = P.maxHp; }]]);
     row('Progressão do mundo (estágio dos inimigos)', [['Estágio 0 · Início', () => { G.stage = 0; }, G.stage === 0], ['Estágio 1 · Pós-Olho', () => { G.stage = 1; G.flags.eye = true; }, G.stage === 1], ['Estágio 2 · Hardmode', () => { if (!G.world.hardmode) spawnHardmodeOres(G.world); G.stage = 2; G.flags.eye = G.flags.guardian = true; toast('Hardmode ativado: minérios T3/T4 gerados.', '#fb923c'); }, G.stage === 2], ['Estágio 3 · Pós-Colosso', () => { if (!G.world.hardmode) spawnHardmodeOres(G.world); G.stage = 3; G.flags.guardian = true; }, G.stage === 3]]);
     const tp = (x, y) => () => { P.x = x * TS; P.y = (y - 3) * TS; P.vx = P.vy = 0; P.fallStart = 0; closePanels(); }; const sf = x => G.world.surf[x];
@@ -11721,11 +11783,33 @@ function spawnNpc(type, room) {
   G.npcs.push(n); toast(d.n + ' mudou-se para a sua casa! (clique direito para conversar)', '#86efac', 5); sfx('heal'); burst(x + 6, y + 13, 14, { col: ['#86efac', '#fff'], spd: 90, glow: true, life: .6, g: -50 });
   return n;
 }
+// Item de invocação de NPC (Modo Criativo): coloca o morador ao lado do jogador, sem exigir casa.
+// Se aquele NPC já existe, ele é trazido para perto em vez de duplicar.
+function summonNpcItem(type) {
+  const d = NPC_DEF[type]; if (!d) return false;
+  if (G.mode !== 'creative') { toast('Itens de invocação de NPC só funcionam no Modo Criativo.', '#fbbf24', 4); return false; }
+  const P = G.P, wd = G.world;
+  const side = P.face || 1, sx = pcx(P) + side * 44;
+  const gy = groundY(sx, pcy(P) - 8, 40);
+  const x = clamp(sx, 20, wd.w * TS - 20), y = (gy > 0 ? gy : pcy(P) + 20) - 26;
+  let n = G.npcs.find(q => q.type === type);
+  if (!n) { n = { type, d, w: 12, h: 26, vx: 0, vy: 0, onGround: false, face: side, t: 1, age: 0, hitX: 0, hitY: 0, away: 0 }; G.npcs.push(n); }
+  n.free = true; n.home = 'free'; n.room = null; n.leave = false; n.away = 0;
+  n.x = x - n.w / 2; n.y = y; n.homeX = n.x; n.target = n.x; n.vx = n.vy = 0; n.face = side;
+  burst(n.x + 6, n.y + 13, 18, { col: ['#86efac', d.shirt || '#fff', '#fff'], spd: 100, glow: true, life: .7, g: -40 });
+  ringFx(n.x + 6, n.y + 13, 26, '#86efac', .45, 3); sfx('portal');
+  achSummon(type); achStat('npcSummoned', 1);
+  toast(d.n + ' foi invocado! (item exclusivo do Modo Criativo)', '#86efac', 4);
+  return n;
+}
 function updateNpcs(dt) {
   const P = G.P; G.npcScanT -= dt; G.npcSpawnT -= dt;
   if (G.npcScanT <= 0) {
     G.npcScanT = 4; const rooms = scanRooms();
-    for (const n of G.npcs) { const r = rooms.find(r => r.id === n.home); if (r) { n.room = r; n.away = 0; } else { n.away += 4; if (n.away >= 12) { n.leave = true; } } }
+    for (const n of G.npcs) {
+      if (n.free) { n.room = null; n.away = 0; continue; }   /* invocado no Criativo: não precisa de casa */
+      const r = rooms.find(r => r.id === n.home); if (r) { n.room = r; n.away = 0; } else { n.away += 4; if (n.away >= 12) { n.leave = true; } }
+    }
     G.npcs = G.npcs.filter(n => { if (n.leave) { toast(n.d.n + ' foi embora porque a casa deixou de ser válida.', '#fca5a5', 4); return false; } return true; });
   }
   if (G.npcSpawnT <= 0) {
@@ -11736,7 +11820,7 @@ function updateNpcs(dt) {
     n.age += dt; n.t -= dt; const near = !P.dead && Math.abs(pcx(P) - (n.x + 6)) < 70 && Math.abs(pcy(P) - (n.y + 13)) < 50;
     if (near) { n.vx = approach(n.vx, 0, 600 * dt); n.face = pcx(P) > n.x + 6 ? 1 : -1; }
     else {
-      if (n.t <= 0) { n.t = rnd(2, 5); const r = n.room; n.target = r && Math.random() < .7 ? rnd(r.minx + 1, r.maxx) * TS : n.x; }
+      if (n.t <= 0) { n.t = rnd(2, 5); const r = n.room; n.target = r && Math.random() < .7 ? rnd(r.minx + 1, r.maxx) * TS : (n.free ? (n.homeX || n.x) + rnd(-26, 26) : n.x); }
       const dx = n.target - n.x; if (Math.abs(dx) > 6) { n.vx = approach(n.vx, Math.sign(dx) * 38, 500 * dt); n.face = Math.sign(dx); } else n.vx = approach(n.vx, 0, 600 * dt);
     }
     n.vy = Math.min(n.vy + GRAV * dt, MAXFALL); bodyMove(n, dt, { stepUp: true });
@@ -11773,6 +11857,7 @@ const GUIDE_HINTS = [
 ];
 function openNpc(n) {
   const box = $('npc-panel'), d = n.d; openPanel('npc'); G.ui.npc = n;
+  { const a = achS(); if (!a.st.talk) a.st.talk = {}; a.st.talk[n.type] = 1; }   /* conquista: falar com cada NPC */
   const head = `<h3><span>${d.n}</span><span><button class="btn" id="npc-close">Fechar</button></span></h3><div style="font-size:12px;color:var(--mut);margin-bottom:10px">${d.desc}</div>`;
   const body = document.createElement('div');
   const setHTML = h => { box.innerHTML = head; box.appendChild(body); body.innerHTML = h; box.querySelector('#npc-close').onclick = () => closePanels(); };
@@ -11780,7 +11865,7 @@ function openNpc(n) {
     let idx = 0; const applicable = () => GUIDE_HINTS.filter(h => h[0]()); const show = () => { const a = applicable(); const msg = a[idx % a.length][1]; setHTML(`<div style="font-size:14px;line-height:1.5;padding:8px 10px;background:rgba(255,255,255,.06);border-radius:8px;min-height:90px">${escHtml(msg)}</div><div style="margin-top:10px;display:flex;gap:8px"><button class="btn pri" id="g-next">Outra dica</button><button class="btn" id="g-cat">Abrir catálogo de espadas (B)</button></div>`); $('g-next').onclick = () => { idx++; show(); sfx('tick'); }; $('g-cat').onclick = () => { closePanels(); openPanel('arsenal'); }; };
     show();
   } else if (n.type === 'nurse') {
-    const render = () => { const P = G.P, miss = Math.ceil(P.maxHp - P.hp), cost = miss <= 0 ? 0 : Math.max(1, Math.ceil(miss * (1 + G.stage * .6) * .4)); setHTML(`<div style="font-size:14px;margin-bottom:10px">${miss <= 0 ? 'Você está em perfeita saúde!' : 'Você está ferido. Posso cuidar disso por <b style="color:#fbbf24">' + cost + ' moedas</b>.'}</div><button class="btn pri" id="n-heal" ${miss <= 0 ? 'disabled style="opacity:.5"' : ''}>Curar (${cost} moedas)</button> <span style="margin-left:8px;color:var(--mut);font-size:12px">Você tem ${invCount('coin')} moedas.</span>`); const b = $('n-heal'); if (b) b.onclick = () => { if (miss <= 0) return; if (invCount('coin') < cost) { toast('Moedas insuficientes.', '#fbbf24'); return; } invRemove('coin', cost); P.hp = P.maxHp; sfx('heal'); burst(pcx(P), pcy(P), 16, { col: ['#4ade80', '#fff'], spd: 100, glow: true, life: .6, g: -50 }); toast('Totalmente curado!', '#86efac'); render(); G.invChanged = true; }; };
+    const render = () => { const P = G.P, miss = Math.ceil(P.maxHp - P.hp), cost = miss <= 0 ? 0 : Math.max(1, Math.ceil(miss * (1 + G.stage * .6) * .4)); setHTML(`<div style="font-size:14px;margin-bottom:10px">${miss <= 0 ? 'Você está em perfeita saúde!' : 'Você está ferido. Posso cuidar disso por <b style="color:#fbbf24">' + cost + ' moedas</b>.'}</div><button class="btn pri" id="n-heal" ${miss <= 0 ? 'disabled style="opacity:.5"' : ''}>Curar (${cost} moedas)</button> <span style="margin-left:8px;color:var(--mut);font-size:12px">Você tem ${invCount('coin')} moedas.</span>`); const b = $('n-heal'); if (b) b.onclick = () => { if (miss <= 0) return; if (invCount('coin') < cost) { toast('Moedas insuficientes.', '#fbbf24'); return; } invRemove('coin', cost); achStat('nurse', 1); P.hp = P.maxHp; sfx('heal'); burst(pcx(P), pcy(P), 16, { col: ['#4ade80', '#fff'], spd: 100, glow: true, life: .6, g: -50 }); toast('Totalmente curado!', '#86efac'); render(); G.invChanged = true; }; };
     render();
   } else {
     let tab = 'buy'; const render = () => {
@@ -11789,8 +11874,8 @@ function openNpc(n) {
       else { const seen = new Map(); G.P.inv.forEach((s, i) => { if (s && s.id !== 'coin') seen.set(s.id, (seen.get(s.id) || 0) + s.n); }); for (const [id, cnt] of seen) { const it = IT[id]; rows += `<div class="shop-row" data-sell="${id}"><i class="ic ${iconClass(id)}"></i><div style="flex:1"><div style="font-weight:700;color:${tierCol(id)}">${escHtml(it.n)} <span style="color:var(--mut);font-weight:400">×${cnt}</span></div></div><div style="color:#86efac;font-weight:700">+${sellPrice(id)} ●</div></div>`; } if (!rows) rows = '<div style="color:var(--mut);padding:10px">Você não tem itens para vender.</div>'; }
       setHTML(`<div class="tabs"><div class="tab ${tab === 'buy' ? 'on' : ''}" id="t-buy">Comprar</div><div class="tab ${tab === 'sell' ? 'on' : ''}" id="t-sell">Vender (1/3 do valor)</div><span style="margin-left:auto;color:#fbbf24;font-weight:700;font-size:13px">● ${coins}</span></div><div style="max-height:46vh;overflow-y:auto">${rows}</div><div style="font-size:11px;color:var(--mut);margin-top:6px">Shift+clique: ${tab === 'buy' ? 'comprar 10' : 'vender tudo'}</div>`);
       $('t-buy').onclick = () => { tab = 'buy'; render(); }; $('t-sell').onclick = () => { tab = 'sell'; render(); };
-      box.querySelectorAll('[data-buy]').forEach(el => { const id = el.dataset.buy; el.onmouseenter = ev => showTip(tipHTML(id), ev); el.onmousemove = moveTip; el.onmouseleave = hideTip; el.onclick = ev => { const n_ = ev.shiftKey && stackMax(id) > 1 ? 10 : 1, price = itemValue(id) * n_; if (invCount('coin') < price) { toast('Moedas insuficientes.', '#fbbf24'); return; } if (!invCanAdd(id, n_)) { toast('Inventário cheio.', '#fbbf24'); return; } invRemove('coin', price); invAdd(id, n_); sfx('coin'); render(); }; });
-      box.querySelectorAll('[data-sell]').forEach(el => { const id = el.dataset.sell; el.onclick = ev => { const have = invCount(id), n_ = ev.shiftKey ? have : 1; invRemove(id, n_); invAdd('coin', sellPrice(id) * n_); sfx('coin'); render(); }; });
+      box.querySelectorAll('[data-buy]').forEach(el => { const id = el.dataset.buy; el.onmouseenter = ev => showTip(tipHTML(id), ev); el.onmousemove = moveTip; el.onmouseleave = hideTip; el.onclick = ev => { const n_ = ev.shiftKey && stackMax(id) > 1 ? 10 : 1, price = itemValue(id) * n_; if (invCount('coin') < price) { toast('Moedas insuficientes.', '#fbbf24'); return; } if (!invCanAdd(id, n_)) { toast('Inventário cheio.', '#fbbf24'); return; } invRemove('coin', price); invAdd(id, n_); achStat('bought', n_); sfx('coin'); render(); }; });
+      box.querySelectorAll('[data-sell]').forEach(el => { const id = el.dataset.sell; el.onclick = ev => { const have = invCount(id), n_ = ev.shiftKey ? have : 1; invRemove(id, n_); invAdd('coin', sellPrice(id) * n_); achStat('sold', n_); sfx('coin'); render(); }; });
     };
     render();
   }
@@ -11874,13 +11959,16 @@ function snapshotGame() {
     spawn: plain(wd.spawn), mush: wd.mushCenter ? plain(wd.mushCenter) : null, w,
     chests: plain([...wd.chests.entries()]),
     P: plain({ x: P.x, y: P.y, hp: P.hp, crystals: P.crystals, inv: P.inv, equip: P.equip, sel: P.sel }),
-    npcs: G.npcs.map(n => ({ type: n.type, home: n.home, x: n.x, y: n.y })), opts: plain(G.opts),
+    npcs: G.npcs.map(n => n.free ? { type: n.type, home: 'free', free: 1, x: n.x, y: n.y } : { type: n.type, home: n.home, x: n.x, y: n.y }),
+    ach: plain(achClean(achS())), opts: plain(G.opts),   /* conquistas: vão junto no save e no arquivo exportado */
   };
+  achSave();   /* salvar o mundo também grava o perfil de conquistas do navegador */
   return { sv, bytes: w.t.length + w.wl.length + w.lq.length + w.lt.length + w.rev.length + w.surf.byteLength + w.bio.length };
 }
 // Reconstrói o mundo a partir de um save (formato 2: arrays tipados; formato 1 antigo: base64) e entra no jogo.
 function applyGame(sv, meta) {
   Snd.init(); resetGameState(sv.mode); G.seed = sv.seed;
+  if (sv.ach) { achMerge(achClean(sv.ach), achS()); achSave(); }   /* o perfil nunca regride ao abrir um mundo mais antigo */
   G.worldId = meta.id; G.worldName = meta.name; G.worldCreated = meta.created;
   const wd = new World(WW, WH, sv.seed), n = WW * WH, dec = a => typeof a === 'string' ? unb64(a) : a;
   wd.t.set(rleDec(dec(sv.w.t), n)); wd.wl.set(rleDec(dec(sv.w.wl), n)); wd.lq.set(rleDec(dec(sv.w.lq), n)); wd.lt.set(rleDec(dec(sv.w.lt), n)); wd.rev.set(rleDec(dec(sv.w.rev), n));
@@ -12037,7 +12125,7 @@ const Worlds = {
 
 // ---------- API usada pelo resto do jogo e pelos testes ----------
 function hasSave() { return Worlds.list.length > 0; }
-function saveGame(silent) { return Worlds.save({ silent: !!silent, thumb: !silent }); }                     // Promise<boolean>
+function saveGame(silent) { achStat('saves'); achSave(); return Worlds.save({ silent: !!silent, thumb: !silent }); }   // Promise<boolean>
 function loadGame(id) { return Worlds.load(id || G.worldId || (Worlds.list[0] && Worlds.list[0].id)); }    // Promise<boolean>
 
 ;
@@ -12346,7 +12434,7 @@ async function renderDeviceBox() {
 async function exportWorldUI(id, btn) {
   btn.disabled = true;
   try {
-    const f = await Worlds.exportFile(id); downloadFile(f.name, f.text);
+    const f = await Worlds.exportFile(id); downloadFile(f.name, f.text); achStat('exported');
     worldsMsg('Arquivo "' + f.name + '" gerado (' + fmtMB(f.text.length) + '). Guarde-o: ele recria este mapa em qualquer aparelho, com "Importar mapa".', 'ok');
   } catch (e) { worldsMsg('Não foi possível exportar: ' + ((e && e.message) || e), 'err'); }
   btn.disabled = false;
@@ -12367,7 +12455,7 @@ async function importFiles(files) {
       if (f.size > WORLD_FILE_MAX) r = { ok: false, action: 'error', reason: 'arquivo grande demais' };
       else r = await Worlds.importText(await f.text());
     } catch (e) { r = { ok: false, action: 'error', reason: 'não foi possível ler o arquivo (' + ((e && e.message) || e) + ')' }; }
-    lines.push(importLine(r, f.name)); if (r.action === 'added' || r.action === 'updated') ok++; else if (r.action === 'error') bad++;
+    lines.push(importLine(r, f.name)); if (r.action === 'added' || r.action === 'updated') { ok++; achStat('imported'); } else if (r.action === 'error') bad++;
   }
   updateTitleMenu(); renderWorlds();
   worldsMsg(lines, bad ? 'err' : ok ? 'ok' : 'warn');
@@ -12378,7 +12466,7 @@ async function newWorld(mode) {
   const bs = [$('btn-adv'), $('btn-cre'), $('btn-load')]; bs.forEach(b => b.disabled = true);   // evita clique duplo durante o sorteio
   try {
     await Worlds.init();
-    const w = await Worlds.allocate(mode);
+    const w = await Worlds.allocate(mode); achStat('worlds');
     startGame({ mode, seed: w.seed, id: w.id, name: w.name });
   } finally { bs.forEach(b => b.disabled = false); }
 }
@@ -12595,7 +12683,9 @@ function sanitizeSave(raw) {
   const ns = raw.npcs === undefined ? [] : raw.npcs, npcs = [];
   if (!Array.isArray(ns) || ns.length > 100) return bad('NPCs inválidos');
   for (const n of ns) {
-    if (!isO(n) || !hasOwn(NPC_DEF, n.type) || typeof n.home !== 'string' || !/^\d{1,5},\d{1,5}$/.test(n.home) || !num(n.x, 0, WW * TS) || !num(n.y, -400, WH * TS + 400)) return bad('NPC inválido');
+    if (!isO(n) || !hasOwn(NPC_DEF, n.type) || !num(n.x, 0, WW * TS) || !num(n.y, -400, WH * TS + 400)) return bad('NPC inválido');
+    if (n.free === true || n.free === 1) { npcs.push({ type: n.type, home: 'free', free: 1, x: n.x, y: n.y }); continue; }   /* invocado no Criativo: mora onde foi chamado */
+    if (typeof n.home !== 'string' || !/^\d{1,5},\d{1,5}$/.test(n.home)) return bad('NPC inválido');
     npcs.push({ type: n.type, home: n.home, x: n.x, y: n.y });
   }
   const flags = {}; for (const k of ['slime', 'eye', 'guardian', 'colossus']) flags[k] = !!(isO(raw.flags) && raw.flags[k]);
@@ -12603,7 +12693,7 @@ function sanitizeSave(raw) {
   const opts = {}; for (const k of ['god', 'noSpawn', 'showDps', 'freeCraft']) opts[k] = !!(isO(raw.opts) && raw.opts[k]);
   return {
     sv: { v: 2, seed: raw.seed, mode: raw.mode, time: raw.time, day: raw.day, t: raw.t, stage: raw.stage, flags, kills, hard: !!raw.hard, spawn: { x: raw.spawn.x, y: raw.spawn.y }, mush, w, chests,
-      P: { x: Pp.x, y: Pp.y, hp: Pp.hp, crystals: Pp.crystals, inv, equip: { armor, acc }, sel: Pp.sel || 0 }, npcs, opts },
+      P: { x: Pp.x, y: Pp.y, hp: Pp.hp, crystals: Pp.crystals, inv, equip: { armor, acc }, sel: Pp.sel || 0 }, npcs, ach: achClean(raw.ach), opts },
     bytes,
   };
 }
@@ -12777,6 +12867,351 @@ function touchUpdate(dt) {
 }
 
 ;
+/* ===== 15h_ach.js ===== */
+/* ============================================================
+   15h_ach: conquistas do jogo (429), painel, progresso e ganchos de save.
+   Regras:
+   - toda conquista tem id único, categoria, raridade (1..4) e uma função p() -> [atual, meta];
+   - as 200 espadas e os 94 chefes são GERADOS a partir de SWORDS/BXLIST (nunca ficam dessincronizados);
+   - o resto é escrito à mão, sempre olhando para contadores baratos (G.ach.st) e para o estado do jogo;
+   - achTick() roda a cada 0,6 s dentro do laço; os ganchos só marcam que algo mudou.
+   Estado salvo: G.ach = { un:{id:1}, seen:{itemId:1}, bio:{nome:1}, lay:{camada:1}, st:{contador}, max:{recorde} }.
+   ============================================================ */
+const ACH_CATS = [
+  { k: 'sw', n: 'Espadas', col: '#fbbf24', ic: '⚔' },
+  { k: 'bx', n: 'Chefes', col: '#f87171', ic: '☠' },
+  { k: 'prog', n: 'Progressão', col: '#22d3ee', ic: '★' },
+  { k: 'cbt', n: 'Combate', col: '#fb923c', ic: '⚡' },
+  { k: 'mine', n: 'Mineração e construção', col: '#a3e635', ic: '⛏' },
+  { k: 'gear', n: 'Equipamento', col: '#a78bfa', ic: '🛡' },
+  { k: 'expl', n: 'Exploração', col: '#34d399', ic: '🧭' },
+  { k: 'econ', n: 'Economia e NPCs', col: '#facc15', ic: '●' },
+  { k: 'world', n: 'Mundos', col: '#60a5fa', ic: '🗺' },
+  { k: 'sec', n: 'Segredos', col: '#e879f9', ic: '?' },
+];
+const ACH_RAR = [null, { n: 'Comum', col: '#cbd5e1' }, { n: 'Raro', col: '#38bdf8' }, { n: 'Épico', col: '#a78bfa' }, { n: 'Lendário', col: '#fbbf24' }];
+const ACH = {}, ACH_LIST = [];
+const ACH_NOW = () => Date.now();
+
+// ---------- estado ----------
+function achS() {
+  const g = G;
+  if (!g.ach || typeof g.ach !== 'object') g.ach = {};
+  const a = g.ach;
+  if (!a.un || typeof a.un !== 'object') a.un = {};
+  if (!a.seen || typeof a.seen !== 'object') a.seen = {};
+  if (!a.bio || typeof a.bio !== 'object') a.bio = {};
+  if (!a.lay || typeof a.lay !== 'object') a.lay = {};
+  if (!a.st || typeof a.st !== 'object') a.st = {};
+  if (!a.max || typeof a.max !== 'object') a.max = {};
+  return a;
+}
+const ac = k => { const s = G.ach && G.ach.st; return (s && +s[k]) || 0; };
+const ax = k => { const s = G.ach && G.ach.max; return (s && +s[k]) || 0; };
+const achSeen = id => !!(G.ach && G.ach.seen && G.ach.seen[id]);
+function achStat(k, n) { const a = achS(); a.st[k] = (a.st[k] || 0) + (n === undefined ? 1 : n); _achDirty = true; }
+function achMax(k, v) { const a = achS(); if ((a.max[k] || 0) < v) { a.max[k] = v; _achDirty = true; } }
+function achSee(id) { if (!id || !IT[id]) return; const a = achS(); if (!a.seen[id]) { a.seen[id] = 1; _achDirty = true; } }
+const achSeenN = list => list.reduce((n, id) => n + (achSeen(id) ? 1 : 0), 0);
+const achFlag = (id) => () => [G.flags && G.flags[id] ? 1 : 0, 1];
+
+// ---------- registro ----------
+function ach(id, cat, n, d, p, r) {
+  if (ACH[id]) return ACH[id];
+  const o = { id, cat, n, d, r: r || 1, p };
+  ACH[id] = o; ACH_LIST.push(o); return o;
+}
+const achDone = o => !!(G.ach && G.ach.un && G.ach.un[o.id]);
+function achProg(o) { try { const r = o.p() || [0, 1]; const goal = Math.max(.0001, +r[1] || 1); return [Math.max(0, Math.min(goal, +r[0] || 0)), goal]; } catch (e) { return [0, 1]; } }
+function achCount() { let n = 0; for (const o of ACH_LIST) if (achDone(o)) n++; return n; }
+function achPct() { return Math.round(achCount() / ACH_LIST.length * 100); }
+
+// ---- 200 espadas (raridade pelo tier) ----
+const tierRar = t => t <= 2 ? 1 : t <= 4 ? 2 : t <= 7 ? 3 : 4;
+for (const s of SWORDS) ach('sw_' + s.id, 'sw', s.swordName, `${String(s.num).padStart(3, '0')} · ${TIERS[s.tierLevel].n} — ` + (s.dropOnly ? 'não se forja: cai do chefe ' + (s.dropFromName || 'do fim do jogo') + '.' + (s.sealedAll ? ' Selada: só depois de derrotar todos os chefes do jogo.' : '') : 'forje e tenha esta espada no histórico.'), () => [achSeen(s.id) ? 1 : 0, 1], tierRar(s.tierLevel));
+
+// ---- 94 chefes (4 clássicos + 90 novos) ----
+const CLASSIC = [['slime', 'Rei Slime', 'Derrote o Rei Slime (Coroa de Gosma).', 1], ['eye', 'Olho Colossal', 'Derrote o Olho Colossal (Lente Suspeita, à noite).', 1], ['guardian', 'Guardião do Abismo', 'Derrote o Guardião do Abismo e inicie o Hardmode.', 2], ['colossus', 'Colosso Estelar', 'Derrote o Colosso Estelar (Coração Estelar).', 3]];
+for (const [k, n, d, r] of CLASSIC) ach('cl_' + k, 'bx', n, d, achFlag(k), r);
+for (const b of BXLIST) ach('bx_' + b.id, 'bx', b.n, `${BX_ACTS[b.act].n} · ` + (b.mech.length > 150 ? b.mech.slice(0, 150).replace(/[\s,;:.]+$/, '') + '…' : b.mech), achFlag(b.id), b.act <= 2 ? 1 : b.act <= 4 ? 2 : b.act === 5 ? 3 : 4);
+
+// ---------- progressão ----------
+const allSw = () => SWORDS.filter(s => achSeen(s.id)).length;
+const tierSw = t => () => [SWORDS.filter(s => s.tierLevel === t && achSeen(s.id)).length, 20];
+const actBosses = a => BXLIST.filter(b => b.act === a);
+const actKilled = a => actBosses(a).filter(b => G.flags && G.flags[b.id]).length;
+const sigilsSeen = () => BXLIST.filter(b => achSeen('sg_' + b.id)).length;
+ach('prog_first', 'prog', 'Primeiro brilho', 'Obtenha o seu primeiro item.', () => [Math.min(1, Object.keys((G.ach && G.ach.seen) || {}).length), 1], 1);
+ach('prog_sw50', 'prog', 'Colecionador', 'Tenha 50 espadas diferentes no histórico.', () => [allSw(), 50], 2);
+ach('prog_sw100', 'prog', 'Arsenal respeitável', 'Tenha 100 espadas diferentes.', () => [allSw(), 100], 3);
+ach('prog_sw150', 'prog', 'Quase todas', 'Tenha 150 espadas diferentes.', () => [allSw(), 150], 3);
+ach('prog_sw200', 'prog', 'As 200 espadas', 'Tenha as 200 espadas do jogo.', () => [allSw(), 200], 4);
+for (let t = 1; t <= 10; t++) ach('prog_t' + t, 'prog', `Tier ${t} completo`, `Obtenha as 20 espadas do ${TIERS[t].n}.`, tierSw(t), t >= 9 ? 4 : t >= 7 ? 3 : 2);
+ach('prog_stage1', 'prog', 'O mundo muda', 'Chegue ao estágio 1 (depois do Olho Colossal).', () => [Math.min(G.stage, 1), 1], 1);
+ach('prog_stage2', 'prog', 'Hardmode', 'Inicie o Hardmode (Guardião do Abismo).', () => [G.stage >= 2 ? 1 : 0, 1], 2);
+ach('prog_stage3', 'prog', 'Além do Colosso', 'Chegue ao estágio 3 do mundo.', () => [G.stage >= 3 ? 1 : 0, 1], 3);
+ach('prog_classic4', 'prog', 'A velha guarda', 'Derrote os quatro chefes clássicos.', () => [CLASSIC.filter(c => G.flags && G.flags[c[0]]).length, 4], 3);
+ach('prog_craft1', 'prog', 'Mãos à obra', 'Crie o seu primeiro item.', () => [Math.min(ac('crafted'), 1), 1], 1);
+ach('prog_craft100', 'prog', 'Artesão', 'Crie 100 itens.', () => [ac('crafted'), 100], 2);
+ach('prog_craft1000', 'prog', 'Fábrica', 'Crie 1.000 itens.', () => [ac('crafted'), 1000], 3);
+ach('prog_forge', 'prog', 'Forja Celeste', 'Crie um item na Forja Celeste.', () => [Math.min(ac('forge'), 1), 1], 2);
+ach('prog_crystal1', 'prog', 'Coração maior', 'Use o seu primeiro Cristal de Vida.', () => [Math.min(G.P ? G.P.crystals : 0, 1), 1], 1);
+ach('prog_crystal15', 'prog', 'Vida máxima', 'Chegue a 15 Cristais de Vida.', () => [G.P ? G.P.crystals : 0, 15], 3);
+for (let a = 1; a <= 6; a++) ach('prog_act' + a, 'prog', 'Ato ' + a + ' completo', `Derrote os ${actBosses(a).length} chefes do ${BX_ACTS[a].n}.`, () => [actKilled(a), actBosses(a).length], a >= 5 ? 3 : 2);
+ach('prog_sigil1', 'prog', 'Invocador', 'Crie o seu primeiro sigilo de chefe.', () => [Math.min(sigilsSeen(), 1), 1], 1);
+ach('prog_sigil30', 'prog', 'Coleção de sigilos', 'Tenha 30 sigilos diferentes.', () => [sigilsSeen(), 30], 3);
+ach('prog_sigil_all', 'prog', 'Todos os sigilos', 'Tenha os 90 sigilos dos chefes novos.', () => [sigilsSeen(), 90], 4);
+ach('prog_t9', 'prog', 'Divino', 'Obtenha uma espada do Tier 9 (cai de chefe do Ato V).', () => [SWORDS.filter(s => s.tierLevel === 9 && achSeen(s.id)).length, 1], 3);
+ach('prog_t10', 'prog', 'Origem', 'Obtenha uma espada do Tier 10 (cai de chefe do Ato VI).', () => [SWORDS.filter(s => s.tierLevel === 10 && achSeen(s.id)).length, 1], 4);
+ach('prog_apoteose', 'prog', 'Fim de tudo', 'Derrote a Apoteose, o chefe mais forte do jogo.', achFlag('apoteose'), 4);
+
+// ---------- combate ----------
+const K = () => G.kills || 0;
+ach('cbt_k1', 'cbt', 'Primeiro abate', 'Derrote um inimigo.', () => [Math.min(K(), 1), 1], 1);
+ach('cbt_k25', 'cbt', 'Caçador', 'Derrote 25 inimigos.', () => [K(), 25], 1);
+ach('cbt_k100', 'cbt', 'Matador', 'Derrote 100 inimigos.', () => [K(), 100], 2);
+ach('cbt_k500', 'cbt', 'Exterminador', 'Derrote 500 inimigos.', () => [K(), 500], 2);
+ach('cbt_k2000', 'cbt', 'Lenda do campo', 'Derrote 2.000 inimigos.', () => [K(), 2000], 3);
+ach('cbt_k10000', 'cbt', 'Guerra sem fim', 'Derrote 10.000 inimigos.', () => [K(), 10000], 4);
+ach('cbt_hit100', 'cbt', 'Golpe firme', 'Cause 100 de dano num único golpe.', () => [ax('hit'), 100], 1);
+ach('cbt_hit500', 'cbt', 'Pancada', 'Cause 500 de dano num único golpe.', () => [ax('hit'), 500], 2);
+ach('cbt_hit2000', 'cbt', 'Demolidor', 'Cause 2.000 de dano num único golpe.', () => [ax('hit'), 2000], 3);
+ach('cbt_hit10000', 'cbt', 'Um golpe, um fim', 'Cause 10.000 de dano num único golpe.', () => [ax('hit'), 10000], 4);
+ach('cbt_die1', 'cbt', 'Aprender doi', 'Morra uma vez.', () => [Math.min(ac('deaths'), 1), 1], 1);
+ach('cbt_die10', 'cbt', 'Teimoso', 'Morra 10 vezes.', () => [ac('deaths'), 10], 2);
+ach('cbt_die50', 'cbt', 'Persistente', 'Morra 50 vezes.', () => [ac('deaths'), 50], 3);
+ach('cbt_night10', 'cbt', 'Turno da noite', 'Derrote 10 inimigos à noite.', () => [ac('killsNight'), 10], 2);
+ach('cbt_day10', 'cbt', 'Sol a pino', 'Derrote 10 inimigos de dia.', () => [ac('killsDay'), 10], 1);
+ach('cbt_boss10', 'cbt', 'Caçador de chefes', 'Derrote 10 chefes (contando os novos).', () => [ac('bosses'), 10], 2);
+ach('cbt_boss50', 'cbt', 'Veterano', 'Derrote 50 chefes.', () => [ac('bosses'), 50], 3);
+ach('cbt_boss_all', 'cbt', 'Todos eles', 'Derrote todos os chefes do jogo.', () => [ac('bosses'), 94], 4);
+
+// ---------- mineração e construção ----------
+ach('mine_10', 'mine', 'Picareta nova', 'Minere 10 blocos.', () => [ac('mined'), 10], 1);
+ach('mine_100', 'mine', 'Escavador', 'Minere 100 blocos.', () => [ac('mined'), 100], 1);
+ach('mine_1000', 'mine', 'Toupeira', 'Minere 1.000 blocos.', () => [ac('mined'), 1000], 2);
+ach('mine_5000', 'mine', 'Máquina de cavar', 'Minere 5.000 blocos.', () => [ac('mined'), 5000], 3);
+ach('mine_20000', 'mine', 'O subsolo é seu', 'Minere 20.000 blocos.', () => [ac('mined'), 20000], 4);
+ach('place_10', 'mine', 'Pedreiro', 'Coloque 10 blocos.', () => [ac('placed'), 10], 1);
+ach('place_100', 'mine', 'Construtor', 'Coloque 100 blocos.', () => [ac('placed'), 100], 1);
+ach('place_1000', 'mine', 'Arquiteto', 'Coloque 1.000 blocos.', () => [ac('placed'), 1000], 2);
+ach('place_5000', 'mine', 'Cidade inteira', 'Coloque 5.000 blocos.', () => [ac('placed'), 5000], 3);
+ach('mine_ores', 'mine', 'Mineralogista', 'Tenha os 50 minérios no histórico.', () => [achSeenN(GORES.map(g => g.key)), 50], 3);
+ach('mine_picks', 'mine', 'Cinco picaretas', 'Tenha as 5 picaretas novas.', () => [achSeenN(GPICKS.map(p => p[0])), GPICKS.length], 2);
+ach('mine_depth200', 'mine', 'Fundo do mundo', 'Chegue a 200 blocos de profundidade.', () => [ax('depth'), 200], 2);
+ach('mine_depth300', 'mine', 'Cavernas profundas', 'Chegue a 300 blocos.', () => [ax('depth'), 300], 3);
+ach('mine_depth400', 'mine', 'Limiar do Inferno', 'Chegue a 400 blocos.', () => [ax('depth'), 400], 3);
+ach('mine_all_tiles', 'mine', 'Tudo vira bloco', 'Minere 15 tipos diferentes de bloco.', () => [Object.keys(achS().seen).filter(k => IT[k] && IT[k].type === 'block').length, 15], 2);
+
+// ---------- equipamento ----------
+const eq = () => (G.P && G.P.equip) || { acc: [] };
+const accN = () => (eq().acc || []).filter(Boolean).length;
+const setCount = fam => { try { return G.P ? gearSetCount(G.P, fam) : 0; } catch (e) { return 0; } };
+ach('gear_acc1', 'gear', 'Primeiro acessório', 'Equipe um acessório.', () => [Math.min(accN(), 1), 1], 1);
+ach('gear_acc4', 'gear', 'Quatro slots', 'Equipe acessórios nos quatro slots.', () => [accN(), 4], 2);
+ach('gear_acc10', 'gear', 'Colecionador de acessórios', 'Tenha 10 acessórios no histórico.', () => [achSeenN(GACCS.map(g => g.id)), 10], 1);
+ach('gear_acc25', 'gear', 'Joalheiro', 'Tenha 25 acessórios.', () => [achSeenN(GACCS.map(g => g.id)), 25], 2);
+ach('gear_acc50', 'gear', 'Todos os acessórios', 'Tenha os 50 acessórios.', () => [achSeenN(GACCS.map(g => g.id)), 50], 4);
+ach('gear_arm10', 'gear', 'Armadura nova', 'Tenha 10 armaduras no histórico.', () => [achSeenN(GARMS.map(g => g.id)), 10], 1);
+ach('gear_arm25', 'gear', 'Armeiro', 'Tenha 25 armaduras.', () => [achSeenN(GARMS.map(g => g.id)), 25], 2);
+ach('gear_arm50', 'gear', 'Todas as armaduras', 'Tenha as 50 armaduras.', () => [achSeenN(GARMS.map(g => g.id)), 50], 4);
+ach('gear_set2', 'gear', 'Conjunto', 'Equipe 2 peças do mesmo conjunto.', () => [Math.max(0, ...GFAM_KEYS.map(setCount)), 2], 2);
+ach('gear_set4', 'gear', 'Conjunto completo', 'Equipe 4 peças do mesmo conjunto.', () => [Math.max(0, ...GFAM_KEYS.map(setCount)), 4], 3);
+ach('gear_sets10', 'gear', 'Todos os conjuntos', 'Use peças dos 10 conjuntos.', () => [GFAM_KEYS.filter(k => setCount(k) > 0).length, GFAM_KEYS.length], 4);
+ach('gear_full', 'gear', 'Pronto para a luta', 'Esteja com armadura e 4 acessórios equipados.', () => [((G.P && G.P.equip && G.P.equip.armor) ? 1 : 0) + (accN() >= 4 ? 1 : 0), 2], 2);
+ach('gear_t10', 'gear', 'Poder absoluto', 'Equipe uma espada do Tier 10.', () => { const s = G.P && G.P.inv[G.P.sel]; return [s && IT[s.id] && IT[s.id].type === 'sword' && IT[s.id].sw.tierLevel === 10 ? 1 : 0, 1]; }, 4);
+ach('gear_pick_cel', 'gear', 'Picareta celeste', 'Obtenha a Picareta Celeste.', () => [achSeen('pick_celestial') ? 1 : 0, 1], 3);
+ach('gear_ore_all', 'gear', 'Barra a barra', 'Tenha as 50 barras no histórico.', () => [achSeenN(GORES.map(g => g.key + '_bar')), 50], 3);
+
+// ---------- exploração ----------
+const ACH_BIO_PT = { ocean: 'oceano', desert: 'deserto', forest: 'floresta', jungle: 'selva', snow: 'neve' };
+for (const k of Object.keys(ACH_BIO_PT)) ach('expl_bio_' + k, 'expl', 'Bioma: ' + ACH_BIO_PT[k], `Visite o bioma ${ACH_BIO_PT[k]}.`, () => [(G.ach && G.ach.bio && G.ach.bio[k]) ? 1 : 0, 1], 1);
+ach('expl_bio_all', 'expl', 'Volta ao mundo', 'Visite os 5 biomas.', () => [Object.keys(ACH_BIO_PT).filter(k => G.ach && G.ach.bio && G.ach.bio[k]).length, 5], 2);
+const ACH_LAY_PT = { sky: 'as ilhas do céu', surface: 'a superfície', cave: 'as cavernas', deep: 'as cavernas profundas', hell: 'o Inferno' };
+for (const k of Object.keys(ACH_LAY_PT)) ach('expl_lay_' + k, 'expl', 'Camada: ' + ACH_LAY_PT[k], `Visite ${ACH_LAY_PT[k]}.`, () => [(G.ach && G.ach.lay && G.ach.lay[k]) ? 1 : 0, 1], k === 'hell' || k === 'sky' ? 2 : 1);
+ach('expl_lay_all', 'expl', 'Do céu ao Inferno', 'Visite as 5 camadas.', () => [Object.keys(ACH_LAY_PT).filter(k => G.ach && G.ach.lay && G.ach.lay[k]).length, 5], 3);
+ach('expl_day10', 'expl', 'Dez dias', 'Sobreviva 10 dias no mesmo mundo.', () => [G.day, 10], 2);
+ach('expl_day50', 'expl', 'Cinquenta dias', 'Sobreviva 50 dias no mesmo mundo.', () => [G.day, 50], 3);
+ach('expl_dist5k', 'expl', 'Caminhante', 'Ande 5.000 pixels.', () => [ac('dist'), 5000], 2);
+ach('expl_dist50k', 'expl', 'Peregrino', 'Ande 50.000 pixels.', () => [ac('dist'), 50000], 3);
+ach('expl_mush', 'expl', 'Cogumelos brilhantes', 'Passe pela área dos cogumelos.', () => [ac('mush'), 1], 2);
+ach('expl_map', 'expl', 'Cartógrafo', 'Abra o mapa do mundo.', () => [ac('map'), 1], 1);
+ach('expl_chest100', 'expl', 'Baú atrás de baú', 'Abra 100 baús.', () => [ac('chests'), 100], 3);
+
+// ---------- economia e NPCs ----------
+ach('econ_coin100', 'econ', 'Trocado', 'Junte 100 moedas de uma vez.', () => [G.P ? invCount('coin') : 0, 100], 1);
+ach('econ_coin1000', 'econ', 'Bolso cheio', 'Junte 1.000 moedas de uma vez.', () => [G.P ? invCount('coin') : 0, 1000], 2);
+ach('econ_cointotal', 'econ', 'Fortuna', 'Ganhe 10.000 moedas no total.', () => [ac('coins'), 10000], 3);
+ach('econ_cointotal2', 'econ', 'Magnata', 'Ganhe 100.000 moedas no total.', () => [ac('coins'), 100000], 4);
+ach('econ_buy1', 'econ', 'Primeira compra', 'Compre algo de um NPC.', () => [Math.min(ac('bought'), 1), 1], 1);
+ach('econ_buy50', 'econ', 'Bom cliente', 'Compre 50 itens.', () => [ac('bought'), 50], 2);
+ach('econ_sell1', 'econ', 'Primeira venda', 'Venda algo para um NPC.', () => [Math.min(ac('sold'), 1), 1], 1);
+ach('econ_sell100', 'econ', 'Comerciante', 'Venda 100 itens.', () => [ac('sold'), 100], 2);
+ach('econ_heal', 'econ', 'Enfermaria', 'Pague pela cura da Enfermeira.', () => [ac('nurse'), 1], 1);
+ach('econ_npc1', 'econ', 'Um morador', 'Tenha um NPC morando com você.', () => [G.npcs ? G.npcs.length : 0, 1], 1);
+ach('econ_npc4', 'econ', 'Vila completa', 'Tenha os 4 NPCs morando.', () => [G.npcs ? new Set(G.npcs.map(n => n.type)).size : 0, 4], 3);
+ach('econ_summon1', 'econ', 'Convocação', 'Invoque um NPC com o item (modo Criativo).', () => { const s = G.ach && G.ach.st && G.ach.st.npc; return [s ? Object.keys(s).length : 0, 1]; }, 1);
+ach('econ_summon4', 'econ', 'Todo mundo aqui', 'Invoque os 4 NPCs com os itens.', () => { const s = G.ach && G.ach.st && G.ach.st.npc; return [s ? Object.keys(s).length : 0, 4]; }, 2);
+
+// ---------- mundos ----------
+ach('world_new2', 'world', 'Dois mundos', 'Crie 2 mundos.', () => [ac('worlds'), 2], 1);
+ach('world_new5', 'world', 'Viajante', 'Crie 5 mundos.', () => [ac('worlds'), 5], 2);
+ach('world_play1h', 'world', 'Uma hora', 'Jogue 1 hora no mesmo mundo.', () => [ac('play'), 3600], 2);
+ach('world_play10h', 'world', 'Dez horas', 'Jogue 10 horas no mesmo mundo.', () => [ac('play'), 36000], 3);
+ach('world_save', 'world', 'Guardado', 'Salve o mundo manualmente.', () => [ac('saves'), 1], 1);
+ach('world_export', 'world', 'Backup', 'Exporte um mundo para arquivo.', () => [ac('exported'), 1], 2);
+ach('world_import', 'world', 'Outro aparelho', 'Importe um mundo de arquivo.', () => [ac('imported'), 1], 2);
+ach('world_modes', 'world', 'Os dois jeitos', 'Jogue Aventura e Criativo.', () => [((G.ach && G.ach.st && G.ach.st.modes) ? Object.keys(G.ach.st.modes).length : 0), 2], 1);
+
+// ---------- segredos ----------
+ach('sec_acts6', 'sec', 'Seis atos', 'Complete os 6 atos de chefes novos.', () => [Array.from({ length: 6 }, (_, i) => actKilled(i + 1) === actBosses(i + 1).length ? 1 : 0).reduce((a, b) => a + b, 0), 6], 4);
+ach('sec_40bosses', 'sec', 'Fim do firmamento', 'Derrote os 40 chefes dos Atos V e VI.', () => [actKilled(5) + actKilled(6), 40], 4);
+ach('sec_t9t10', 'sec', 'As 40 do fim', 'Obtenha as 40 espadas dos Tiers 9 e 10.', () => [SWORDS.filter(s => s.tierLevel >= 9 && achSeen(s.id)).length, 40], 4);
+ach('sec_fenix', 'sec', 'Cinzas e renascimento', 'Derrote a Fênix (ela volta uma vez).', achFlag('fenix'), 3);
+ach('sec_axioma', 'sec', 'Quebre o axioma', 'Derrote o Axioma — quando a pedra acender, pare de atacar (a regra devolve metade do seu dano).', achFlag('axioma'), 3);
+ach('sec_trono', 'sec', 'Sem escolta', 'Derrote o Trono de Ouro.', achFlag('trono'), 3);
+ach('sec_coroa', 'sec', 'Coroa quebrada', 'Derrote a Coroa da Criação.', achFlag('coroa'), 3);
+ach('sec_convergencia', 'sec', 'Tudo converge', 'Derrote a Convergência Final.', achFlag('convergencia'), 3);
+ach('sec_mare', 'sec', 'Maré baixa', 'Derrote a Maré Cósmica.', achFlag('mare'), 3);
+ach('sec_nogod', 'sec', 'Sem atalhos', 'Derrote um chefe sem nunca ligar o modo invencível.', () => [(ac('bosses') > 0 && !ac('god')) ? 1 : 0, 1], 3);
+ach('sec_npc_all', 'sec', 'Bom papo', 'Converse com os 4 tipos de NPC.', () => [(G.ach && G.ach.st && G.ach.st.talk) ? Object.keys(G.ach.st.talk).length : 0, 4], 3);
+ach('sec_allseen', 'sec', 'Tudo já passou pelas suas mãos', 'Tenha 300 itens diferentes no histórico.', () => [Object.keys((G.ach && G.ach.seen) || {}).length, 300], 4);
+
+// ---------- notificação / laço ----------
+let _achPend = [], _achPendT = 0, _achTickT = 0, _achPx = 0, _achPy = 0;
+function achNotify(list) {
+  if (!list.length) return;
+  if (list.length === 1) toast('🏆 Conquista: ' + list[0].n, '#fbbf24', 5);
+  else if (list.length <= 3) toast('🏆 ' + list.length + ' conquistas: ' + list.map(o => o.n).join(' · '), '#fbbf24', 6);
+  else toast('🏆 ' + list.length + ' conquistas desbloqueadas!', '#fbbf24', 5);
+  if (typeof sfx === 'function') sfx('pickup');
+  if (typeof achLabels === 'function') achLabels();
+  if (typeof achRefresh === 'function' && typeof $ === 'function' && $('ach') && !$('ach').classList.contains('hidden')) achRefresh();
+}
+function achCheck() {
+  const S = achS(), got = [];
+  for (const o of ACH_LIST) { if (S.un[o.id]) continue; const [c, g] = achProg(o); if (g > 0 && c >= g) { S.un[o.id] = 1; got.push(o); } }
+  if (got.length) { _achDirty = true; achNotify(got); achSave(); }
+  return got.length;
+}
+function achTick(dt) {
+  const P = G.P, wd = G.world; if (!P || !wd || G.state !== 'play' || P.dead) return;
+  const S = achS(), px = pcx(P), py = pcy(P);
+  if (_achPx || _achPy) { const d = Math.hypot(px - _achPx, py - _achPy); if (d < 420) S.st.dist = (S.st.dist || 0) + d; }
+  _achPx = px; _achPy = py;
+  const tx = Math.floor(px / TS), ty = Math.floor(py / TS);
+  achMax('depth', ty);
+  try { const b = wd.biomeName(tx); if (b) S.bio[b] = 1; const l = wd.layerAt(tx, ty); if (l) S.lay[l] = 1; } catch (e) { }
+  S.st.play = Math.max(S.st.play || 0, G.t || 0);
+  if (wd.mushCenter && Math.abs(tx - wd.mushCenter.x) < 24 && Math.abs(ty - wd.mushCenter.y) < 24) S.st.mush = 1;
+  _achTickT -= dt; if (_achTickT > 0) return; _achTickT = .6;
+  achCheck();
+  _achSaveT -= .6; if (_achDirty && _achSaveT <= 0) { _achSaveT = 12; achSave(); }   /* grava o perfil a cada 12 s, se mudou */
+}
+
+
+// ---------- armazenamento (as conquistas são do jogador, não só de um mundo) ----------
+const ACH_KEY = 'swords_destiny_ach_v1';
+let _achDirty = false, _achSaveT = 0;
+function achSave() {
+  try { if (typeof localStorage !== 'undefined') localStorage.setItem(ACH_KEY, JSON.stringify(achS())); _achDirty = false; } catch (e) { }
+}
+function achMerge(raw, dst) {   // une dois estados: desbloqueados/flags/contadores máximos
+  const out = dst || achS(), src = raw && typeof raw === 'object' ? raw : null;
+  if (!src) return out;
+  const isO = v => v && typeof v === 'object' && !Array.isArray(v);
+  for (const k of ['un', 'seen', 'bio', 'lay', 'st', 'max']) if (!isO(out[k])) out[k] = {};
+  if (isO(src.un)) for (const k in src.un) if (src.un[k]) out.un[k] = 1;
+  for (const k of ['seen', 'bio', 'lay']) if (isO(src[k])) for (const j in src[k]) if (src[k][j]) out[k][j] = 1;
+  if (isO(src.st)) for (const k in src.st) {
+    const sv = src.st[k];
+    if (isO(sv)) { if (!isO(out.st[k])) out.st[k] = {}; for (const j in sv) if (sv[j]) out.st[k][j] = 1; continue; }
+    const v = +sv; if (isFinite(v) && v >= 0) out.st[k] = Math.max(+out.st[k] || 0, v);
+  }
+  if (isO(src.max)) for (const k in src.max) { const v = +src.max[k]; if (isFinite(v) && v >= 0) out.max[k] = Math.max(+out.max[k] || 0, v); }
+  return out;
+}
+function achLoad() {
+  try { if (typeof localStorage === 'undefined') return; const raw = localStorage.getItem(ACH_KEY); if (raw) achMerge(JSON.parse(raw), achS()); } catch (e) { }
+  achLabels();
+}
+
+// ---------- painel ----------
+function achLabelTxt() { return achCount() + ' / ' + ACH_LIST.length; }
+function achLabels() {
+  if (typeof document === 'undefined' || !document.getElementById) return;
+  const t = achLabelTxt();
+  const a = document.getElementById('btn-ach-sub'); if (a) a.textContent = t + ' desbloqueadas (' + achPct() + '%)';
+  const b = document.getElementById('p-ach'); if (b) b.textContent = 'Conquistas (' + t + ')';
+}
+function achRowHTML(o) {
+  const done = achDone(o), [c, g] = achProg(o), cat = ACH_CATS.find(x => x.k === o.cat) || ACH_CATS[0], rar = ACH_RAR[o.r] || ACH_RAR[1];
+  const pct = Math.round(c / g * 100);
+  const prog = done ? '' : `<div class="ach-bar"><i style="width:${pct}%;background:${rar.col}"></i></div>`;
+  const right = done ? '<span class="ach-pct" style="color:#86efac">✔</span>' : `<span class="ach-pct">${Math.round(c)}/${Math.round(g)}</span>`;
+  return `<div class="ach-row ${done ? 'on' : 'off'}" style="border-left-color:${done ? rar.col : '#334155'}">
+    <div class="ach-ic" style="background:${done ? rar.col + '33' : 'rgba(255,255,255,.06)'};color:${done ? rar.col : '#64748b'}">${done ? cat.ic : '·'}</div>
+    <div style="flex:1;min-width:0"><div class="ach-nm" style="color:${done ? rar.col : '#cbd5e1'}">${escHtml(o.n)} <span style="font-weight:400;font-size:10.5px;color:${rar.col};opacity:.8">${rar.n}</span></div>
+    <div class="ach-ds">${escHtml(o.d)}</div>${prog}</div>${right}</div>`;
+}
+function achHTML() {
+  achS();
+  const tab = (G.ui && G.ui.achTab) || 'all';
+  const cat = ACH_CATS.find(c => c.k === tab);
+  let list = ACH_LIST.filter(o => tab === 'all' || o.cat === tab);
+  const order = o => (achDone(o) ? 2 : (achProg(o)[0] / achProg(o)[1]) > 0 ? 0 : 1);
+  list = list.slice().sort((a, b) => order(a) - order(b) || a.n.localeCompare(b.n));
+  const tabs = [['all', 'Todas', ACH_LIST.length]].concat(ACH_CATS.map(c => [c.k, c.n, ACH_LIST.filter(o => o.cat === c.k).length]));
+  const done = achCount(), tot = ACH_LIST.length, pct = Math.round(done / tot * 100);
+  let h = `<h2 style="display:flex;justify-content:space-between;align-items:center;gap:10px">Conquistas <span style="font-size:12px;font-weight:400;color:var(--mut)">${done} de ${tot} · ${pct}%</span><button class="btn" id="ach-close">Fechar</button></h2>`;
+  h += `<div class="ach-bar" style="height:9px;margin:2px 0 10px"><i style="width:${pct}%;background:var(--acc)"></i></div>`;
+  h += `<div class="ach-tabs">` + tabs.map(([k, n, c]) => `<div class="tab ${tab === k ? 'on' : ''}" data-ach-tab="${k}">${n} <span style="opacity:.7">${c}</span></div>`).join('') + `</div>`;
+  if (cat) { const cd = list.filter(achDone).length; h += `<div style="font-size:12px;color:var(--mut);margin:0 0 8px">${cat.n}: ${cd} de ${list.length}</div>`; }
+  h += `<div style="max-height:58vh;overflow-y:auto;padding-right:4px">` + list.map(achRowHTML).join('') + `</div>`;
+  h += `<div style="margin-top:10px;font-size:11.5px;color:var(--mut)">As conquistas ficam guardadas no navegador e dentro do mundo (também vão junto no arquivo exportado). No modo Criativo tudo conta normalmente — o Arsenal acelera a coleção.</div>`;
+  return h;
+}
+function achRefresh() {
+  if (typeof $ !== 'function' || !$('ach-box')) return;
+  $('ach-box').innerHTML = achHTML();
+  const c = $('ach-close'); if (c) c.onclick = () => showAch(false);
+  $('ach-box').querySelectorAll('[data-ach-tab]').forEach(el => el.onclick = () => { G.ui.achTab = el.dataset.achTab; achRefresh(); sfx('tick'); });
+}
+function showAch(show) {
+  if (typeof $ !== 'function') return;
+  const box = $('ach'); if (!box) return;
+  if (show) { achRefresh(); box.classList.remove('hidden'); sfx('tick'); }
+  else { box.classList.add('hidden'); }
+}
+const achOpen = () => typeof $ === 'function' && $('ach') && !$('ach').classList.contains('hidden');
+
+// ---------- saneamento (importação de mundo) ----------
+function achClean(raw) {
+  const out = { un: {}, seen: {}, bio: {}, lay: {}, st: {}, max: {} };
+  if (!raw || typeof raw !== 'object') return out;
+  const isO = v => v && typeof v === 'object' && !Array.isArray(v);
+  if (isO(raw.un)) for (const k in raw.un) if (ACH[k] && Object.keys(out.un).length < ACH_LIST.length) out.un[k] = 1;
+  if (isO(raw.seen)) for (const k in raw.seen) if (IT[k] && Object.keys(out.seen).length < 2000) out.seen[k] = 1;
+  if (isO(raw.bio)) for (const k in raw.bio) if (BIO_NAMES.indexOf(k) >= 0) out.bio[k] = 1;
+  if (isO(raw.lay)) for (const k in raw.lay) if (['sky', 'surface', 'cave', 'deep', 'hell'].indexOf(k) >= 0) out.lay[k] = 1;
+  const num = (v, max) => { const n = +v; return isFinite(n) && n >= 0 ? Math.min(n, max) : 0; };
+  if (isO(raw.st)) for (const k of ['kills', 'mined', 'placed', 'crafted', 'forge', 'coins', 'bought', 'sold', 'deaths', 'bosses', 'killsNight', 'killsDay', 'chests', 'dist', 'play', 'worlds', 'saves', 'exported', 'imported', 'nurse', 'npcSummoned', 'god', 'map', 'mush']) out.st[k] = num(raw.st[k], 1e9);
+  if (isO(raw.st) && isO(raw.st.npc)) { out.st.npc = {}; for (const k in raw.st.npc) if (NPC_DEF[k]) out.st.npc[k] = 1; }
+  if (isO(raw.st) && isO(raw.st.modes)) { out.st.modes = {}; for (const k in raw.st.modes) if (k === 'adventure' || k === 'creative') out.st.modes[k] = 1; }
+  if (isO(raw.st) && isO(raw.st.talk)) { out.st.talk = {}; for (const k in raw.st.talk) if (NPC_DEF[k]) out.st.talk[k] = 1; }
+  if (isO(raw.max)) for (const k of ['depth', 'hit']) out.max[k] = num(raw.max[k], 1e9);
+  return out;
+}
+
+// ---------- ganchos (chamados pelos outros módulos) ----------
+function achKill(e) {   // chamado em killEnemy
+  if (e && e.harmless) return;
+  try { if (typeof isNightFrac === 'function' && isNightFrac(G.time)) achStat('killsNight'); else achStat('killsDay'); } catch (er) { }
+}
+function achBoss() { achStat('bosses'); }
+function achSummon(type) { const a = achS(); if (!a.st.npc) a.st.npc = {}; a.st.npc[type] = 1; }
+
+;
 /* ===== 16_main.js ===== */
 /* ============================================================
    16_main: inicialização, loop, renderização, input, câmera
@@ -12813,8 +13248,8 @@ window.addEventListener('keydown', e => {
   Snd.init();
   if (G.state === 'play' && GAMEKEYS.has(e.code)) e.preventDefault();
   if (KEYS[e.code] && e.repeat) return; KEYS[e.code] = true;
-  if (G.state !== 'play') { if (e.code === 'Escape') { if (!$('help').classList.contains('hidden')) showHelp(false); else openWorlds(false); } return; }
-  if (e.code === 'Escape') { if (!$('help').classList.contains('hidden')) showHelp(false); else if (G.ui.open) closePanels(); else if (G.paused) setPause(false); else setPause(true); return; }
+  if (G.state !== 'play') { if (e.code === 'Escape') { if (achOpen()) showAch(false); else if (!$('help').classList.contains('hidden')) showHelp(false); else openWorlds(false); } return; }
+  if (e.code === 'Escape') { if (achOpen()) showAch(false); else if (!$('help').classList.contains('hidden')) showHelp(false); else if (G.ui.open) closePanels(); else if (G.paused) setPause(false); else setPause(true); return; }
   if (G.paused) return;
   const P = G.P;
   if (e.code === 'KeyE' || e.code === 'Tab') { if (G.ui.open === 'inv') closePanels(); else if (!P.dead) openPanel('inv'); }
@@ -12834,12 +13269,13 @@ window.addEventListener('mousemove', e => { G.mouse.sx = e.clientX; G.mouse.sy =
 window.addEventListener('contextmenu', e => e.preventDefault());
 window.addEventListener('wheel', e => { if (G.state !== 'play' || G.paused || G.ui.open) return; const P = G.P; P.sel = (P.sel + (e.deltaY > 0 ? 1 : 9)) % 10; G.invChanged = true; e.preventDefault(); }, { passive: false });
 window.addEventListener('resize', resize);
-function setPause(p) { G.paused = p; $('pause-world').textContent = G.worldName || ''; $('pause').classList.toggle('hidden', !p); G.mouse.down = [false, false, false]; if (p) closePanels(true); setBlocking(); G.ui.blocking = G.ui.blocking || p; }
+function setPause(p) { G.paused = p; $('pause-world').textContent = G.worldName || ''; $('pause').classList.toggle('hidden', !p); G.mouse.down = [false, false, false]; if (p) closePanels(true); else showAch(false); setBlocking(); G.ui.blocking = G.ui.blocking || p; }
 
 // ---------- geração assíncrona + início ----------
 function resetGameState(mode) {
   G.mode = mode; G.enemies = []; G.projs = []; G.drops = []; G.parts = []; G.texts = []; G.boss = null; G.bxs = null; G.flags = { slime: false, eye: false, guardian: false, colossus: false }; G.stage = 0; G.time = .1; G.day = 1; G.t = 0;
   G.freeze = 0; G.dark = 0; G.flash = null; G.hitStop = 0; G.kills = 0; G.opts = { god: false, noSpawn: false, showDps: false, freeCraft: false }; G.dpsLog = []; G.held = null; G.chestSlots = null; G.chestPos = null; G.paused = false; G.zoomAdj = 0; G.npcs = []; G.rooms = []; G.npcScanT = 3; G.npcSpawnT = 8; G.autoSaveT = 60;
+  { const a = achS(); if (!a.st.modes) a.st.modes = {}; a.st.modes[mode] = 1; }   /* conquista dos dois modos (novo mundo ou mundo aberto) */
 }
 function startGame(opts) {
   opts = opts || {}; Snd.init();
@@ -12867,7 +13303,13 @@ function finishLoad(sv) {
   if (sv) {
     G.time = sv.time; G.day = sv.day; G.t = sv.t || 0; G.stage = sv.stage; G.flags = sv.flags; G.kills = sv.kills || 0; Object.assign(G.opts, sv.opts || {});
     P.x = sv.P.x; P.y = sv.P.y; P.crystals = sv.P.crystals; P.inv = sv.P.inv; P.equip = normalizeEquip(sv.P.equip); P.sel = sv.P.sel || 0;
-    for (const nd of sv.npcs || []) { const rm = { id: nd.home, cx: +nd.home.split(',')[0], cy: +nd.home.split(',')[1], minx: +nd.home.split(',')[0] - 3, maxx: +nd.home.split(',')[0] + 3 }; const n = spawnNpcQuiet(nd.type, rm); n.x = nd.x; n.y = nd.y; }
+    for (const nd of sv.npcs || []) {
+      const free = nd.free === true || nd.home === 'free', pp = String(nd.home).split(',');
+      const cx = +pp[0] || Math.floor(nd.x / TS), cy = +pp[1] || Math.floor(nd.y / TS);
+      const rm = { id: nd.home, cx, cy, minx: cx - 3, maxx: cx + 3 };
+      const n = spawnNpcQuiet(nd.type, rm); n.x = nd.x; n.y = nd.y;
+      if (free) { n.free = true; n.room = null; n.homeX = n.x; n.target = n.x; n.home = 'free'; }
+    }
   } else if (G.mode === 'creative') { G.opts.god = false; give('pick_celestial'); give('s001'); give('s062'); give('s100'); give('s120'); give('s021'); give('s055'); give('torch', 99); give('potion3', 20); give('stone', 999); give('plank', 999); give('bench'); give('chest'); P.crystals = 15; }
   else { give('s001'); give('pick_copper'); give('torch', 12); give('potion1', 3); }
   G.invChanged = true; recalcStats(); P.hp = sv ? Math.min(sv.P.hp, P.maxHp) : P.maxHp; if (!sv) P.sel = 0;
@@ -12895,6 +13337,7 @@ function step(dt) {
   updatePlayer(dt); updateNpcs(dt); updateEnemies(dt); bxUpdate(dt); updateProjs(dt); updateDrops(dt); updateParts(dt); updateTexts(dt);
   _liqT -= dt; if (_liqT <= 0) { _liqT = .05; wd.stepLiquids(2200); } _fallT -= dt; if (_fallT <= 0) { _fallT = .08; wd.stepFalling(160); }
   spawnTick(dt);
+  achTick(dt);   /* conquistas: distância, camadas, biomas, profundidade e checagem a cada 0,6 s */
   G.autoSaveT -= dt; if (G.autoSaveT <= 0) { G.autoSaveT = 60; Worlds.save({ silent: true }); }   // autosave a cada minuto
   // câmera
   const c = G.cam, vw = c.w / c.zoom, vh = c.h / c.zoom, m = G.mouse;
@@ -13041,6 +13484,9 @@ function frame(now) {
 function initGame() {
   initUI(); resize(); G.state = 'title'; initSky(11); initTouch();
   $('btn-help').onclick = () => showHelp(true); initWorldsUI();   // botões do título, mundos salvos e autosave (15e_worlds.js)
+  achLoad();   // conquistas do jogador (guarda o progresso entre mundos)
+  $('btn-ach').onclick = () => showAch(true); $('p-ach').onclick = () => showAch(true);   // as duas entradas exigidas: menu e pausa
+  achLabels();
   $('p-resume').onclick = () => setPause(false); $('p-help').onclick = () => showHelp(true);
   $('p-sound').onclick = () => { Snd.mute(!Snd.muted); $('p-sound').textContent = 'Som: ' + (Snd.muted ? 'desligado' : 'ligado'); };
   requestAnimationFrame(frame);

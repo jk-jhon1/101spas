@@ -125,6 +125,16 @@ const tamper = (text, fn) => { const f = JSON.parse(text), pl = JSON.parse(f.pay
   const extra = A.parseWorldFile(tamper(file, (pl) => { pl.sv.evil = { x: 1 }; pl.sv.opts = { god: true, hack: true }; pl.sv.flags = { slime: true, hack: true }; pl.sv.P.evil = 1; }));
   check('campos desconhecidos são descartados; só as opções e chefes conhecidos passam', !extra.error && !('evil' in extra.sv) && !('evil' in extra.sv.P) && !('hack' in extra.sv.opts) && extra.sv.opts.god === true && !('hack' in extra.sv.flags));
 
+  console.log('\n== conquistas e NPCs invocados (Modo Criativo) no arquivo ==');
+  const npcFree = A.parseWorldFile(tamper(file, (pl) => { pl.sv.npcs = [{ type: 'guide', home: 'free', free: 1, x: 900, y: 300 }]; }));
+  check('NPC invocado no criativo (sem casa) é aceito e volta marcado', !npcFree.error && npcFree.sv.npcs.length === 1 && npcFree.sv.npcs[0].free === 1, npcFree.error || JSON.stringify(npcFree.sv.npcs));
+  const npcBad = errOf(tamper(file, (pl) => { pl.sv.npcs = [{ type: 'guide', home: 'free', free: 2, x: 900, y: 300 }]; }));
+  check('NPC com a marca de invocado adulterada continua barrado', !!npcBad, npcBad || 'ACEITOU');
+  const achOk = A.parseWorldFile(tamper(file, (pl) => { pl.sv.ach = { un: { prog_first: 1, prog_sw50: 1 }, seen: { s001: 1, invalido: 1 }, bio: { forest: 1, marte: 1 }, lay: { hell: 1, lua: 1 }, st: { mined: 12, crafted: -3, npc: { guide: 1, hacker: 1 }, modes: { creative: 1, outro: 1 }, talk: { nurse: 1, x: 1 } }, max: { hit: 800, depth: 1e12 } }; }));
+  const AC = achOk.sv && achOk.sv.ach;
+  check('conquistas do arquivo: o válido fica, o inventado sai', !achOk.error && AC && AC.un.prog_first === 1 && !AC.un.hack && AC.seen.s001 === 1 && !AC.seen.invalido && AC.bio.forest === 1 && !AC.bio.marte && AC.lay.hell === 1 && !AC.lay.lua, achOk.error || JSON.stringify(AC));
+  check('contadores de conquista: negativos viram 0, objetos só com NPCs/modos/nomes conhecidos e números têm teto', AC && AC.st.crafted === 0 && AC.st.mined === 12 && AC.st.npc.guide === 1 && !AC.st.npc.hacker && AC.st.modes.creative === 1 && !AC.st.modes.outro && AC.st.talk.nurse === 1 && !AC.st.talk.x && AC.max.hit === 800 && AC.max.depth === 1e9);
+
   console.log('\n== fuzz: 400 arquivos com 1 a 3 caracteres trocados em posições aleatórias ==');
   let s = 99; const rnd = () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296; let thrown = 0, accepted = 0, crcCaught = 0;
   for (let k = 0; k < 400; k++) {

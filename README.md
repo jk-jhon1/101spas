@@ -37,6 +37,33 @@ Dez **famílias** — Braseiro, Geada, Corisco, Maré, Raiz, Véu, Alvorada, Rel
 
 Catálogo do equipamento: [`docs/catalogo_equipamentos.md`](docs/catalogo_equipamentos.md).
 
+Conquistas: [`docs/conquistas.md`](docs/conquistas.md) (gerado por `node dev/docs_ach.js`).
+
+## Conquistas: 429 no total
+
+O jogo tem **429 conquistas** em 10 categorias — espadas, chefes, progressão, combate, mineração e construção, equipamento,
+exploração, economia e NPCs, mundos e segredos —, com quatro raridades (Comum, Raro, Épico e Lendário).
+Lista completa, com o que fazer em cada uma: [`docs/conquistas.md`](docs/conquistas.md).
+
+- **Duas entradas, como pedido:** botão **Conquistas** no menu principal (mostra `x / 429` e a porcentagem) e botão **Conquistas**
+  na pausa (`Esc`). Os dois abrem o mesmo painel.
+- **Painel:** abas por categoria, barra de progresso geral, contador `x de total` e ordem *em progresso → não iniciadas → concluídas*;
+  cada linha mostra o ícone, a raridade, a descrição e o seu progresso (`37/200`).
+- **As 200 espadas e os 94 chefes** geram uma conquista cada, direto das tabelas do jogo (`SWORDS` e `BXLIST`) — se uma espada ou um
+  chefe muda de nome, a conquista muda junto.
+- **Aviso na hora:** a cada 0,6 s o jogo confere o progresso e mostra um aviso dourado com som quando algo é desbloqueado.
+- **Nunca perde progresso:** as conquistas ficam no perfil do navegador **e** dentro do mundo salvo. Exportar leva as conquistas no
+  arquivo e importar faz a união (nunca regride). Importar um arquivo adulterado não injeta conquistas inventadas: `achClean()` valida
+  ids, itens, biomas, camadas, NPCs e números, com teto nos contadores.
+- **Modo Criativo conta normalmente** (é um sandbox) — o Arsenal acelera a coleção.
+
+## Itens de invocar NPC (só no Modo Criativo)
+
+Quatro itens novos chamam um morador para o seu lado **sem precisar de casa válida**: **Sino do Guia**, **Baú do Mercador**,
+**Maleta da Enfermeira** e **Martelo do Armeiro** (Arsenal → *Itens → Consumíveis e Invocações*, no Criativo).
+No modo Aventura eles aparecem no inventário mas **não fazem nada e não são consumidos** — a mensagem explica que são exclusivos do
+Criativo. O NPC invocado fica por perto de onde foi chamado, é salvo com o mundo e também vai no arquivo exportado.
+
 ---
 
 ## Capturas
@@ -69,6 +96,7 @@ Catálogo do equipamento: [`docs/catalogo_equipamentos.md`](docs/catalogo_equipa
 | `E` / `Tab` | Inventário + criação (fique perto de Bancada, Fornalha, Bigorna…) |
 | `B` | **Arsenal** (modo Criativo) · **Catálogo das 200 espadas** (modo Aventura) |
 | `M` | Mapa do mundo · `Q` poção de cura · `+` `-` zoom · `F3` debug · `Esc` pausar/fechar |
+| Menu → **Conquistas** / Pausa → **Conquistas** | Painel das 429 conquistas (abas, progresso e raridades) |
 
 ### Toque (celular/tablet)
 
@@ -137,6 +165,7 @@ Além dos 4 chefes da progressão, há **90 chefes novos** em 6 atos (8 + 14 + 1
 - **Como enfrentar:** no *Criativo*, Arsenal → *Inimigos & Chefes*. No modo *Aventura*, forje o **Sigilo** do chefe (receita na estação do ato: Bancada, Bigorna, Bigorna Avançada ou Forja Celeste) e use-o; alguns pedem local ou hora (selva, deserto, oceano, noite, cavernas, Inferno…) e cada ato só abre depois do chefe do ato anterior (Ato II depois do Olho, Ato III depois do Guardião, Ato IV depois do Colosso).
 - **Mecânicas únicas, em exemplos:** a *Rainha Vespa* cospe poças de mel que travam seus passos; o *Caranguejo-Rei* só fica vulnerável com as garras abertas; o *Rei Ossos* ressurge uma vez; a *Medusa* petrifica quem a olha de frente; a *Armadura Viva* só leva dano de verdade pelas costas; o *Dragão Adormecido* acorda a cada golpe que leva; o *Arauto do Vazio* inverte a gravidade; o *Titereiro* inverte seus comandos; e o *Mestre Forjador* aprende a resistir à espada que você mais usa. No Ato V, o *Serafim* marca você com o veredito e só acertar o chefe anula a sentença; o *Coro dos Querubins* corta o dano em 80% enquanto os três cantam; a *Fênix* vira um ovo de cinzas antes de renascer. No Ato VI, o *Buraco Branco* empurra tudo para longe; o *Cosmos Vivo* tem quatro planetas que absorvem os golpes; o *Axioma* devolve metade do dano enquanto a pedra está acesa; e a **Apoteose**, a espada 200, tem **quatro estágios** — dois no chão (julgamento e selos) e dois no ar (asas e apoteose final), com um golpe novo em cada um.
 - **Recompensas:** moedas, materiais do ato, poções, às vezes um Cristal de Vida e **uma espada garantida** de cada chefe (as dos Atos I a IV também podem ser forjadas; **as dos Atos V e VI, Tiers 9 e 10, só caem do chefe**).
+- **Selo do Axioma:** a última espada do jogo (**190 · Axioma**) só cai quando **todos os 94 chefes** já foram derrotados — os 4 clássicos e os 90 novos. Se faltar algum, o chefe continua invocável e o loot normal cai, mas a espada avisa *“faltam N chefes”* (o tooltip dela, no catálogo, já mostra a condição).
 - **Efeitos novos no jogador** (sempre temporários, somem ao morrer): lentidão, confusão (controles invertidos), atordoamento, silêncio (sem atacar), gravidade invertida, flutuar, maldição (sem cura), sangramento acumulável e tempo lento.
 
 ### Progressão
@@ -222,6 +251,7 @@ src/
   15e_worlds.js         tela "Meus Mundos", menu do título, criar / abrir / sair
   15f_transfer.js       este aparelho (código), proteção do armazenamento, mapa em arquivo (exportar / importar + validação)
   15g_touch.js          controles de toque: direcional virtual, botão de ação com mira por arrasto, pulo, interagir, painéis
+  15h_ach.js            conquistas: 429 registradas (200 de espada e 94 de chefe geradas das tabelas), painel com abas, aviso, perfil no navegador e saneamento na importação
   16_main.js            loop, câmera, renderização em camadas (cena em baixa resolução + zoom inteiro), input
 docs/                 catálogo de 200 espadas e dos equipamentos (md/csv) e capturas de tela (img/)
 dev/                  scripts de teste (Node + Playwright)
@@ -246,13 +276,14 @@ Os dados (tiles, itens, receitas, 200 espadas) estão em tabelas simples, fácei
 ---
 
 ## Testes realizados (automatizados, Chromium headless)
-> **Como rodar:** `node dev/validate.js` (catálogo; também regenera `docs/catalogo_*`), `node dev/reach.js`, `node dev/seeds.js`, `node dev/layouts.js` (variedade dos mundos) e `node dev/transfer.js` (mapa em arquivo, validação, aparelho, proteção) precisam só do Node (`npm test` roda os cinco). Os testes de navegador usam Playwright: `npm install && npx playwright install chromium`, depois `node dev/test_swords.js` etc. (`npm run test:browser` roda os doze com veredito: mundos salvos, aparelho/arquivos, controle, toque, aparência, arsenal, inimigos, chefes, chefes novos (luta e arte), soak e espadas). `node dev/http_check.js [url]` confere uma URL do jogo (local ou publicada) de ponta a ponta: carrega, salva, recarrega e continua. Os scripts localizam o `index.html` pelo próprio caminho e dividem utilitários em `dev/lib.js`; capturas temporárias vão para `dev/*.png` (ignoradas pelo git). Depois de editar `src/`, recompile com `node build.js`.
+> **Como rodar:** `node dev/validate.js` (catálogo; também regenera `docs/catalogo_*`), `node dev/reach.js`, `node dev/seeds.js`, `node dev/layouts.js` (variedade dos mundos) e `node dev/transfer.js` (mapa em arquivo, validação, aparelho, proteção) e `node dev/test_ach.js` (conquistas, itens de invocação e o selo do Axioma) precisam só do Node (`npm test` roda os seis). Os testes de navegador usam Playwright: `npm install && npx playwright install chromium`, depois `node dev/test_swords.js` etc. (`npm run test:browser` roda os doze com veredito: mundos salvos, aparelho/arquivos, controle, toque, aparência, arsenal, inimigos, chefes, chefes novos (luta e arte), soak e espadas). `node dev/http_check.js [url]` confere uma URL do jogo (local ou publicada) de ponta a ponta: carrega, salva, recarrega e continua. Os scripts localizam o `index.html` pelo próprio caminho e dividem utilitários em `dev/lib.js`; capturas temporárias vão para `dev/*.png` (ignoradas pelo git). Depois de editar `src/`, recompile com `node build.js`.
 
 - **Catálogo**: 200 espadas, 20 por tier (10 tiers), faixas de dano por tier, receitas válidas (`node dev/validate.js`).
 - **Progressão**: todo item é obtível e as 200 espadas são craftáveis a partir de fontes reais do mundo (`node dev/reach.js`); gerador testado em 8 sementes (`node dev/seeds.js`).
 - **Variedade dos mundos** (`dev/layouts.js`): 20.000 layouts (as 24 ordens de bioma equilibradas, oceanos de 90 a 220 colunas, spawn sempre na floresta, larguras mínimas), o sorteio de sementes (nunca repete; os 24 primeiros mundos têm 24 ordens diferentes) e 14 mundos completos comparados entre si — biomas, relevo, terreno bloco a bloco — mais o determinismo (mesma semente = mesmo mundo).
 - **Mundos salvos** (`dev/test_worlds.js`, 60 verificações): 6 mundos criados pelos botões (sementes, nomes, ordens de bioma e miniaturas diferentes), reabrir depois de recarregar a página, **fidelidade do save bloco a bloco** (blocos, paredes, líquidos, baús, inventário, chefes, Hardmode…), autosave, renomear/excluir, teletransporte do Arsenal para o bioma certo, semente excluída que nunca volta, migração do save antigo (inclusive sem IndexedDB: o save antigo nunca é apagado se o mundo não puder ser gravado de verdade), ambiente sem IndexedDB, cota estourada e mundo corrompido.
-- **Mapa em arquivo, aparelho e proteção** — sem navegador (`dev/transfer.js`, 73 verificações): CRC‑32 (igual ao `zlib`), ida e volta byte a byte, **52 adulterações com o CRC refeito** (item/bloco/bioma/NPC inexistente, camadas truncadas, valores fora da faixa, `__proto__`, quantidades absurdas…) todas recusadas sem exceção, fuzz de 400 arquivos corrompidos, regras de importação (novo / atualiza / ignora / divergente), código do aparelho, 12 *user‑agents* e a API de proteção (concedida, negada, com erro, ausente). No navegador (`dev/test_device.js`, 69 verificações): vários "aparelhos" separados — exportar de um e importar em outro (o que fica guardado é **idêntico**, camada por camada), levar o progresso de volta, dois aparelhos que evoluíram separados, proteção (Chrome, Firefox, sem a API), celular (iPhone, sem rolagem horizontal), sem IndexedDB e arquivos maliciosos (injeção de código no nome, na miniatura e no rótulo: nada é executado).
+- **Mapa em arquivo, aparelho e proteção** — sem navegador (`dev/transfer.js`, 78 verificações): CRC‑32 (igual ao `zlib`), ida e volta byte a byte, **52 adulterações com o CRC refeito** (item/bloco/bioma/NPC inexistente, camadas truncadas, valores fora da faixa, `__proto__`, quantidades absurdas…) todas recusadas sem exceção, fuzz de 400 arquivos corrompidos, regras de importação (novo / atualiza / ignora / divergente), código do aparelho, 12 *user‑agents* e a API de proteção (concedida, negada, com erro, ausente). No navegador (`dev/test_device.js`, 69 verificações): vários "aparelhos" separados — exportar de um e importar em outro (o que fica guardado é **idêntico**, camada por camada), levar o progresso de volta, dois aparelhos que evoluíram separados, proteção (Chrome, Firefox, sem a API), celular (iPhone, sem rolagem horizontal), sem IndexedDB e arquivos maliciosos (injeção de código no nome, na miniatura e no rótulo: nada é executado).
+- **Conquistas, itens de invocação e o selo do Axioma** — sem navegador (`dev/test_ach.js`, 29 verificações): as 429 conquistas (ids únicos, 200 de espada, 94 de chefe, progresso que não quebra com o jogo vazio e nenhuma nasce concluída), o painel em HTML com todas as linhas, o saneamento do arquivo importado (`achClean`) e a união de perfis sem regressão (`achMerge`), os 4 itens de invocar NPC funcionando só no Criativo (e sem consumir no Aventura), o NPC invocado e as conquistas sobrevivendo ao exportar/importar, e o **Axioma**: a espada 190 não cai com 1 ou 2 chefes faltando (com o aviso certo) e cai com os 94 derrotados.
 - **Espadas em combate** (`dev/test_swords.js`): o teste percorre o catálogo inteiro, cada uma ataca bonecos/inimigos por ~4,5 s — sem exceções, todas causam dano, status esperados observados (sangramento, veneno, gelo, atordoamento, tempo parado, podridão, pânico, cegueira…).
 - **Todos os inimigos, variantes elementais e os 4 chefes** (`dev/test_enemies.js`) e **~45.000 passos** de simulação com spawn natural em 14 cenários, todas as camadas e estágios (`dev/soak.js`): zero erros.
 - **Aparência e copas** (`dev/test_skin.js`, 20 verificações): interface azul única (o menu de Pausa não tem botão para trocar, mesmo com a escolha antiga "escura" guardada no aparelho), silhueta, contorno e cache das copas das árvores, lote de desenho, e a ausência do retângulo "DPS · Total" (removido da tela).

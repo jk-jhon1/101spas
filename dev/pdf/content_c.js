@@ -33,7 +33,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/09_combat.js', lines: 334, tag: 'Simulação', role: 'Dano, status, projéteis e explosões', color: COL.sim,
+    name: 'src/09_combat.js', lines: 335, tag: 'Simulação', role: 'Dano, status, projéteis e explosões', color: COL.sim,
     summary: 'O pipeline completo de combate: aplicar dano, calcular crítico e defesa, status, morte, projéteis de todos os formatos, feixes e explosões.',
     what: 'É o módulo que decide tudo o que acontece quando algo acerta algo. `hitEnemy` calcula dano (base × multiplicador × crítico − defesa), aplica elemento e status, dispara os ganchos da espada e devolve o resultado. `killEnemy` dá drops, moedas e conta chefes. `spawnProj`/`updateProjs`/`drawProj` movem e desenham projéteis de ~18 formatos diferentes, com homing, balística, perfuração e recarga por alvo.',
     how: [
@@ -127,7 +127,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/12_player.js', lines: 360, tag: 'Conteúdo', role: 'Jogador, inventário e criação', color: COL.play,
+    name: 'src/12_player.js', lines: 367, tag: 'Conteúdo', role: 'Jogador, inventário e criação', color: COL.play,
     summary: 'O corpo do jogador (12×26 px), os 40 espaços de inventário, os equipamentos (1 armadura + 4 acessórios), as estatísticas, a criação, a mineração, a construção e o desenho.',
     what: 'É o módulo mais “jogável” do projeto. Cuida do movimento com colisão, pulo, natação, i-frames, morte e renascimento; do inventário de 40 posições + armadura + três acessórios; da criação de itens com verificação de estação próxima; de quebrar e colocar blocos com alcance; de usar consumíveis; e de desenhar o boneco com as peças de 05b.',
     how: [
@@ -165,7 +165,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/13c_bossx.js', lines: 312, tag: 'Conteúdo', role: 'Motor dos 90 chefes novos', color: COL.play,
+    name: 'src/13c_bossx.js', lines: 324, tag: 'Conteúdo', role: 'Motor dos 90 chefes novos', color: COL.play,
     summary: 'Registro `BX`, condições de invocação, sigilos, repertório de golpes escritos como geradores e um kit de peças reutilizáveis (zonas, feixes, projéteis, lacaios, teleporte).',
     what: 'Cada chefe novo se declara com `bx(id, { ... })`: atributos, ato, condição (bioma, item, horário), mecânica única descrita em texto, e um conjunto de golpes escritos como `function*` — `yield 0.5` espera meio segundo e `yield` sozinho espera um quadro. O motor executa esses geradores, cuida das três fases, das zonas de perigo, dos projéteis telegrafados, dos lacaios e dos debuffs no jogador.',
     how: [
@@ -239,11 +239,11 @@ function part3b(doc) {
     deps: '05f_bxart, 14_draw_enemies', used: '16_main (bxDraw)',
   });
 
-  doc.h2('12.  Bloco 15–16 · interface, saves e controles', { mark: 's12', break: true });
-  doc.para('O último bloco liga o jogo ao navegador: interface em DOM, NPCs e moradia, biblioteca de mundos salvos, gamepad, toque, exportação de arquivo e o laço principal com o pipeline de render.');
+  doc.h2('12.  Bloco 15–16 · interface, saves, conquistas e controles', { mark: 's12', break: true });
+  doc.para('O último bloco liga o jogo ao navegador: interface em DOM, NPCs e moradia, biblioteca de mundos salvos, gamepad, toque, exportação de arquivo, conquistas e o laço principal com o pipeline de render.');
 
   doc.fileCard({
-    name: 'src/15_ui.js', lines: 319, tag: 'Interface', role: 'HUD, inventário, catálogo, mapa e ajuda', color: COL.ui,
+    name: 'src/15_ui.js', lines: 320, tag: 'Interface', role: 'HUD, inventário, catálogo, mapa e ajuda', color: COL.ui,
     summary: 'Toda a interface em DOM: corações, barra de itens, painéis de inventário e criação, catálogo das espadas, tooltips, minimapa, mapa grande e a tela de ajuda.',
     what: 'A interface não é desenhada em canvas: são elementos HTML posicionados sobre o jogo, o que dá texto nítido, rolagem e acessibilidade de graça. Este módulo monta os slots, sincroniza o inventário com o DOM, calcula o HTML de cada tooltip, filtra e ordena receitas, e renderiza o catálogo com abas.',
     how: [
@@ -256,7 +256,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/15b_npc.js', lines: 145, tag: 'Interface', role: 'Moradia e NPCs', color: COL.ui,
+    name: 'src/15b_npc.js', lines: 168, tag: 'Interface', role: 'Moradia e NPCs', color: COL.ui,
     summary: 'Valida salas para moradia, faz os NPCs aparecerem, atualiza seu comportamento e abre as lojas de compra e venda.',
     what: 'Para um NPC se mudar, a sala precisa ser fechada, ter paredes de fundo em toda a área, luz, mesa ou bancada, cadeira e ao menos uma porta. `scanRooms` faz uma busca em largura para achar salas válidas; `spawnNpcQuiet` coloca o morador; `openNpc` monta o painel de diálogo e a loja.',
     how: [
@@ -268,7 +268,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/15c_save.js', lines: 241, tag: 'Sistemas', role: 'Biblioteca de mundos salvos', color: COL.ui,
+    name: 'src/15c_save.js', lines: 244, tag: 'Sistemas', role: 'Biblioteca de mundos salvos', color: COL.ui,
     summary: 'Guarda vários mundos em IndexedDB, comprime os blocos com RLE, gera miniaturas, salva em fila e migra o save antigo.',
     what: 'O objeto `Worlds` é uma pequena biblioteca: metadados leves na loja `worlds` (nome, semente, modo, progresso, miniatura, aparelho de origem), o mundo em si na loja `data` e todas as sementes já sorteadas na loja `seeds` — para que nenhuma semente se repita nem depois de excluir um mundo. Sem IndexedDB (iframe restrito, modo privado), os mundos ficam em memória durante a sessão, com aviso.',
     how: [
@@ -305,7 +305,7 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/15f_transfer.js', lines: 261, tag: 'Sistemas', role: 'Este aparelho, proteção e mapa em arquivo', color: COL.ui,
+    name: 'src/15f_transfer.js', lines: 263, tag: 'Sistemas', role: 'Este aparelho, proteção e mapa em arquivo', color: COL.ui,
     summary: 'Gera um código de aparelho, pede armazenamento persistente ao navegador e exporta/importa mundos como arquivos `.json` com CRC-32.',
     what: 'O código do aparelho é aleatório e guardado localmente: serve para dizer de onde um mapa veio, sem usar IP (que o navegador esconde e que muda de rede para rede). A exportação monta um arquivo autocontido com verificação de integridade; a importação **não confia em nada** do arquivo: valida o CRC e reconstrói o mundo apenas com campos e valores permitidos.',
     how: [
@@ -330,7 +330,21 @@ function part3b(doc) {
   });
 
   doc.fileCard({
-    name: 'src/16_main.js', lines: 270, tag: 'Motor', role: 'Loop, render, input e câmera', color: COL.main,
+    name: 'src/15h_ach.js', lines: 342, tag: 'Sistemas', role: 'Conquistas: 429, painel e perfil', color: COL.ui,
+    summary: 'Registra as 429 conquistas, confere o progresso a cada 0,6 s, avisa quando algo é desbloqueado e desenha o painel com abas, raridades e barra de progresso.',
+    what: 'Cada conquista é um objeto com id, categoria, raridade **e uma função `p()`** que devolve `[atual, meta]` — o progresso é sempre calculado a partir do estado do jogo (`G`, `G.P`, `G.flags`, contadores de `G.ach.st`), nunca de flags espalhadas pelo código. As 200 conquistas de espada e as 94 de chefe são **geradas** de `SWORDS` e `BXLIST`, então acompanham o catálogo sozinhas; as outras 135 são escritas à mão.',
+    how: [
+      '`achTick(dt)` roda dentro do `step`: mede distância percorrida (com guarda anti-teleporte), bioma, camada, profundidade máxima, tempo de jogo e a área dos cogumelos; a checagem completa roda a cada 0,6 s.',
+      'O estado vive em `G.ach` (`un`, `seen`, `bio`, `lay`, `st`, `max`), é gravado no `localStorage` a cada 12 s quando muda e também vai dentro de cada mundo salvo.',
+      '`achClean`/`achMerge` são a fronteira do arquivo importado: só ids, itens, biomas, camadas, NPCs e números que existem no jogo entram, com teto nos contadores; a união nunca deixa o perfil regredir.',
+      '`achNotify` mostra o aviso dourado e toca o som; `achLabels` atualiza os dois botões (menu e pausa) e o contador.',
+    ],
+    funcs: 'ach() · achTick · achCheck · achNotify · achHTML · achRefresh · showAch · achClean · achMerge · achSave/achLoad · achSee/achStat/achMax · achKill/achBoss/achSummon',
+    deps: '11_swords, 13c_bossx, 11c_gear_x, 15b_npc', used: '16_main, 15c_save, 15f_transfer, 12_player, 09_combat',
+  });
+
+  doc.fileCard({
+    name: 'src/16_main.js', lines: 281, tag: 'Motor', role: 'Loop, render, input e câmera', color: COL.main,
     summary: 'O ponto de entrada do jogo: cria os canvas em camadas, trata teclado/mouse, roda o laço de quadro, desenha as cinco passadas e inicializa tudo.',
     what: 'É o único módulo que conhece o DOM do jogo diretamente e o único que dispara a simulação. Ele mantém quatro canvas (cena em baixa resolução, luz, céu e a vista final), aplica o zoom inteiro (1 px do mundo = N px de tela) e executa, a cada quadro, `padUpdate` → `touchUpdate` → `step` → `refreshHUD` → `render`. Também cuida da tela de carregamento (consumindo o gerador do mundo) e do fundo animado do menu.',
     how: [

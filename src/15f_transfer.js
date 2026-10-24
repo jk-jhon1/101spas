@@ -162,7 +162,9 @@ function sanitizeSave(raw) {
   const ns = raw.npcs === undefined ? [] : raw.npcs, npcs = [];
   if (!Array.isArray(ns) || ns.length > 100) return bad('NPCs inválidos');
   for (const n of ns) {
-    if (!isO(n) || !hasOwn(NPC_DEF, n.type) || typeof n.home !== 'string' || !/^\d{1,5},\d{1,5}$/.test(n.home) || !num(n.x, 0, WW * TS) || !num(n.y, -400, WH * TS + 400)) return bad('NPC inválido');
+    if (!isO(n) || !hasOwn(NPC_DEF, n.type) || !num(n.x, 0, WW * TS) || !num(n.y, -400, WH * TS + 400)) return bad('NPC inválido');
+    if (n.free === true || n.free === 1) { npcs.push({ type: n.type, home: 'free', free: 1, x: n.x, y: n.y }); continue; }   /* invocado no Criativo: mora onde foi chamado */
+    if (typeof n.home !== 'string' || !/^\d{1,5},\d{1,5}$/.test(n.home)) return bad('NPC inválido');
     npcs.push({ type: n.type, home: n.home, x: n.x, y: n.y });
   }
   const flags = {}; for (const k of ['slime', 'eye', 'guardian', 'colossus']) flags[k] = !!(isO(raw.flags) && raw.flags[k]);
@@ -170,7 +172,7 @@ function sanitizeSave(raw) {
   const opts = {}; for (const k of ['god', 'noSpawn', 'showDps', 'freeCraft']) opts[k] = !!(isO(raw.opts) && raw.opts[k]);
   return {
     sv: { v: 2, seed: raw.seed, mode: raw.mode, time: raw.time, day: raw.day, t: raw.t, stage: raw.stage, flags, kills, hard: !!raw.hard, spawn: { x: raw.spawn.x, y: raw.spawn.y }, mush, w, chests,
-      P: { x: Pp.x, y: Pp.y, hp: Pp.hp, crystals: Pp.crystals, inv, equip: { armor, acc }, sel: Pp.sel || 0 }, npcs, opts },
+      P: { x: Pp.x, y: Pp.y, hp: Pp.hp, crystals: Pp.crystals, inv, equip: { armor, acc }, sel: Pp.sel || 0 }, npcs, ach: achClean(raw.ach), opts },
     bytes,
   };
 }

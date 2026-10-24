@@ -74,13 +74,16 @@ function snapshotGame() {
     spawn: plain(wd.spawn), mush: wd.mushCenter ? plain(wd.mushCenter) : null, w,
     chests: plain([...wd.chests.entries()]),
     P: plain({ x: P.x, y: P.y, hp: P.hp, crystals: P.crystals, inv: P.inv, equip: P.equip, sel: P.sel }),
-    npcs: G.npcs.map(n => ({ type: n.type, home: n.home, x: n.x, y: n.y })), opts: plain(G.opts),
+    npcs: G.npcs.map(n => n.free ? { type: n.type, home: 'free', free: 1, x: n.x, y: n.y } : { type: n.type, home: n.home, x: n.x, y: n.y }),
+    ach: plain(achClean(achS())), opts: plain(G.opts),   /* conquistas: vão junto no save e no arquivo exportado */
   };
+  achSave();   /* salvar o mundo também grava o perfil de conquistas do navegador */
   return { sv, bytes: w.t.length + w.wl.length + w.lq.length + w.lt.length + w.rev.length + w.surf.byteLength + w.bio.length };
 }
 // Reconstrói o mundo a partir de um save (formato 2: arrays tipados; formato 1 antigo: base64) e entra no jogo.
 function applyGame(sv, meta) {
   Snd.init(); resetGameState(sv.mode); G.seed = sv.seed;
+  if (sv.ach) { achMerge(achClean(sv.ach), achS()); achSave(); }   /* o perfil nunca regride ao abrir um mundo mais antigo */
   G.worldId = meta.id; G.worldName = meta.name; G.worldCreated = meta.created;
   const wd = new World(WW, WH, sv.seed), n = WW * WH, dec = a => typeof a === 'string' ? unb64(a) : a;
   wd.t.set(rleDec(dec(sv.w.t), n)); wd.wl.set(rleDec(dec(sv.w.wl), n)); wd.lq.set(rleDec(dec(sv.w.lq), n)); wd.lt.set(rleDec(dec(sv.w.lt), n)); wd.rev.set(rleDec(dec(sv.w.rev), n));
@@ -237,5 +240,5 @@ const Worlds = {
 
 // ---------- API usada pelo resto do jogo e pelos testes ----------
 function hasSave() { return Worlds.list.length > 0; }
-function saveGame(silent) { return Worlds.save({ silent: !!silent, thumb: !silent }); }                     // Promise<boolean>
+function saveGame(silent) { achStat('saves'); achSave(); return Worlds.save({ silent: !!silent, thumb: !silent }); }   // Promise<boolean>
 function loadGame(id) { return Worlds.load(id || G.worldId || (Worlds.list[0] && Worlds.list[0].id)); }    // Promise<boolean>

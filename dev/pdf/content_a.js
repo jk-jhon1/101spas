@@ -12,12 +12,12 @@ const SECTIONS = [
   { key: 's6', num: '6', title: 'Os dados que alimentam o jogo' },
   { group: 'Parte II — A pasta raiz' },
   { key: 's7', num: '7', title: 'Arquivos da raiz, um a um' },
-  { group: 'Parte III — A pasta src/ (50 módulos)' },
+  { group: 'Parte III — A pasta src/ (51 módulos)' },
   { key: 's8', num: '8', title: 'Bloco 00–01 · base e dados' },
   { key: 's9', num: '9', title: 'Bloco 02–07 · mundo, luz e arte' },
   { key: 's10', num: '10', title: 'Bloco 08–10 · física, combate e efeitos' },
   { key: 's11', num: '11', title: 'Bloco 11–14 · conteúdo: espadas, jogador, inimigos' },
-  { key: 's12', num: '12', title: 'Bloco 15–16 · interface, saves e controles' },
+  { key: 's12', num: '12', title: 'Bloco 15–16 · interface, saves, conquistas e controles' },
   { group: 'Parte IV — A pasta dev/' },
   { key: 's13', num: '13', title: 'Ferramentas e testes' },
   { key: 's14', num: '14', title: 'Como rodar as verificações' },
@@ -30,6 +30,7 @@ const SECTIONS = [
   { key: 's19', num: '19', title: 'Salvamento, mundos e arquivos' },
   { key: 's20', num: '20', title: 'Os Tiers 7–10 (espadas 121–200)' },
   { key: 's21', num: '21', title: 'Convenções e armadilhas do código' },
+  { key: 's22', num: '22', title: 'Conquistas e os itens de invocação de NPC' },
   { group: 'Apêndices' },
   { key: 'sa', num: 'A', title: 'Todos os módulos em uma tabela' },
   { key: 'sb', num: 'B', title: 'Comandos e ganchos de teste' },
@@ -37,7 +38,7 @@ const SECTIONS = [
 
 function cover(doc) {
   doc.cover({
-    stats: [['módulos em src/', 50], ['linhas em src/*.js', '12.505'], ['espadas no jogo', 200], ['inimigos definidos', 84],
+    stats: [['módulos em src/', 51], ['linhas em src/*.js', '12.930'], ['espadas no jogo', 200], ['inimigos definidos', 84],
       ['receitas de criação', 433], ['chefes (4 + 90)', 94], ['efeitos de espada', 126], ['telas e painéis', '15+']],
     meta: [['repositório', 'jk-jhon1/101spas'], ['branch', 'arena/27f9de3b-101spas'], ['commit', 'f5c353b + rodada dos 90 chefes'], ['jogo', '120 → 200 espadas · Tiers 9–10 só caem de chefe'], ['gerado em', '24/10/2026']],
     footer: 'Documento técnico gerado a partir da leitura do código-fonte. Todos os números foram medidos no repositório.',
@@ -54,12 +55,12 @@ function part1(doc) {
 
   doc.h2('1.  O que é o 101spas', { mark: 's1' });
   doc.para('**101spas** é um sandbox 2D de plataforma em pixel-art, jogado no navegador. O jogador minera, constrói, enfrenta inimigos e chefes e forja espadas: são **200 espadas** divididas em **10 tiers**, cada uma com atributos, uma mecânica única e uma arte própria. O jogo tem dois modos: **Aventura** (mundo gerado, progressão, chefes) e **Criativo** (arsenal completo, voo livre, sem morte).');
-  doc.para('Tecnicamente, é um projeto sem framework e sem dependências em tempo de execução: **um único `index.html`** de cerca de 1119 KB, com todo o JavaScript, o CSS e o HTML embutidos. Não há servidor obrigatório, nem build de terceiros, nem módulos ES: o jogo é uma sequência de 50 scripts que compartilham o mesmo escopo global. Abrir o arquivo no navegador já funciona; servir por HTTP acrescenta o salvamento em IndexedDB e a API de gamepad, que exigem uma origem de verdade.');
+  doc.para('Tecnicamente, é um projeto sem framework e sem dependências em tempo de execução: **um único `index.html`** de cerca de 1156 KB, com todo o JavaScript, o CSS e o HTML embutidos. Não há servidor obrigatório, nem build de terceiros, nem módulos ES: o jogo é uma sequência de 51 scripts que compartilham o mesmo escopo global. Abrir o arquivo no navegador já funciona; servir por HTTP acrescenta o salvamento em IndexedDB e a API de gamepad, que exigem uma origem de verdade.');
   doc.callout('ok', 'Em uma frase', 'O repositório guarda o código-fonte em pedaços legíveis (a pasta `src/`); o `build.js` costura esses pedaços em um arquivo só (`index.html`); o `serve.js` publica esse arquivo para jogar no navegador.');
 
   doc.h3('Números medidos no repositório');
   doc.table(['O quê', 'Quantidade', 'Onde vive'], [
-    ['Módulos JavaScript do jogo', '50 arquivos · 12.505 linhas', 'src/*.js'],
+    ['Módulos JavaScript do jogo', '51 arquivos · 12.930 linhas', 'src/*.js'],
     ['Folha de estilo e template', '270 + 133 linhas', 'src/style.css · src/template.html'],
     ['Espadas', '200 (20 por tier, 10 tiers)', 'src/11_swords.js · src/11b_swords_x.js'],
     ['Tipos de bloco e parede', '62 tiles · 10 paredes', 'src/01_data.js'],
@@ -73,10 +74,10 @@ function part1(doc) {
 
   doc.h2('2.  Como o projeto é montado', { mark: 's2', break: true });
   doc.para('O jogo não usa `import`, `require`, bundler ou transpilador. O `build.js` lê **todos** os arquivos de `src/` cujo nome começa com dígitos, ordena pelo nome e concatena o conteúdo em um único bloco de script, separado por comentários `/* ===== arquivo.js ===== */`. Depois injeta esse bloco e o CSS no `template.html` e grava o `index.html`.');
-  doc.monoLine('node build.js        →   OK index.html 1119 KB; 50 módulos');
+  doc.monoLine('node build.js        →   OK index.html 1156 KB; 51 módulos');
   doc.para('Como todos os arquivos caem no mesmo escopo, uma função declarada em `15_ui.js` pode ser chamada por `16_main.js` sem nenhum tipo de importação. O preço disso é que **a ordem importa**: constantes e objetos avaliados no topo de um arquivo precisam que as definições de que dependem já tenham rodado. É por isso que os nomes têm prefixos numéricos — eles são a ordem de carga e, ao mesmo tempo, o “endereço” de cada módulo na pilha.');
   doc.flow([
-    { n: 1, title: 'src/*.js', text: '50 módulos numerados de 00 a 16. Cada um cuida de um assunto: dados, mundo, arte, combate, interface, laço principal.', color: '#0e7490' },
+    { n: 1, title: 'src/*.js', text: '51 módulos numerados de 00 a 16. Cada um cuida de um assunto: dados, mundo, arte, combate, interface, laço principal.', color: '#0e7490' },
     { n: 2, title: 'build.js', text: 'Ordena, concatena, escapa a sequência </script> quando ela aparece dentro de uma string e injeta o resultado no template.', color: '#b45309' },
     { n: 3, title: 'src/template.html + style.css', text: 'O esqueleto do documento (canvas, HUD, painéis, menus) e a folha de estilo que dão forma à interface em DOM.', color: '#0e7490' },
     { n: 4, title: 'index.html', text: 'Arquivo único e autocontido. É o que o jogador abre. Nunca deve ser editado à mão: o próximo build sobrescreve.', color: '#0f172a' },
@@ -89,13 +90,13 @@ function part1(doc) {
   doc.h2('3.  Mapa das pastas', { mark: 's3' });
   doc.para('O repositório tem três pastas de trabalho e alguns arquivos soltos na raiz. Cada uma tem um papel bem definido:');
   doc.table(['Pasta', 'Papel', 'Quem usa'], [
-    ['src/', 'Todo o código do jogo, em 50 módulos + CSS + template. É a única pasta que entra no build.', 'build.js'],
+    ['src/', 'Todo o código do jogo, em 51 módulos + CSS + template. É a única pasta que entra no build.', 'build.js'],
     ['dev/', 'Scripts de verificação: validação sem navegador, testes de equipamento e de arte dos ícones, testes de navegador (Playwright) e geradores de imagens de conferência. Nada daqui entra no jogo.', 'desenvolvedor, npm test'],
     ['docs/', 'Catálogo de espadas em Markdown/CSV, lista de chefes e capturas de tela usadas no README.', 'pessoas que leem o projeto'],
   ], [0.14, 0.62, 0.24]);
   doc.h3('Arquivos da raiz');
   doc.table(['Arquivo', 'Para que serve'], [
-    ['index.html', 'O jogo pronto (gerado). ~1119 KB, autocontido.'],
+    ['index.html', 'O jogo pronto (gerado). ~1156 KB, autocontido.'],
     ['build.js', 'Costura src/ em index.html. Sem dependências.'],
     ['serve.js', 'Servidor estático mínimo (só index.html, README e docs/) para jogar por http.'],
     ['package.json', 'Nome, scripts (`build`, `serve`, `validate`, `test`) e a única dependência de desenvolvimento (Playwright).'],
@@ -195,7 +196,7 @@ function part2(doc) {
 
   doc.fileCard({
     name: 'index.html', lines: 9090, tag: 'Gerado', role: 'O jogo inteiro em um arquivo — não editar à mão',
-    summary: 'Documento HTML autocontido, de cerca de 1119 KB, que carrega o template, o CSS e os 50 módulos concatenados em um único `<script>`.',
+    summary: 'Documento HTML autocontido, de cerca de 1156 KB, que carrega o template, o CSS e os 51 módulos concatenados em um único `<script>`.',
     what: 'É o artefato que o jogador abre. O `build.js` o reescreve a partir de `src/`; qualquer edição manual é perdida no próximo build. Ele existe para que o jogo funcione sem servidor, sem rede e sem caminhos relativos.',
     how: [
       'Estrutura: `<canvas id="view">` (o jogo), canvas do fundo do menu, HUD em DOM, painéis e menus, e um bloco `<script>` com tudo.',

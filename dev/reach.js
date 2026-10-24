@@ -20,6 +20,8 @@ Object.values(BX_ACC || {}).forEach(i => have.add(i));   // acessórios exclusiv
 // Tier 9/10: as 40 espadas não têm receita — caem do chefe que as guarda (13h/13i_bx_*)
 SWORDS.filter(s => s.dropOnly).forEach(s => { if (!BXLIST.some(d => d.sword === s.id)) { console.log('ERRO: ' + s.id + ' não cai de chefe nenhum'); process.exitCode = 1; } have.add(s.id); });
 ['feather', 'cloud', 'torch', 'copper_bar', 'iron_bar', 'silver_bar', 'gold_bar', 'platinum_bar', 'ruby', 'emerald', 'topaz', 'sapphire', 'amethyst', 'acc_glove', 'acc_boots', 'acc_ring', 'acc_fang', 'acc_shield'].forEach(i => have.add(i));
+// 3b) itens exclusivos do Modo Criativo (invocação de NPC): o Arsenal entrega todos no criativo
+Object.values(IT).filter(i => i.creativeOnly).forEach(i => have.add(i.id));
 // 4) lojas
 for (const k in SHOPS) SHOPS[k]().forEach(i => have.add(i));
 // 5) árvore de receitas (ponto fixo)

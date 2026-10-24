@@ -29,6 +29,7 @@ function build(pages) {
   Cc.part3b(doc);
   D.part4(doc);
   D.part6(doc);
+  D.artifacts(doc);
   D.appendix(doc);
   return doc;
 }
