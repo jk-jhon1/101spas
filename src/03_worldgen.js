@@ -275,6 +275,7 @@ function* genWorld(wd, seedNum) {
   [[T.ruby, 70], [T.emerald, 70], [T.topaz, 70], [T.sapphire, 70], [T.amethyst, 70]].forEach(([g, c], i) => ores(g, c, x => S(x) + (i === 4 ? 25 : 35), 390, 3, 6, ST));
   ores(T.hellstone, 700, Y_HELL + 20, H - 5, 8, 16, [T.ash]);
   ores(T.obsidian, 220, Y_HELL + 2, Y_HELL + 20, 7, 14, [T.ash, T.stone]); ores(T.obsidian, 220, 458, 474, 7, 14, [T.ash]);
+  if (typeof gearPlaceOres === 'function') gearPlaceOres(ores, T, S, Y_HELL, bio, W);   /* 50 minérios novos (11c_gear_x.js) */
   yield [0.6, 'Semeando minérios...'];
 
   // ---------- 7. água, lagos e lava ----------

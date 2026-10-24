@@ -99,7 +99,7 @@ const tamper = (text, fn) => { const f = JSON.parse(text), pl = JSON.parse(f.pay
     ['quantidade fracionária', (pl) => { pl.sv.P.inv[3] = { id: 'coin', n: 1.5 }; }], ['quantidade gigante', (pl) => { pl.sv.P.inv[3] = { id: 'coin', n: 1e12 }; }],
     ['metadado de item enorme', (pl) => { pl.sv.P.inv[3] = { id: 'coin', n: 1, m: { x: 'y'.repeat(1000) } }; }], ['espaço que não é objeto', (pl) => { pl.sv.P.inv[3] = 'coin'; }],
     ['armadura que é uma espada', (pl) => { pl.sv.P.equip = { armor: { id: 's001', n: 1 }, acc: [null, null, null] }; }],
-    ['acessório que é uma espada', (pl) => { pl.sv.P.equip = { armor: null, acc: [{ id: 's001', n: 1 }, null, null] }; }], ['acessórios: 2 em vez de 3', (pl) => { pl.sv.P.equip = { armor: null, acc: [null, null] }; }],
+    ['acessório que é uma espada', (pl) => { pl.sv.P.equip = { armor: null, acc: [{ id: 's001', n: 1 }, null, null, null] }; }], ['acessórios: 2 em vez de 3 ou 4', (pl) => { pl.sv.P.equip = { armor: null, acc: [null, null] }; }], ['acessórios: 5 slots', (pl) => { pl.sv.P.equip = { armor: null, acc: [null, null, null, null, null] }; }], ['acessório com mecânica inexistente', (pl) => { pl.sv.P.equip = { armor: null, acc: [{ id: 'accx_brasa_anel', n: 1, m: 1 }, null, null, null] }; }],
     ['baú com posição inválida', (pl) => { pl.sv.chests = [[-1, []]]; }], ['baú com item inexistente', (pl) => { pl.sv.chests = [[5000, [{ id: 'zzz', n: 1 }]]]; }], ['baús que não é lista', (pl) => { pl.sv.chests = 'x'; }],
     ['NPC de tipo desconhecido', (pl) => { pl.sv.npcs = [{ type: 'dragao', home: '5,5', x: 1, y: 1 }]; }], ['NPC com casa inválida', (pl) => { pl.sv.npcs = [{ type: 'guide', home: 'abc', x: 1, y: 1 }]; }],
     ['NPC "toString"', (pl) => { pl.sv.npcs = [{ type: 'toString', home: '5,5', x: 1, y: 1 }]; }],
@@ -107,6 +107,8 @@ const tamper = (text, fn) => { const f = JSON.parse(text), pl = JSON.parse(f.pay
   ];
   let slipped = [];
   for (const [name, fn] of T2) { const e = errOf(tamper(file, fn)); if (!e || e.startsWith('EXCEÇÃO')) slipped.push(name + (e ? ' [' + e + ']' : ' [ACEITOU]')); }
+  // save NOVO (4 acessórios das famílias) continua aceito
+  { const ok4 = errOf(tamper(file, (pl) => { pl.sv.P.equip = { armor: { id: 'armx_brasa_0', n: 1 }, acc: [{ id: 'accx_brasa_anel', n: 1 }, { id: 'accx_geada_anel', n: 1 }, null, null] }; })); check('save com armadura e 4 slots de acessório é aceito', !ok4, ok4 || ''); }
   check(T2.length + ' adulterações diferentes: todas recusadas, nenhuma lança exceção', slipped.length === 0, slipped.join(' | '));
   check('o arquivo registra o tamanho do mundo e a recusa por tamanho explica os dois', JSON.parse(JSON.parse(file).payload).meta.size.join('x') === WW + 'x' + WH && /outro tamanho \(2000×600\).*\(1400×480\)/.test(errOf(tamper(file, (pl) => { pl.meta.size = [2000, 600]; }))));
   const ex = errOf(tamper(file, (pl) => { pl.sv.P.inv[3] = { id: 'zzz', n: 1 }; }));

@@ -57,7 +57,10 @@ function summonBossX(id) {
     else { const p = freeSpot(ed.w, ed.h, pcx(P) + side * 200, pcy(P) - 60); x = p.x; y = p.y; }
   }
   bxTrimCache(id); bxWarmAll(id);   /* todos os quadros do chefe prontos antes da luta (escondido pelo clarão preto) */
-  const e = spawnEnemy('bx_' + id, x, y); G.boss = e; e.bossT = 0; bxInit(e);
+  const e = spawnEnemy('bx_' + id, x, y); G.boss = e; e.bossT = 0;
+  // os chefes novos foram calibrados para 3 acessórios; com o 4º slot eles ganham 12% de vida
+  e.hpMax = Math.round(e.hpMax * (1 + .03 * Math.min(4, (P.equip.acc || []).filter(Boolean).length))); e.hp = e.hpMax;
+  bxInit(e);
   sfx('boss'); shake(8); toast(d.msg || (d.n + ' despertou!'), d.acc, 5); flash('#000000', .35, .8);
   return true;
 }
@@ -290,6 +293,7 @@ function bxLoot(e) {
   rain('coin', rndi(d.coin[0], d.coin[1]));
   for (const [id, a, b] of A.mat) { const n = rndi(a, b); rain(id, n); }
   if (d.sword) dropItem(d.sword, 1, x, y);
+  gearBossDrop(d, dropItem, x, y);   /* acessório exclusivo do chefe (11c_gear_x.js) */
   if (d.i % 3 === 0) dropItem('life_crystal', 1, x + 8, y);
   dropItem(A.pot, 2 + d.act, x - 10, y);
   if (d.loot) d.loot(e, rain);

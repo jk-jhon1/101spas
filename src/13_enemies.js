@@ -88,6 +88,7 @@ function bossLoot(e) {
   if (e.d.bx) return bxLoot(e);
   const x = ecx(e), y = ecy(e), k = e.k;
   const rain = (id, n) => { for (let i = 0; i < n; i += Math.max(1, Math.ceil(n / 8))) dropItem(id, Math.min(Math.ceil(n / 8) || 1, n - i), x + rnd(-30, 30), y + rnd(-20, 10), rnd(-120, 120), rnd(-300, -150)); };
+  if (CLASSIC_ACC[k.slice(5)]) gearClassicDrop(k.slice(5), dropItem, x, y);   /* acessório exclusivo (11c_gear_x.js) */
   if (k === 'boss_slime') { rain('coin', rndi(70, 110)); rain('gel', rndi(40, 60)); dropItem('life_crystal', 1, x, y); dropItem(pick(['s003', 's009', 's011', 's015', 's017', 's010']), 1, x, y); dropItem('acc_boots', 1, x + 10, y); dropItem('potion1', 4, x - 10, y); }
   else if (k === 'boss_eye') { rain('coin', rndi(120, 180)); rain('platinum_bar', rndi(16, 24)); dropItem('life_crystal', 2, x, y); dropItem(pick(['s021', 's024', 's027', 's029', 's033', 's037']), 1, x, y); dropItem('acc_ring', 1, x + 12, y); dropItem('potion1', 6, x - 10, y); }
   else if (k === 'boss_guardian') { rain('coin', rndi(250, 360)); rain('hell_bar', rndi(10, 16)); rain('celestial_frag', rndi(14, 20)); dropItem('life_crystal', 3, x, y); dropItem('potion2', 5, x - 10, y); dropItem('acc_gauntlet', 1, x + 12, y); }

@@ -86,7 +86,7 @@ function finishLoad(sv) {
   const give = (id, n) => invAdd(id, n || 1);
   if (sv) {
     G.time = sv.time; G.day = sv.day; G.t = sv.t || 0; G.stage = sv.stage; G.flags = sv.flags; G.kills = sv.kills || 0; Object.assign(G.opts, sv.opts || {});
-    P.x = sv.P.x; P.y = sv.P.y; P.crystals = sv.P.crystals; P.inv = sv.P.inv; P.equip = sv.P.equip; P.sel = sv.P.sel || 0;
+    P.x = sv.P.x; P.y = sv.P.y; P.crystals = sv.P.crystals; P.inv = sv.P.inv; P.equip = normalizeEquip(sv.P.equip); P.sel = sv.P.sel || 0;
     for (const nd of sv.npcs || []) { const rm = { id: nd.home, cx: +nd.home.split(',')[0], cy: +nd.home.split(',')[1], minx: +nd.home.split(',')[0] - 3, maxx: +nd.home.split(',')[0] + 3 }; const n = spawnNpcQuiet(nd.type, rm); n.x = nd.x; n.y = nd.y; }
   } else if (G.mode === 'creative') { G.opts.god = false; give('pick_celestial'); give('s001'); give('s062'); give('s100'); give('s120'); give('s021'); give('s055'); give('torch', 99); give('potion3', 20); give('stone', 999); give('plank', 999); give('bench'); give('chest'); P.crystals = 15; }
   else { give('s001'); give('pick_copper'); give('torch', 12); give('potion1', 3); }

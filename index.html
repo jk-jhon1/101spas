@@ -1250,6 +1250,7 @@ function* genWorld(wd, seedNum) {
   [[T.ruby, 70], [T.emerald, 70], [T.topaz, 70], [T.sapphire, 70], [T.amethyst, 70]].forEach(([g, c], i) => ores(g, c, x => S(x) + (i === 4 ? 25 : 35), 390, 3, 6, ST));
   ores(T.hellstone, 700, Y_HELL + 20, H - 5, 8, 16, [T.ash]);
   ores(T.obsidian, 220, Y_HELL + 2, Y_HELL + 20, 7, 14, [T.ash, T.stone]); ores(T.obsidian, 220, 458, 474, 7, 14, [T.ash]);
+  if (typeof gearPlaceOres === 'function') gearPlaceOres(ores, T, S, Y_HELL, bio, W);   /* 50 minérios novos (11c_gear_x.js) */
   yield [0.6, 'Semeando minérios...'];
 
   // ---------- 7. água, lagos e lava ----------
@@ -1654,7 +1655,7 @@ function genTile(id, mask, v) {
     case 'brick': paintBricks(H, c0, c1, c2, false); break;
     case 'ore': {
       stoneFill(c0, c1, [154, 160, 168]);
-      const oc = hex2rgb(d.ore), gem = ['ruby', 'emerald', 'topaz', 'sapphire', 'amethyst', 'quartz', 'amber', 'frostcrystal'].includes(d.k);
+      const oc = hex2rgb(d.ore), gem = d.gem || ['ruby', 'emerald', 'topaz', 'sapphire', 'amethyst', 'quartz', 'amber', 'frostcrystal'].includes(d.k);
       const coal = d.k === 'coal', hell = d.k === 'hellstone';
       for (let k = 0; k < 4; k++) {
         const bx = 2 + (H(k, 1, 11) * 11 | 0), by = 2 + (H(k, 2, 11) * 11 | 0);
@@ -3639,6 +3640,127 @@ function drawIconSpec(g, spec, it) {
       break;
     }
     case 'wood': { g.save(); g.translate(16, 16); g.rotate(-.5); rrect(g, -13, -6, 24, 12, 3, '#8a5c2c'); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(-12, -2, 22, 1.4); g.fillRect(-12, 2, 22, 1.4); ellipseFill(g, 11, 0, 4, 6, '#d0a060', '#7a4e2a'); g.strokeStyle = '#8a5c2c'; g.lineWidth = 1; g.beginPath(); g.ellipse(11, 0, 2, 3.5, 0, 0, TAU); g.stroke(); g.restore(); break; }
+    // ---------------- 50 minérios novos (11c_gear_x.js) ----------------
+    case 'ore2': {
+      const forma = spec[2] | 0, brilho = spec[3];
+      if (brilho) glowDot(g, 16, 16, 15, col, .5);
+      if (forma === 1) {           // agulhas de cristal
+        for (const [x, h, w] of [[9, 18, 3], [15, 24, 3.4], [21, 16, 3]]) {
+          poly(g, [[x, 28], [x - w, 14], [x, 28 - h], [x + w, 14]], md);
+          poly(g, [[x, 28], [x - w, 14], [x, 28 - h]], lt, false);
+        }
+        g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(14, 8, 1.4, 6);
+      } else if (forma === 2) {    // geodo aberto
+        poly(g, [[5, 20], [9, 9], [18, 5], [26, 10], [27, 22], [18, 27], [8, 26]], md);
+        poly(g, [[9, 9], [18, 5], [24, 9], [15, 14]], lt, false);
+        poly(g, [[18, 14], [26, 10], [27, 22], [20, 20]], dk, false);
+        g.fillStyle = 'rgba(255,255,255,.75)'; g.fillRect(12, 10, 2, 2); g.fillRect(19, 16, 2, 2); g.fillRect(11, 20, 1.6, 1.6);
+      } else {                     // lasca maciça com veios
+        poly(g, [[6, 19], [10, 8], [19, 5], [26, 11], [25, 23], [17, 27], [8, 25]], md);
+        poly(g, [[10, 8], [19, 5], [22, 10], [14, 13]], lt, false);
+        poly(g, [[19, 13], [26, 11], [25, 23], [19, 20]], dk, false);
+        g.strokeStyle = lt; g.lineWidth = 1.2; g.beginPath(); g.moveTo(9, 21); g.lineTo(15, 14); g.lineTo(21, 17); g.stroke();
+      }
+      break;
+    }
+    // ---------------- 50 armaduras novas ----------------
+    case 'armor2': {
+      const fam = spec[2] | 0, t = spec[3] | 0;
+      const crest = [ '#f97316', '#7dd3fc', '#fde047', '#38bdf8', '#84cc16', '#a855f7', '#fbbf24', '#f472b6', '#818cf8', '#f8fafc' ][fam] || col;
+      if (t >= 3) glowDot(g, 16, 16, 16, crest, .45);
+      // ombreiras e tronco
+      poly(g, [[4, 9], [11, 4], [16, 7], [21, 4], [28, 9], [26, 16], [22, 14], [23, 28], [9, 28], [10, 14], [6, 16]], md);
+      poly(g, [[11, 4], [16, 7], [21, 4], [16, 12]], lt, false);
+      poly(g, [[9, 28], [10, 14], [16, 12], [16, 28]], dk, false);
+      poly(g, [[4, 9], [11, 4], [16, 7], [21, 4], [28, 9], [26, 16], [22, 14], [23, 28], [9, 28], [10, 14], [6, 16]], null);
+      // brasão da família
+      g.fillStyle = crest;
+      if (fam % 3 === 0) { poly(g, [[16, 13], [20, 18], [16, 24], [12, 18]], crest); }
+      else if (fam % 3 === 1) { circ(g, 16, 18, 4.4, crest); g.fillStyle = 'rgba(0,0,0,.35)'; circ(g, 16, 18, 2, 'rgba(0,0,0,.35)', false); }
+      else { g.fillRect(14.5, 13, 3, 11); g.fillRect(12, 16, 8, 3); }
+      // detalhes por tier
+      if (t >= 1) { g.fillStyle = crest; g.fillRect(6, 20, 2, 5); g.fillRect(24, 20, 2, 5); }
+      if (t >= 2) { g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(11, 26, 10, 1.6); }
+      if (t >= 3) { for (const x of [11, 16, 21]) { poly(g, [[x, 6], [x + 1.6, 2], [x - 1.6, 2]], crest); } }
+      if (t >= 4) { g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = 1.2; g.beginPath(); g.arc(16, 17, 12.5, .6, TAU - .6); g.stroke(); }
+      break;
+    }
+    // ---------------- 50 acessórios novos ----------------
+    case 'acc2': {
+      const sh = spec[2], v = (spec[3] === undefined ? ((it && it.tier) || 0) : spec[3]);
+      const metal = '#d8dee9', dkm = '#6b7280';
+      if (sh === 'ring') {
+        g.strokeStyle = metal; g.lineWidth = 4; g.beginPath(); g.arc(16, 19, 8, 0, TAU); g.stroke();
+        g.strokeStyle = dkm; g.lineWidth = 1.2; g.beginPath(); g.arc(16, 19, 9.8, 0, TAU); g.stroke();
+        const pts = v % 3 === 0 ? [[16, 3], [22, 9], [16, 15], [10, 9]] : v % 3 === 1 ? [[16, 4], [21, 9], [16, 14], [11, 9]] : [[16, 3], [20, 7], [16, 13], [12, 7]];
+        poly(g, pts, col); poly(g, pts, null); g.fillStyle = 'rgba(255,255,255,.7)'; g.fillRect(15, 6, 1.6, 1.6);
+        if (v >= 3) { circ(g, 8, 19, 2, col); circ(g, 24, 19, 2, col); }
+      } else if (sh === 'amulet') {
+        g.strokeStyle = metal; g.lineWidth = 1.6; g.beginPath(); g.arc(16, 8, 10, .25, PI - .25); g.stroke();
+        if (v % 3 === 0) { poly(g, [[16, 12], [24, 19], [16, 28], [8, 19]], col); poly(g, [[16, 12], [24, 19], [16, 19]], '#fff', false); }
+        else if (v % 3 === 1) { circ(g, 16, 20, 7.5, col, dkm, 1.4); circ(g, 13.5, 17.5, 2.2, 'rgba(255,255,255,.65)', false); }
+        else { poly(g, [[16, 11], [22, 17], [19, 27], [13, 27], [10, 17]], col); g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(15, 15, 2, 6); }
+      } else if (sh === 'boots') {
+        poly(g, [[9, 4], [19, 4], [19, 17], [28, 21], [28, 28], [7, 28], [7, 18]], col);
+        g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(10, 5, 8, 3);
+        g.fillStyle = shade(col, -.35); g.fillRect(7, 25, 21, 3);
+        if (v >= 3) { g.fillStyle = '#fde047'; g.fillRect(11, 10, 6, 1.6); }
+      } else if (sh === 'gauntlet') {
+        poly(g, [[7, 28], [6, 14], [9, 8], [12, 6], [12, 12], [15, 5], [18, 5], [18, 12], [21, 6], [24, 7], [22, 14], [26, 16], [24, 28]], col);
+        g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(10, 15, 12, 2);
+        g.fillStyle = shade(col, -.4); g.fillRect(8, 24, 17, 3);
+        if (v >= 4) { g.fillStyle = '#fff'; g.fillRect(15, 17, 2, 2); }
+      } else if (sh === 'heart') {
+        glowDot(g, 16, 16, 14, col, .5);
+        g.beginPath(); g.moveTo(16, 28); g.bezierCurveTo(1, 17, 5, 3, 16, 10); g.bezierCurveTo(27, 3, 31, 17, 16, 28); g.closePath();
+        g.fillStyle = col; g.fill(); g.strokeStyle = shade(col, -.4); g.lineWidth = 1.4; g.stroke();
+        g.fillStyle = 'rgba(255,255,255,.55)'; g.beginPath(); g.ellipse(12, 13, 2.6, 3.6, -.5, 0, TAU); g.fill();
+      } else if (sh === 'shield') {
+        poly(g, [[5, 5], [27, 5], [27, 17], [16, 29], [5, 17]], col);
+        poly(g, [[16, 5], [27, 5], [27, 17], [16, 29]], shade(col, -.3), false);
+        poly(g, [[5, 5], [27, 5], [27, 9], [5, 9]], shade(col, .35), false);
+        g.fillStyle = 'rgba(255,255,255,.6)'; poly(g, [[16, 11], [19, 16], [16, 21], [13, 16]], 'rgba(255,255,255,.6)');
+      } else if (sh === 'cloak') {
+        poly(g, [[16, 3], [26, 11], [28, 28], [4, 28], [6, 11]], col);
+        poly(g, [[16, 3], [22, 10], [16, 15], [10, 10]], shade(col, -.35), false);
+        g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(16, 15, 1.6, 13);
+        g.fillStyle = shade(col, .5); g.fillRect(12, 5, 8, 1.6);
+        if (v >= 4) { g.fillStyle = '#fff'; g.fillRect(15, 8, 2, 2); }
+      } else if (sh === 'crown') {
+        glowDot(g, 16, 16, 15, col, .4);
+        poly(g, [[3, 24], [3, 9], [10, 16], [16, 5], [22, 16], [29, 9], [29, 24]], '#fbbf24');
+        g.fillStyle = '#b45309'; g.fillRect(3, 22, 26, 4);
+        circ(g, 16, 6, 2.2, col); circ(g, 6, 9, 1.8, col); circ(g, 26, 9, 1.8, col);
+        g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(9, 17, 2, 4); g.fillRect(21, 17, 2, 4);
+      } else if (sh === 'bellows') {
+        poly(g, [[4, 12], [20, 8], [22, 22], [6, 26]], '#8a5c2c');
+        g.fillStyle = '#6b4420'; for (let i = 0; i < 3; i++) g.fillRect(6 + i, 11 + i, 14, 1.6);
+        g.fillStyle = '#9aa0a8'; g.fillRect(21, 13, 6, 4);
+        glowDot(g, 28, 15, 7, '#ff7a1a', .7);
+        poly(g, [[25, 13], [31, 10], [31, 20], [25, 18]], '#ff7a1a');
+      } else if (sh === 'fin') {
+        poly(g, [[16, 3], [26, 16], [16, 24], [7, 16]], col);
+        poly(g, [[16, 3], [26, 16], [16, 24]], shade(col, -.35), false);
+        g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = 1.1; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(16, 3 + i * 5); g.lineTo(16 + i * 2.4, 12 + i * 4.4); g.stroke(); }
+        g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(14, 7, 1.6, 5);
+      } else if (sh === 'bubble') {
+        g.beginPath(); g.arc(16, 16, 11, 0, TAU); g.fillStyle = 'rgba(140,220,255,.45)'; g.fill();
+        g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.arc(16, 16, 11, 0, TAU); g.stroke();
+        g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 1.6; g.beginPath(); g.arc(13, 12, 4, 2.4, 4.4); g.stroke();
+        circ(g, 21, 21, 2, 'rgba(255,255,255,.6)', false);
+      } else if (sh === 'hourglass') {
+        g.fillStyle = '#b07a40'; g.fillRect(8, 3, 16, 3); g.fillRect(8, 26, 16, 3);
+        poly(g, [[10, 6], [22, 6], [16, 15]], col); poly(g, [[10, 26], [22, 26], [16, 17]], col);
+        g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(15, 14, 1.6, 4);
+        glowDot(g, 16, 16, 12, col, .35);
+      } else {   // 'void' e outros
+        glowDot(g, 16, 16, 16, col, .55);
+        circ(g, 16, 16, 9, '#14121c', col, 2);
+        g.strokeStyle = col; g.lineWidth = 1.4; g.beginPath(); g.ellipse(16, 16, 13, 5, .5, 0, TAU); g.stroke();
+        g.fillStyle = 'rgba(255,255,255,.8)'; g.fillRect(15, 15, 2, 2);
+      }
+      break;
+    }
     default: circ(g, 16, 16, 9, md);
   }
 }
@@ -4826,6 +4948,7 @@ function hitEnemy(e, h) {
   if (h.id !== undefined) { if (e.imm.has(h.id)) return null; e.imm.set(h.id, h.imm === undefined ? 1e9 : h.imm); }
   const sw = h.sword || null;
   if (sw && !h.noHooks) fxCall(sw, 'mod', P, e, h);
+  if (!h.gear) gearCall('mod', P, e, h);   /* acessórios/armaduras podem alterar o golpe */
   let base = h.dmg * (h.mult === undefined ? 1 : h.mult);
   const st = P.stats;
   if (h.src !== 'dot' && h.src !== 'raw') base += st.dmg * (h.fs === undefined ? (h.src === 'melee' ? 1 : .6) : h.fs);
@@ -4835,10 +4958,11 @@ function hitEnemy(e, h) {
   const cm = 1 + st.cm;           // multiplicador crítico base 1.0 (= x2) + acessórios
   // resistência (defesa do alvo)
   const def = (e.def || 0) * (e.st.compress ? .5 : 1);
-  const res = h.ignoreDef ? 1 : 60 / (60 + def);
+  const res = h.ignoreDef ? 1 : 60 / (60 + def * (1 - (st.pierce || 0)));
   let tm = 1; if (e.st.corrode) tm *= 1.25; if (e.st.curse) tm *= 1.2; if (e.st.compress) tm *= 1.2; if (e.st.mark) tm *= 1.15; if (e.dmgTakenMult) tm *= e.dmgTakenMult;
   let dmg = base * (crit ? 1 + cm : 1) * res * tm * rnd(.95, 1.05);
   if (h.pctMax) dmg += (e.isDummy ? 3000 : e.hpMax) * h.pctMax * (e.boss ? .25 : 1);
+  if (st.exec && !e.boss && e.hpMax && e.hp / e.hpMax < st.exec) dmg *= 1.5;   /* execução (armaduras/acessórios) */
   const bxh = e.bxh; if (bxh && bxh.hurt) { dmg = bxh.hurt(e.ai.x, e, dmg, h); if (!(dmg > 0)) { addText(ecx(e), e.y - 4, 'Imune', '#94a3b8', 12, .6); sfx('hit'); return { dmg: 0, crit: false, e, killed: false }; } }   /* chefes novos: mecânica própria de dano */
   dmg = Math.max(1, Math.round(dmg));
   e.hp -= dmg; e.hurtT = .12; e.flash = .1; e.lastHit = G.t; if (bxh && bxh.after) bxh.after(e.ai.x, e, dmg, h);
@@ -4864,6 +4988,7 @@ function hitEnemy(e, h) {
   if (st.steal > 0 && h.src !== 'dot') healPlayer(Math.max(1, Math.round(dmg * st.steal)), true);
   const res_ = { dmg, crit, e, killed: e.hp <= 0 };
   if (sw && !h.noHooks) fxCall(sw, 'onHit', P, e, h, res_);
+  if (!h.gear) gearCall('onHit', P, e, h, res_);
   if (e.hp <= 0) killEnemy(e, h);
   return res_;
 }
@@ -4875,6 +5000,7 @@ function killEnemy(e, h) {
   burst(ecx(e), ecy(e), 14, { col: e.blood || '#c0392b', spd: 150, g: 500, life: .6, size: 3 }); sfx('kill');
   if (!e.harmless) {
     if (h && h.sword && !h.noHooks) fxCall(h.sword, 'onKill', P, e, h);
+    if (!(h && h.gear)) gearCall('onKill', P, e, h);
     rollDrops(e, h);
     G.kills = (G.kills || 0) + 1;
   }
@@ -4886,13 +5012,28 @@ function hurtPlayer(dmg, fromX, kb, o) {
   if (!P || P.dead || P.inv_ > 0 || G.opts.god || P.buffs.invuln) return false;
   const front = fromX !== undefined && Math.sign(fromX - (P.x + P.w / 2)) === P.face;
   let m = 1; if (front && P.cb.blockT > 0) m *= 1 - P.cb.blockPct;
-  let d = Math.max(1, Math.round((dmg - (o.pierce ? 0 : P.stats.def * .5)) * m));
+  // acessórios/armaduras: esquiva e reduções
+  const info = { dmg, mult: 1, flat: 0, dodge: false };
+  if (!o.pierce && !o.noGear) {
+    if ((P.stats.dodge || 0) > 0 && Math.random() < P.stats.dodge) info.dodge = true;
+    if (P.buffs.evade && Math.random() < P.buffs.evade.amt) info.dodge = true;
+  }
+  if (!o.noGear) gearCall('incoming', P, info);
+  if (info.dodge) { addText(P.x + P.w / 2, P.y - 6, 'Esquiva', '#a7f3d0', 12, .8); burst(P.x + P.w / 2, P.y + P.h / 2, 4, { col: '#a7f3d0', spd: 70, life: .3 }); sfx('tick', .4); return false; }
+  let d = Math.max(1, Math.round((info.dmg * info.mult - (o.pierce ? 0 : P.stats.def * .5)) * m - info.flat));
   const sh = P.buffs.shield; if (sh && sh.hp > 0) { const ab = Math.min(sh.hp, d); sh.hp -= ab; d -= ab; addText(P.x + P.w / 2, P.y - 6, '-' + ab, '#fbbf24', 12); if (sh.hp <= 0) delete P.buffs.shield; }
   if (d > 0) { P.hp -= d; addText(P.x + P.w / 2, P.y - 6, '-' + d, '#f87171', 15, 1); }
   P.inv_ = o.inv || clamp(.55 + d / 220, .55, 1.1); P.flash = .2; sfx('hurt'); shake(5 + Math.min(8, d / 8));
   burst(P.x + P.w / 2, P.y + P.h / 2, 10, { col: ['#c0392b', '#e74c3c'], spd: 140, g: 450, life: .5 });
   if (kb && fromX !== undefined) { const s = Math.sign(P.x + P.w / 2 - fromX) || 1; P.vx = s * kb * (1 - P.stats.kbr); P.vy = -190 * (1 - P.stats.kbr * .5); P.kbT = .18; }
-  if (P.hp <= 0) killPlayer();
+  P.lastHurtT = G.t;
+  if ((P.stats.thorns || 0) > 0 && fromX !== undefined) {
+    const list = enemiesNear(P.x + P.w / 2, P.y + P.h / 2, 110);
+    for (const e of list) hitEnemy(e, { src: 'gear', gear: 1, dmg: Math.max(2, Math.round(d * P.stats.thorns)), kb: 2.4, fs: 0, fromX: P.x + P.w / 2, fromY: P.y + P.h / 2 });
+    if (list.length) burst(P.x + P.w / 2, P.y + P.h / 2, 8, { col: ['#a3e635', '#d9f99d'], spd: 110, life: .35 });
+  }
+  gearCall('onHurt', P, d, o);
+  if (P.hp <= 0) { gearCall('onLethal', P); if (P.hp > 0) { P.dead = false; } else killPlayer(); }
   return true;
 }
 function healPlayer(n, silent) {
@@ -5063,6 +5204,7 @@ const ARM = 7;
 function atkSpeedMult(P) {
   let m = 1 + (P.buffs.haste ? P.buffs.haste.amt : 0) - (P.buffs.slowatk ? P.buffs.slowatk.amt : 0);
   const sw = P.cb.sw; if (sw) { const v = fxAll(sw, 'atkMult', P); if (v) m *= v; }
+  m *= gearAtkMult(P);
   return m;
 }
 function startSwing(P, sw, o) {
@@ -5082,6 +5224,7 @@ function startSwing(P, sw, o) {
     cb.cd = inst.cycle; cb.side = -cb.side; cb.count++; cb.swingT = Math.max(inst.dur, .15) + .1; cb.main = inst;
     sfx(sw.tierLevel >= 4 ? 'swing2' : 'swing');
     fxCall(sw, 'onSwing', P, inst, cb);
+    gearCall('onSwing', P, inst);
   }
   cb.inst.push(inst); return inst;
 }
@@ -5425,6 +5568,507 @@ function breakHeldSword() { // 005: 5% de chance de quebrar (reembolsa metade do
   burst(pcx(P), P.y, 22, { col: ['#2a1f3d', '#a78bfa', '#fff'], spd: 200, g: 500, life: .6, glow: true }); sfx('break'); toast('Vidro Vulcânico quebrou! (metade dos materiais devolvida)', '#f87171');
   P.cb.sw = null;
 }
+
+;
+/* ===== 10b_gear_fx.js ===== */
+/* ============================================================
+   10b_gear_fx: mecânicas dos 50 acessórios, 50 armaduras e 10 conjuntos
+   - ACC_FX: 50 efeitos únicos (um por acessório)
+   - ARM_FX: 50 passivas (uma por armadura, 5 por família)
+   - SET_FX: bônus de conjunto (armadura + acessórios da mesma família)
+   Ganchos chamados pelo motor: stats, tick, mod, onHit, onKill, onHurt,
+   incoming, onLethal, onJump, onLand, onWater, onPotion, onSwing, atkMult
+   ============================================================ */
+
+// ---------- estado / despacho ----------
+function gearList(P) { return (P && P.gear) || []; }
+function rebuildGear(P) {
+  const g = [], st = P.gearState || (P.gearState = {});
+  const add = (id, kind) => {
+    if (!id) return; const it = IT[id]; if (!it) return;
+    const reg = kind === 'armor' ? ARM_FX : ACC_FX;
+    const mk = reg[it.mech];
+    const s = st[id] || (st[id] = {});
+    s.off = 0;   // zera efeitos de "por golpe" ao reequipar (contadores não vazam)
+    let fx = null; if (mk) { try { fx = mk(it, s); } catch (e) { fx = null; } }
+    g.push({ id, it, kind, fx: fx || {}, s });
+  };
+  const eq = P.equip || {};
+  if (eq.armor) add(eq.armor.id, 'armor');
+  for (const a of (eq.acc || [])) if (a) add(a.id, 'acc');
+  // conjuntos: conta peças da mesma família (armadura + acessórios)
+  const cnt = {};
+  for (const e of g) { const f = e.it.fam; if (f) cnt[f] = (cnt[f] || 0) + 1; }
+  const sets = [], sst = P.setState || (P.setState = {});
+  for (const fam in cnt) {
+    const n = cnt[fam]; if (n < 2 || !SET_FX[fam]) continue;
+    const s = sst[fam] || (sst[fam] = {}); s.n = n;
+    let fx = null; try { fx = SET_FX[fam](n, s); } catch (e) { fx = null; }
+    if (fx) sets.push({ fam, n, fx, s });
+  }
+  P.gear = g; P.sets = sets; P.setCount = cnt;
+}
+function gearCall(hook, ...a) {
+  const P = G.P; if (!P) return;
+  for (const e of gearList(P)) { const f = e.fx && e.fx[hook]; if (f) f.call(e.fx, ...a); }
+  for (const s of (P.sets || [])) { const f = s.fx[hook]; if (f) f.call(s.fx, ...a); }
+}
+function gearAtkMult(P) {
+  let m = 1; const sw = P.cb && P.cb.sw;
+  for (const e of gearList(P)) { const f = e.fx && e.fx.atkMult; if (f) m *= f.call(e.fx, P); }
+  return m;
+}
+function gearSetCount(P, fam) { return ((P && P.setCount) || {})[fam] || 0; }
+
+// ---------- utilidades dos efeitos ----------
+const gSwDmg = P => { const sw = P.cb && P.cb.sw; return sw ? sw.baseDamage : 20; };
+const gDmg = (P, m) => gSwDmg(P) * m;
+function gHit(e, dmg, o) {
+  if (!e || e.dead) return null;
+  return hitEnemy(e, Object.assign({ src: 'gear', gear: 1, dmg, kb: 1.1, fs: 0, fromX: pcx(G.P), fromY: pcy(G.P) }, o || {}));
+}
+function gBoom(P, r, dmg, o) {
+  o = o || {}; explode(pcx(P), pcy(P), r, dmg, Object.assign({ col: '#fbbf24', kb: 2 }, o));
+}
+function gProj(P, o) {
+  return spawnProj(Object.assign({ x: pcx(P), y: pcy(P), r: 6, life: .55, pierce: 1, kb: 1.4, shape: 'orb', col: '#fff', col2: '#fff', friendly: true }, o));
+}
+function gAim(P) { const m = G.mouse; return Math.atan2(m.wy - pcy(P), m.wx - pcx(P)); }
+function gNear(P, r) { return enemiesNear(pcx(P), pcy(P), r); }
+function gTarget(P, r) { return nearestEnemy(pcx(P), pcy(P), r); }
+function gStatus(e, n, d, p) { if (e && !e.dead) applyStatus(e, n, d, p); }
+function gHeal(n) { healPlayer(n, true); }
+
+// ============================================================
+//   ACESSÓRIOS — 50 mecânicas
+// ============================================================
+const ACC_FX = {
+  // ---------------- BRASEIRO (fogo) ----------------
+  brasa_anel: (it, s) => ({
+    onHit(P, e) { gStatus(e, 'burn', 3, { dps: 2 + it.tier }); burst(ecx(e), ecy(e), 3, { col: ['#ff8a2a', '#ffd23a'], spd: 60, g: -40, life: .35, glow: true }); }
+  }),
+  brasa_fole: (it, s) => ({
+    onHit(P, e) {
+      s.n = (s.n || 0) + 1; if (s.n % 6) return;
+      const a0 = gAim(P), d = gDmg(P, .55);
+      for (let i = -1; i <= 1; i++) gProj(P, { vx: Math.cos(a0 + i * .22) * 420, vy: Math.sin(a0 + i * .22) * 420, shape: 'fire', r: 8, col: '#ff8a2a', col2: '#ffd23a', pierce: 2, life: .5, dmg: d, status: [['burn', 2, { dps: 3 }]] });
+      sfx('fire', .5);
+    }
+  }),
+  brasa_botas: (it, s) => ({
+    tick(P, dt) {
+      if (!P.onGround || Math.abs(P.vx) < 40) { s.t = 0; return; }
+      s.t = (s.t || 0) - dt; if (s.t > 0) return; s.t = .16;
+      gProj(P, { x: P.x + P.w / 2 - Math.sign(P.vx) * 6, y: P.y + P.h - 2, vx: 0, vy: 0, kind: 'static', shape: 'fire', r: 7, life: .9, dmg: gDmg(P, .12), kb: 0, hitCd: .5, col: '#ff7a1a', col2: '#ffd23a', status: [['burn', 1.5, { dps: 2 }]] });
+    }
+  }),
+  brasa_manopla: (it, s) => ({
+    onKill(P, e) { if (!e || !e.st || !e.st.burn) return; explode(ecx(e), ecy(e), 44, gDmg(P, .5), { col: '#ff7a1a', cols: ['#ff7a1a', '#ffd23a', '#fff'], kb: 3, status: [['burn', 2, { dps: 3 }]] }); }
+  }),
+  brasa_coracao: (it, s) => ({
+    onHurt(P, d) {
+      if ((s.cd || 0) > G.t) return; s.cd = G.t + 5;
+      explode(pcx(P), pcy(P), 78, gDmg(P, .7) + d, { col: '#ff5a1f', cols: ['#ff5a1f', '#ffb347', '#fff'], kb: 5, status: [['burn', 3, { dps: 4 }]] });
+    }
+  }),
+  // ---------------- GEADA ----------------
+  geada_anel: (it, s) => ({
+    onHit(P, e) { gStatus(e, 'slow', 2, { amt: .22 + it.tier * .01 }); burst(ecx(e), ecy(e), 3, { col: ['#7dd3fc', '#e0f2fe'], spd: 50, life: .35, glow: true }); }
+  }),
+  geada_pingente: (it, s) => ({
+    onHit(P, e) {
+      s.n = (s.n || 0) + 1; if (s.n % 3) return;
+      gStatus(e, 'stun', .8, {}); ringFx(ecx(e), ecy(e), 26, '#bfeaff', .3, 2); sfx('ice', .5);
+    }
+  }),
+  geada_botas: (it, s) => ({
+    onHit(P, e) { if (e.st && (e.st.slow || e.st.stun)) addBuff('speed', 2, { mult: 1.3 }); }
+  }),
+  geada_manopla: (it, s) => ({
+    mod(P, e, h) { if (e.st && e.st.stun) h.mult = (h.mult || 1) * 1.35; },
+    onHit(P, e, h, r) {
+      if (!(e.st && e.st.stun) || !r) return;
+      burst(ecx(e), ecy(e), 10, { col: ['#bfeaff', '#fff'], spd: 130, life: .4, glow: true });
+      for (const o of gNear(P, 50)) if (o !== e) gHit(o, r.dmg * .25, { noKb: true });
+    }
+  }),
+  geada_manto: (it, s) => ({
+    tick(P) { if ((s.cd || 0) > G.t) return; s.cd = G.t + 15; addBuff('shield', 12, { hp: 18 + it.tier * 4 }); ringFx(pcx(P), pcy(P), 30, '#bfeaff', .4, 2); }
+  }),
+  // ---------------- CORISCO ----------------
+  corisco_anel: (it, s) => ({
+    onHit(P, e) {
+      s.n = (s.n || 0) + 1; if (s.n % 4) return;
+      let from = e, list = [e];
+      for (let i = 0; i < 2; i++) {
+        const nx = nearestEnemy(ecx(from), ecy(from), 170, from); if (!nx) break;
+        chainFx(ecx(from), ecy(from), ecx(nx), ecy(nx), '#fde047'); list.push(nx); from = nx;
+      }
+      for (let i = 1; i < list.length; i++) gHit(list[i], gDmg(P, .35), { elem: 'lightning' });
+      sfx('thunder', .6);
+    }
+  }),
+  corisco_pingente: (it, s) => ({
+    tick(P, dt) { if (Math.abs(P.vx) > 60) s.ch = Math.min(60, (s.ch || 0) + dt * 26); },
+    mod(P, e, h) { if ((s.ch || 0) > 25) { h.mult = (h.mult || 1) * (1 + s.ch / 60); } },
+    onHit(P) { if ((s.ch || 0) > 25) { s.ch = 0; ringFx(pcx(P), pcy(P), 40, '#fde047', .3, 3); sfx('thunder', .7); } }
+  }),
+  corisco_botas: (it, s) => ({
+    stats(P, st) { st.dash = Math.max(st.dash || 0, 2); st.dashAir = 1; },
+    onDash(P) { ringFx(pcx(P), pcy(P), 34, '#fde047', .28, 3); chainFx(pcx(P), pcy(P), P.x + P.w / 2 + P.face * 40, pcy(P), '#fde047'); }
+  }),
+  corisco_manopla: (it, s) => ({
+    onHit(P, e, h, r) {
+      if (Math.random() > .25 || !r) return;
+      const o = nearestEnemy(ecx(e), ecy(e), 150, e); if (!o) return;
+      chainFx(ecx(e), ecy(e), ecx(o), ecy(o), '#fef08a'); gHit(o, r.dmg * .5, { noKb: true, elem: 'lightning' });
+    }
+  }),
+  corisco_coroa: (it, s) => ({
+    tick(P) {
+      if ((s.cd || 0) > G.t) return; s.cd = G.t + 4;
+      const e = gTarget(P, 210); if (!e) return;
+      chainFx(pcx(P), P.y - 10, ecx(e), ecy(e), '#fde047'); gHit(e, gDmg(P, .8), { elem: 'lightning', kb: 2 });
+      sfx('thunder', .8); G.light.addLight(ecx(e) / TS, ecy(e) / TS, .9, .8, .3);
+    }
+  }),
+  // ---------------- MARÉ ----------------
+  mare_anel: (it, s) => ({
+    onHit(P) { s.n = (s.n || 0) + 1; s.t = G.t; if (s.n > 8) s.n = 8; },
+    stats(P, st) { if (s.n && G.t - (s.t || 0) < 3) st.atkspd = (st.atkspd || 0) + Math.min(.3, s.n * .035); },
+    atkMult(P) { return 1 + (P.stats.atkspd || 0); }
+  }),
+  mare_pingente: (it, s) => ({
+    tick(P, dt) {
+      if (!P.inWater) return; s.t = (s.t || 0) + dt; if (s.t < 1) return; s.t = 0;
+      gHeal(Math.max(1, Math.round(P.maxHp * .02))); burst(pcx(P), pcy(P), 4, { col: ['#38bdf8', '#bae6fd'], spd: 40, g: -60, life: .5 });
+    },
+    onWater(P) { gHeal(Math.round(P.maxHp * .04)); }
+  }),
+  mare_nadadeira: (it, s) => ({
+    stats(P, st) { st.swim = .6; if (P.inWater) st.dmg += 6 + it.tier; }
+  }),
+  mare_manopla: (it, s) => ({
+    onHit(P, e) {
+      for (const o of gNear(P, 74)) { if (o === e) continue; const dx = ecx(o) - pcx(P), dy = ecy(o) - pcy(P), l = Math.hypot(dx, dy) || 1; o.vx += dx / l * 150; o.vy += dy / l * 90 - 40; o.kbT = .2; }
+      ringFx(pcx(P), pcy(P), 62, '#7dd3fc', .3, 2);
+    }
+  }),
+  mare_bolha: (it, s) => ({
+    tick(P) { if ((s.cd || 0) > G.t) return; s.cd = G.t + 12; addBuff('shield', 14, { hp: 22 + it.tier * 6 }); ringFx(pcx(P), pcy(P), 26, '#bae6fd', .35, 2); }
+  }),
+  // ---------------- RAIZ ----------------
+  raiz_anel: (it, s) => ({
+    stats(P, st) { const lost = 1 - P.hp / Math.max(1, P.maxHp); st.def += Math.floor(lost * (5 + it.tier)); }
+  }),
+  raiz_pingente: (it, s) => ({
+    onLand(P, tiles) {
+      if (tiles < 3) return;
+      for (const e of gNear(P, 70)) gHit(e, gDmg(P, .35), { kb: 3, noKb: false });
+      ringFx(pcx(P), P.y + P.h, 70, '#a3e635', .3, 3); sfx('boom', .3);
+    }
+  }),
+  raiz_botas: (it, s) => ({
+    stats(P, st) { st.fallSafe = 1; },
+    onLand(P, tiles) { if (tiles >= 8) { gBoom(P, 80, gDmg(P, .6), { col: '#b4783a', cols: ['#b4783a', '#d9c7a0', '#fff'], kb: 4 }); } }
+  }),
+  raiz_manopla: (it, s) => ({
+    onHit(P, e) {
+      s.n = (s.n || 0) + 1; if (s.n % 3) return;
+      const gy = groundY(pcx(P), pcy(P), 40);
+      groundWave(P, { sw: P.cb.sw || { baseDamage: gSwDmg(P), knockbackForce: 2, critChance: .05 }, dmgMult: .45, aim: 0, tip: { x: pcx(P), y: pcy(P) } }, pcx(P), gy > 0 ? gy : pcy(P) + 20, P.face, { speed: 320, life: .55, hh: 12, hw: 10, col: '#a3e635' });
+      sfx('boom', .35);
+    }
+  }),
+  raiz_couraca: (it, s) => ({
+    stats(P, st) { st.thorns = (st.thorns || 0) + .25; }
+  }),
+  // ---------------- VÉU ----------------
+  veu_anel: (it, s) => ({
+    mod(P, e, h) { s.seen = s.seen || {}; const k = e.id; if (!s.seen[k]) { s.seen[k] = 1; h.crit = true; } }
+  }),
+  veu_pingente: (it, s) => ({
+    onHit(P, e, h, r) { if (r && r.crit) gHeal(Math.max(1, Math.round(r.dmg * .03))); }
+  }),
+  veu_botas: (it, s) => ({
+    tick(P, dt) { s.still = Math.abs(P.vx) < 12 && P.onGround ? (s.still || 0) + dt : 0; },
+    stats(P, st) { if ((s.still || 0) > 1) { st.dodge = (st.dodge || 0) + .5; st.ambush = 1; } },
+    mod(P, e, h) { if ((s.still || 0) > 1) h.mult = (h.mult || 1) * 1.25; }
+  }),
+  veu_manopla: (it, s) => ({
+    mod(P, e, h) { if (e.hpMax && e.hp / e.hpMax < .3) h.mult = (h.mult || 1) * 1.4; }
+  }),
+  veu_manto: (it, s) => ({
+    onKill(P) { addBuff('evade', 1.5, { amt: .6 }); burst(pcx(P), pcy(P), 12, { col: ['#a855f7', '#e9d5ff'], spd: 90, life: .5, glow: true }); }
+  }),
+  // ---------------- ALVORADA ----------------
+  aurora_anel: (it, s) => ({
+    tick(P, dt) {
+      if (G.t - (P.lastHurtT || -99) < 5) return;
+      s.t = (s.t || 0) + dt; if (s.t < 1) return; s.t = 0; gHeal(1 + Math.floor(it.tier / 3));
+    }
+  }),
+  aurora_pingente: (it, s) => ({
+    onPotion(P) { gHeal(Math.round(P.maxHp * .12)); for (const n of ['bleed', 'poison', 'slow', 'curse', 'confuse']) delete P.buffs[n]; burst(pcx(P), pcy(P), 12, { col: ['#fbbf24', '#fef08a'], spd: 80, g: -80, life: .6, glow: true }); }
+  }),
+  aurora_botas: (it, s) => ({
+    stats(P, st) { st.glide = 1; st.spd += .08; }
+  }),
+  aurora_manopla: (it, s) => ({
+    mod(P, e, h) { if (e.undead) h.mult = (h.mult || 1) * 1.5; },
+    onHit(P, e) { if (e.undead) gStatus(e, 'burn', 3, { dps: 4 }); }
+  }),
+  aurora_coroa: (it, s) => ({
+    tick(P) {
+      if ((s.cd || 0) > G.t) return; s.cd = G.t + 1;
+      for (const e of gNear(P, 78)) gHit(e, gDmg(P, .22), { noKb: true, elem: 'light' });
+      G.light.addLight(pcx(P) / TS, pcy(P) / TS, 1.4, 1.2, .4);
+      if (Math.random() < .4) burst(pcx(P), pcy(P) + rnd(-10, 10), 2, { col: ['#fbbf24', '#fff7c2'], spd: 20, g: -40, life: .5, glow: true });
+    }
+  }),
+  // ---------------- RELOJOARIA ----------------
+  relogio_anel: (it, s) => ({
+    onHit(P, e, h, r) {
+      if (!r || Math.random() > .12) return;
+      gHit(e, r.dmg * .5, { noKb: true, gear: 1, crit: r.crit });
+      burst(ecx(e), ecy(e), 5, { col: ['#f472b6', '#fbcfe8'], spd: 70, life: .3, glow: true });
+    }
+  }),
+  relogio_pingente: (it, s) => ({
+    stats(P, st) { st.cdr = (st.cdr || 0) + .25; }
+  }),
+  relogio_botas: (it, s) => ({
+    stats(P, st) { st.dash = Math.max(st.dash || 0, 1); },
+    onDash(P) { for (let i = 0; i < 3; i++) addPart({ x: pcx(P) - P.face * (10 + i * 8), y: pcy(P) + rnd(-8, 8), vx: -P.face * 40, vy: 0, life: .3, size: 3, col: '#fbcfe8', glow: true }); }
+  }),
+  relogio_manopla: (it, s) => ({
+    onHit(P) { P.dashCd = Math.max(0, (P.dashCd || 0) - .35); P.potionCd = Math.max(0, P.potionCd - .25); }
+  }),
+  relogio_ampulheta: (it, s) => ({
+    tick(P) {
+      if ((s.cd || 0) > G.t) return; s.cd = G.t + 20;
+      const list = gNear(P, 170); if (!list.length) return;
+      for (const e of list) { gStatus(e, 'stun', 1.2, {}); ringFx(ecx(e), ecy(e), 22, '#fbcfe8', .3, 2); }
+      flash('#f472b6', .18, .3); sfx('portal', .7);
+    }
+  }),
+  // ---------------- VAZIO ----------------
+  vazio_anel: (it, s) => ({
+    tick(P, dt) {
+      const arr = G.drops || [];
+      for (const d of arr) {
+        const dx = pcx(P) - d.x, dy = pcy(P) - d.y, l = Math.hypot(dx, dy);
+        if (l < 130 && l > 6) { d.vx += dx / l * 340 * dt * (1 - l / 140); d.vy += dy / l * 300 * dt * (1 - l / 140); }
+      }
+      if ((s.cd || 0) > G.t) return; s.cd = G.t + .6;
+      for (const e of gNear(P, 110)) { const dx = pcx(P) - ecx(e), dy = pcy(P) - ecy(e), l = Math.hypot(dx, dy) || 1; e.vx += dx / l * 26; if (e.fly) e.vy += dy / l * 22; }
+    }
+  }),
+  vazio_pingente: (it, s) => ({ stats(P, st) { st.pierce = (st.pierce || 0) + .3; } }),
+  vazio_botas: (it, s) => ({ stats(P, st) { st.glide = 1; st.lavaRes = (st.lavaRes || 0) + .5; } }),
+  vazio_manopla: (it, s) => ({
+    stats(P, st) { st.steal += .06; },
+    onHit(P, e) { gStatus(e, 'bleed', 4, { dps: 3 + it.tier }); }
+  }),
+  vazio_singularidade: (it, s) => ({
+    onHit(P) {
+      s.n = (s.n || 0) + 1; if (s.n % 12) return;
+      const x = pcx(P) + P.face * 60, y = pcy(P);
+      const p = { x, y, r: 26, life: 1.2, col: '#818cf8', glow: '#c7d2fe', pull: 1 };
+      for (let i = 0; i < 3; i++) burst(x, y, 8, { col: ['#818cf8', '#c7d2fe'], spd: 140, life: .8, glow: true });
+      G.sing = { x, y, t: 1.2, dmg: gDmg(P, 1.4) };
+      sfx('portal', .7);
+    },
+    tick(P, dt) {
+      const q = G.sing; if (!q) return;
+      q.t -= dt;
+      for (const e of enemiesNear(q.x, q.y, 150)) { const dx = q.x - ecx(e), dy = q.y - ecy(e), l = Math.hypot(dx, dy) || 1; e.vx += dx / l * 210 * dt * 6; e.vy += dy / l * 200 * dt * 6; }
+      burst(q.x + rnd(-20, 20), q.y + rnd(-20, 20), 1, { col: '#c7d2fe', spd: 10, life: .4, glow: true, size: 2.5 });
+      if (q.t <= 0) { explode(q.x, q.y, 96, q.dmg, { col: '#818cf8', cols: ['#818cf8', '#e0e7ff', '#fff'], kb: 6 }); G.sing = null; }
+    }
+  }),
+  // ---------------- ORIGEM ----------------
+  origem_anel: (it, s) => ({
+    onHit(P) { s.n = (s.n || 0) + 1; if (s.n >= 10) { s.n = 0; s.ready = 1; addText(pcx(P), P.y - 12, 'Golpe primordial pronto', '#f8fafc', 11, 1); } },
+    mod(P, e, h) { if (s.ready) { h.crit = true; s.ready = 0; } }
+  }),
+  origem_pingente: (it, s) => ({
+    onHit(P, e, h, r) {
+      if (e.boss || !e.hpMax || e.hp / e.hpMax > .12 || e.dead) return;
+      addText(ecx(e), e.y - 8, 'Executado', '#f8fafc', 13, 1);
+      burst(ecx(e), ecy(e), 14, { col: ['#f8fafc', '#c7d2fe'], spd: 160, life: .5, glow: true });
+      e.hp = 0; killEnemy(e, { gear: 1 });
+    }
+  }),
+  origem_botas: (it, s) => ({ stats(P, st) { st.spd += .12; st.jump = (st.jump || 0) + .1; } }),
+  origem_manopla: (it, s) => ({
+    mod(P, e, h) { s.seen = s.seen || {}; if (!s.seen[e.id]) { s.seen[e.id] = 1; h.mult = (h.mult || 1) * 2; } }
+  }),
+  origem_coroa: (it, s) => ({
+    onLethal(P) {
+      if ((s.cd || 0) > G.t) return;
+      s.cd = G.t + 120; P.hp = Math.round(P.maxHp * .5); addBuff('invuln', 2);
+      flash('#f8fafc', .5, .6); gBoom(P, 120, gDmg(P, 2), { col: '#f8fafc', kb: 8 });
+      addText(pcx(P), P.y - 16, 'Renascido!', '#f8fafc', 16, 1.4); sfx('boss', 1);
+    }
+  }),
+};
+
+// ============================================================
+//   ARMADURAS — 50 passivas (5 por família)
+// ============================================================
+const ARM_FX = {
+  // brasa
+  brasa_0: () => ({ onHit(P, e) { gStatus(e, 'burn', 2.5, { dps: 2 }); } }),
+  brasa_1: () => ({
+    mod(P, e, h) { if (e.st && e.st.burn) h.mult = (h.mult || 1) * 1.25; },
+    onHit(P, e) { if (Math.random() < .25) gStatus(e, 'burn', 3, { dps: 3 }); }
+  }),
+  brasa_2: (it, s) => ({
+    onHurt(P, d) { if ((s.cd || 0) > G.t) return; s.cd = G.t + 6; explode(pcx(P), pcy(P), 62, gDmg(P, .4) + d * .3, { col: '#ff7a1a', kb: 3, status: [['burn', 2, { dps: 2 }]] }); }
+  }),
+  brasa_3: (it, s) => ({
+    tick(P, dt) {
+      if (!P.onGround || Math.abs(P.vx) < 40) return;
+      s.t = (s.t || 0) - dt; if (s.t > 0) return; s.t = .3;
+      gProj(P, { x: pcx(P), y: P.y + P.h - 2, vx: 0, vy: 0, kind: 'static', shape: 'fire', r: 6, life: .7, dmg: gDmg(P, .1), kb: 0, hitCd: .6, col: '#ff7a1a', col2: '#ffd23a' });
+    }
+  }),
+  brasa_4: () => ({
+    stats(P, st) { st.lavaRes = (st.lavaRes || 0) + .75; st.def += 4; },
+    tick(P) { for (const e of gNear(P, 62)) { if (Math.random() < .04) gStatus(e, 'burn', 2, { dps: 3 }); } }
+  }),
+  // geada
+  geada_0: () => ({ onHit(P, e) { gStatus(e, 'slow', 2, { amt: .18 }); } }),
+  geada_1: (it, s) => ({
+    tick(P, dt) { s.still = Math.abs(P.vx) < 15 && P.onGround ? (s.still || 0) + dt : 0; },
+    stats(P, st) { if ((s.still || 0) > 1) st.def += 4; }
+  }),
+  geada_2: (it, s) => ({ tick(P) { if ((s.cd || 0) > G.t) return; s.cd = G.t + 14; addBuff('shield', 10, { hp: 20 + it.tier * 4 }); } }),
+  geada_3: (it, s) => ({
+    onHurt(P) { if ((s.cd || 0) > G.t) return; s.cd = G.t + 8; for (const e of gNear(P, 80)) { gStatus(e, 'stun', 1, {}); gHit(e, gDmg(P, .3), { noKb: true }); } ringFx(pcx(P), pcy(P), 80, '#bfeaff', .4, 3); }
+  }),
+  geada_4: () => ({ mod(P, e, h) { if (e.st && (e.st.stun || e.st.slow)) h.mult = (h.mult || 1) * 1.4; } }),
+  // corisco
+  corisco_0: () => ({ stats(P, st) { st.spd += .05; } }),
+  corisco_1: (it, s) => ({
+    tick(P) {
+      if ((s.cd || 0) > G.t) return; s.cd = G.t + 5;
+      const e = gTarget(P, 150); if (!e) return;
+      chainFx(pcx(P), pcy(P), ecx(e), ecy(e), '#fde047'); gHit(e, gDmg(P, .5), { elem: 'lightning' });
+    }
+  }),
+  corisco_2: () => ({ stats(P, st) { if (Math.abs(G.P.vx) > 40) st.crit += .1; } }),
+  corisco_3: (it, s) => ({
+    onHit(P, e, h, r) {
+      if (Math.random() > .15 || !r) return; const o = nearestEnemy(ecx(e), ecy(e), 130, e); if (!o) return;
+      chainFx(ecx(e), ecy(e), ecx(o), ecy(o), '#fde047'); gHit(o, r.dmg * .35, { noKb: true, elem: 'lightning' });
+    }
+  }),
+  corisco_4: (it, s) => ({
+    tick(P) { if ((s.cd || 0) > G.t) return; s.cd = G.t + 1; for (const e of gNear(P, 66)) gHit(e, gDmg(P, .18), { noKb: true, elem: 'lightning' }); }
+  }),
+  // mare
+  mare_0: () => ({ stats(P, st) { st.hp += 15; } }),
+  mare_1: (it, s) => ({ tick(P, dt) { if (!P.inWater) return; s.t = (s.t || 0) + dt; if (s.t > 1) { s.t = 0; gHeal(2); } } }),
+  mare_2: (it, s) => ({ tick(P) { if ((s.cd || 0) > G.t) return; s.cd = G.t + 16; addBuff('shield', 12, { hp: 18 + it.tier * 5 }); } }),
+  mare_3: () => ({ stats(P, st) { if (G.P.inWater) st.dmg += 10; } }),
+  mare_4: (it, s) => ({ tick(P, dt) { s.t = (s.t || 0) + dt; if (s.t > 1) { s.t = 0; gHeal(1); } } }),
+  // raiz
+  raiz_0: () => ({ stats(P, st) { st.def += 2; st.hp += 8; } }),
+  raiz_1: () => ({ stats(P, st) { st.thorns = (st.thorns || 0) + .15; } }),
+  raiz_2: (it, s) => ({ tick(P, dt) { s.still = Math.abs(P.vx) < 15 && P.onGround ? (s.still || 0) + dt : 0; }, stats(P, st) { if ((s.still || 0) > .8) st.def += 4; } }),
+  raiz_3: (it, s) => ({
+    onLand(P, tiles) { if (tiles < 6) return; gBoom(P, 76, gDmg(P, .45), { col: '#b4783a', cols: ['#b4783a', '#d9c7a0'], kb: 4 }); }
+  }),
+  raiz_4: () => ({
+    stats(P, st) { const lost = 1 - P.hp / Math.max(1, P.maxHp); st.hp += 35; st.def += Math.floor(lost * 9); }
+  }),
+  // veu
+  veu_0: () => ({ stats(P, st) { st.crit += .05; } }),
+  veu_1: () => ({ stats(P, st) { st.steal += .02; } }),
+  veu_2: () => ({ stats(P, st) { if (G.night) st.dmg += 9; } }),
+  veu_3: (it, s) => ({ onKill(P) { addBuff('evade', 1.2, { amt: .5 }); } }),
+  veu_4: () => ({ mod(P, e, h) { if (e.hpMax && e.hp / e.hpMax < .35) h.mult = (h.mult || 1) * 1.25; } }),
+  // aurora
+  aurora_0: (it, s) => ({ tick(P, dt) { s.t = (s.t || 0) + dt; if (s.t > 1) { s.t = 0; gHeal(1); } } }),
+  aurora_1: () => ({ stats(P, st) { st.hp += 22; st.def += 1; } }),
+  aurora_2: () => ({ tick(P) { G.light.addLight(pcx(P) / TS, pcy(P) / TS, .9, .8, .35); } }),
+  aurora_3: () => ({ mod(P, e, h) { if (e.undead) h.mult = (h.mult || 1) * 1.3; } }),
+  aurora_4: (it, s) => ({
+    tick(P, dt) {
+      s.t = (s.t || 0) + dt; if (s.t > 1) { s.t = 0; gHeal(2); }
+      if ((s.cd || 0) > G.t) return; s.cd = G.t + 1.5;
+      for (const e of gNear(P, 80)) gHit(e, gDmg(P, .15), { noKb: true, elem: 'light' });
+    }
+  }),
+  // relogio
+  relogio_0: () => ({ stats(P, st) { st.cdr = (st.cdr || 0) + .1; } }),
+  relogio_1: () => ({ stats(P, st) { st.spd += .06; } }),
+  relogio_2: (it, s) => ({ onHit(P, e, h, r) { if (r && Math.random() < .1) gHit(e, r.dmg * .4, { noKb: true }); } }),
+  relogio_3: () => ({ stats(P, st) { st.dash = Math.max(st.dash || 0, 1); st.dashCd = .8; } }),
+  relogio_4: (it, s) => ({
+    tick(P) { if ((s.cd || 0) > G.t) return; s.cd = G.t + 25; for (const e of gNear(P, 140)) gStatus(e, 'stun', 1, {}); flash('#f472b6', .12, .3); }
+  }),
+  // vazio
+  vazio_0: () => ({ stats(P, st) { st.dmg += 4; } }),
+  vazio_1: () => ({ stats(P, st) { st.pierce = (st.pierce || 0) + .15; } }),
+  vazio_2: () => ({ stats(P, st) { st.glide = 1; } }),
+  vazio_3: (it, s) => ({
+    tick(P, dt) {
+      const arr = G.drops || [];
+      for (const d of arr) { const dx = pcx(P) - d.x, dy = pcy(P) - d.y, l = Math.hypot(dx, dy); if (l < 90 && l > 6) { d.vx += dx / l * 200 * dt; d.vy += dy / l * 180 * dt; } }
+    }
+  }),
+  vazio_4: () => ({ stats(P, st) { st.dmg += 14; st.pierce = (st.pierce || 0) + .1; } }),
+  // origem
+  origem_0: () => ({ stats(P, st) { st.dmg += 6; st.hp += 12; } }),
+  origem_1: () => ({ stats(P, st) { st.crit += .08; st.cm += .2; } }),
+  origem_2: () => ({ stats(P, st) { st.dmg += 12; } }),
+  origem_3: () => ({ stats(P, st) { st.exec = Math.max(st.exec || 0, .15); } }),
+  origem_4: (it, s) => ({
+    onLethal(P) {
+      if ((s.cd || 0) > G.t) return; s.cd = G.t + 150;
+      P.hp = Math.round(P.maxHp * .35); addBuff('invuln', 1.5); flash('#f8fafc', .4, .5); addText(pcx(P), P.y - 14, 'A Origem te devolve', '#f8fafc', 15, 1.2);
+    }
+  }),
+};
+
+// ============================================================
+//   CONJUNTOS — armadura + acessórios da mesma família
+// ============================================================
+const SET_FX = {
+  brasa: n => n >= 4
+    ? { stats(P, st) { st.dmg += 12; }, onHit(P, e) { gStatus(e, 'burn', 3, { dps: 3 }); }, onKill(P, e) { explode(ecx(e), ecy(e), 40, gDmg(P, .4), { col: '#ff7a1a', kb: 3 }); } }
+    : { stats(P, st) { st.dmg += 5; } },
+  geada: n => n >= 4
+    ? { stats(P, st) { st.def += 6; }, tick(P) { for (const e of gNear(P, 66)) if (Math.random() < .06) gStatus(e, 'slow', 1.5, { amt: .3 }); } }
+    : { stats(P, st) { st.def += 2; } },
+  corisco: n => n >= 4
+    ? { stats(P, st) { st.spd += .06; st.crit += .05; }, onHit(P) { const e = gTarget(P, 120); if (e) gHit(e, gDmg(P, .2), { noKb: true, elem: 'lightning' }); } }
+    : { stats(P, st) { st.spd += .04; } },
+  mare: n => n >= 4
+    ? { stats(P, st) { st.hp += 30; }, tick(P, dt) { P._setHeal = (P._setHeal || 0) + dt; if (P._setHeal > 1) { P._setHeal = 0; gHeal(Math.max(1, Math.round(P.maxHp * .01))); } } }
+    : { stats(P, st) { st.hp += 12; } },
+  raiz: n => n >= 4
+    ? { stats(P, st) { st.def += 5; st.thorns = (st.thorns || 0) + .3; } }
+    : { stats(P, st) { st.def += 2; } },
+  veu: n => n >= 4
+    ? { stats(P, st) { st.crit += .06; }, onHit(P, e, h, r) { if (r && r.crit) gHit(e, r.dmg * .2, { noKb: true }); } }
+    : { stats(P, st) { st.crit += .04; } },
+  aurora: n => n >= 4
+    ? { stats(P, st) { st.dmg += 6; }, tick(P, dt) { P._setReg = (P._setReg || 0) + dt; if (P._setReg > 1) { P._setReg = 0; gHeal(2); } } }
+    : { stats(P, st) { st.hp += 14; } },
+  relogio: n => n >= 4
+    ? { stats(P, st) { st.cdr = (st.cdr || 0) + .2; st.spd += .06; }, onHit(P, e, h, r) { if (r && Math.random() < .15) gHit(e, r.dmg * .3, { noKb: true }); } }
+    : { stats(P, st) { st.cdr = (st.cdr || 0) + .1; } },
+  vazio: n => n >= 4
+    ? { stats(P, st) { st.dmg += 10; st.pierce = (st.pierce || 0) + .2; } }
+    : { stats(P, st) { st.dmg += 5; } },
+  origem: n => n >= 4
+    ? { stats(P, st) { st.dmg += 14; st.hp += 30; st.crit += .05; st.cm += .3; } }
+    : { stats(P, st) { st.dmg += 6; } },
+};
 
 ;
 /* ===== 11_swords.js ===== */
@@ -6015,6 +6659,264 @@ S2(199, 'Brado do Infinito', 1220, 1.1, 7, A2('glaive', { col: '#ffd27a', hot: '
 S2(200, 'Apoteose', 1400, 1.05, 10, A2('great', { col: '#fff8e6', hot: '#ffffff', glow: '#fbbf24', w: 5.0, len: 54, guard: 'wing', guardCol: '#f2e0b0', gem: '#ffffff', grip: 'crystal', back: ['wings', 'rings', 'aura'], extras: ['runes', 'stars', 'motes'], padR: 9, arc: 3.0 }), [FX2.bigBang(.6, { r: 250, boomDm: 3.0, label: 'APOTEOSE', col: '#fde68a', col2: '#ffffff' }), FX2.orbs(5, .5, { col: '#fde68a', rad: 64 }), FX2.domain(160, 5, .35, { col: '#fff7c2', col2: '#ffffff' })], 'A espada final: dano em tela cheia, colapso, cinco órbitas e um domínio de luz eterna.', 'mythic_core:4,celestial_bar:20,e_light:20,e_time:16,e_shadow:12', { crit: .26 });
 
 ;
+/* ===== 11c_gear_x.js ===== */
+/* ============================================================
+   11c_gear_x: 50 minérios (+50 barras), 50 armaduras e 50 acessórios
+   - 10 famílias: Braseiro, Geada, Corisco, Maré, Raiz, Véu, Alvorada,
+     Relojoaria, Vazio e Origem — 5 peças de cada por família
+   - armadura + acessórios da mesma família = bônus de conjunto
+   - acessórios: 45 dropam de chefes (1 exclusivo por chefe) e 5 são
+     forjados com os minérios novos
+   Carregado depois de 01_data.js (T, tile, item, rec) e de 10b_gear_fx.js.
+   ============================================================ */
+
+const GFAM = {
+  brasa: { n: 'Braseiro', col: '#f97316', desc: 'fogo, queimadura e explosões' },
+  geada: { n: 'Geada', col: '#7dd3fc', desc: 'gelo, lentidão e congelamento' },
+  corisco: { n: 'Corisco', col: '#fde047', desc: 'raios, carga elétrica e velocidade' },
+  mare: { n: 'Maré', col: '#38bdf8', desc: 'água, cura e bolhas' },
+  raiz: { n: 'Raiz', col: '#84cc16', desc: 'terra, defesa e espinhos' },
+  veu: { n: 'Véu', col: '#a855f7', desc: 'sombras, crítico e roubo de vida' },
+  aurora: { n: 'Alvorada', col: '#fbbf24', desc: 'luz, regeneração e caça aos mortos-vivos' },
+  relogio: { n: 'Relojoaria', col: '#f472b6', desc: 'tempo, ecos e recarga' },
+  vazio: { n: 'Vazio', col: '#818cf8', desc: 'gravidade, perfuração e singularidade' },
+  origem: { n: 'Origem', col: '#f8fafc', desc: 'o primeiro metal, execução e renascimento' },
+};
+const GFAM_KEYS = Object.keys(GFAM);
+
+// índice do tier dentro da família: T2, T4, T6, T8 e T10
+const GTIER = [2, 4, 6, 8, 10];
+const GORE_H = [2, 5, 10, 12, 14];        // poder de picareta exigido
+const GORE_N = [130, 120, 110, 130, 150]; // veios espalhados pelo mundo
+const GARM_DEF = [4, 11, 20, 34, 52];
+const GARM_ST = ['anvil', 'anvil', 'advanvil', 'advanvil', 'forge'];
+
+// ---------- 50 minérios ----------
+// [família, nome, cor, forma do ícone 0-2, brilho]
+const GORE_LIST = [
+  // Braseiro
+  ['brasa', 'Brasa Rúnica', '#d95a1e', 0, 0], ['brasa', 'Escória Viva', '#ff7a1a', 1, 0], ['brasa', 'Coral de Fogo', '#ff9a3c', 2, 1], ['brasa', 'Magma Negro', '#8a2a10', 0, 0], ['brasa', 'Coração de Forja', '#fbbf24', 1, 1],
+  // Geada
+  ['geada', 'Gelo Eterno', '#bfe8ff', 2, 0], ['geada', 'Cristal de Nevoeiro', '#9fd8f2', 2, 0], ['geada', 'Prata Glacial', '#d7ecf7', 0, 0], ['geada', 'Rachadura Polar', '#6fb4dc', 1, 0], ['geada', 'Lágrima de Inverno', '#e8f7ff', 2, 1],
+  // Corisco
+  ['corisco', 'Quartzo Tempestuoso', '#fde047', 2, 0], ['corisco', 'Ferro Magnético', '#c9c2a0', 0, 0], ['corisco', 'Estilhaço de Raio', '#fef08a', 1, 1], ['corisco', 'Núcleo de Íon', '#a8b8ff', 1, 0], ['corisco', 'Âmbar Elétrico', '#f59e0b', 2, 1],
+  // Maré
+  ['mare', 'Madrepérola', '#f0e6d2', 2, 0], ['mare', 'Sal Profundo', '#bae6fd', 0, 0], ['mare', 'Coral Abissal', '#f472b6', 1, 0], ['mare', 'Pérola Negra', '#3b3f52', 2, 0], ['mare', 'Alga Petrificada', '#7f9c8a', 0, 1],
+  // Raiz
+  ['raiz', 'Raiz de Ferro', '#8a6a3a', 1, 0], ['raiz', 'Musgo Mineral', '#84cc16', 0, 0], ['raiz', 'Seiva Fóssil', '#a16207', 2, 0], ['raiz', 'Casca de Pedra', '#9ca3af', 0, 0], ['raiz', 'Esmeralda Selvagem', '#22c55e', 2, 1],
+  // Véu
+  ['veu', 'Obsidiana Violeta', '#6d28d9', 1, 0], ['veu', 'Pó de Sombra', '#4c1d95', 0, 0], ['veu', 'Ametista Crepuscular', '#a855f7', 2, 1], ['veu', 'Carvão Noturno', '#1c1917', 0, 0], ['veu', 'Vidro Fumê', '#3f3f46', 1, 0],
+  // Alvorada
+  ['aurora', 'Ouro Solar', '#fbbf24', 2, 1], ['aurora', 'Cristal de Alvorada', '#fde68a', 2, 0], ['aurora', 'Prisma Branco', '#f8fafc', 1, 0], ['aurora', 'Quartzo Celeste', '#c7d2fe', 0, 0], ['aurora', 'Opala Radiante', '#fbcfe8', 2, 1],
+  // Relojoaria
+  ['relogio', 'Cobre Dourado', '#d4a017', 0, 0], ['relogio', 'Mola de Latão', '#c08a2e', 1, 0], ['relogio', 'Prata Cronométrica', '#dfe8f2', 2, 0], ['relogio', 'Cristal de Ampulheta', '#f9a8d4', 1, 1], ['relogio', 'Liga do Instante', '#eab308', 0, 1],
+  // Vazio
+  ['vazio', 'Fragmento de Vazio', '#818cf8', 2, 1], ['vazio', 'Ferro Estelar', '#6366f1', 0, 0], ['vazio', 'Ímã Gravitacional', '#a5b4fc', 1, 0], ['vazio', 'Quartzo do Abismo', '#4f46e5', 2, 0], ['vazio', 'Núcleo de Singularidade', '#312e81', 0, 1],
+  // Origem
+  ['origem', 'Adamante Primordial', '#f8fafc', 2, 1], ['origem', 'Oricalco do Começo', '#e2e8f0', 0, 0], ['origem', 'Minério do Alvorecer', '#c7d2fe', 1, 0], ['origem', 'Pedra do Gênese', '#fef3c7', 0, 1], ['origem', 'Coração do Mundo', '#fca5a5', 2, 1],
+];
+
+// onde cada tier de minério aparece (profundidade e hospedeiros)
+const GORE_SITE = [
+  { y0: 'surf', d0: 8, y1: 300, hosts: 'DS', bio: null },     // T2
+  { y0: 170, d0: 0, y1: 380, hosts: 'S', bio: null },          // T4
+  { y0: 280, d0: 0, y1: 410, hosts: 'S', bio: null },          // T6
+  { y0: 400, d0: 0, y1: 455, hosts: 'AS', bio: null },         // T8
+  { y0: 425, d0: 0, y1: 474, hosts: 'AS', bio: null },         // T10
+];
+// os minérios não ficam presos a bioma: os de tier alto precisam existir em qualquer mundo
+const GORE_BIO = {};
+
+// ---------- criação dos minérios ----------
+const GORES = [];   // dados usados pelo gerador de mundo e pelos testes
+GORE_LIST.forEach((row, k) => {
+  const [fam, nome, cor, forma, brilho] = row;
+  const t = k % 5;                      // posição dentro da família (tier)
+  const key = 'or_' + fam + '_' + t;
+  const tier = GTIER[t];
+  const h = GORE_H[t] + ((t === 2 || t === 3) ? (k % 2) : 0);   // usa as 5 picaretas novas (10 a 14)
+  // telhado de minério no mundo
+  tile(key, { n: nome, h, t: .55 + t * .12, d: key, c: ['#7b8088', '#5a5e66', cor], x: 'ore', ore: cor, gem: brilho || forma === 2, l: brilho ? Lm(cor, .35) : null });
+  item(key, nome, { tier, ic: ['ore2', cor, forma, brilho], desc: 'Minério de ' + GFAM[fam].n + '. Funde na Fornalha (3 minérios = 1 barra). Requer picareta com poder ' + h + '.' });
+  item(key + '_bar', 'Barra de ' + nome, { tier, ic: ['bar', cor], desc: 'Material de criação da família ' + GFAM[fam].n + '.' });
+  rec(key + '_bar', 1, key + ':3', 'furnace');
+  GORES.push({ key, fam, nome, cor, forma, brilho, tier, h, t, bio: GORE_BIO[fam] || null });
+});
+function Lm(cor, k) { const c = hex2rgb(cor); return [c[0] / 255 * k, c[1] / 255 * k, c[2] / 255 * k]; }
+
+// ---------- 50 armaduras ----------
+const GARMS = [];
+const GARM_PIECE = ['Couraça', 'Peitoral', 'Manto', 'Placas', 'Égide'];
+const GARM_TXT = {
+  brasa: ['Acertos incendeiam o alvo (2 de dano/s por 2,5 s).', '+25% de dano em alvos em chamas; 25% de chance de incendiar.', 'Ao levar dano, explode em fogo ao redor (recarga de 6 s).', 'Deixa um rastro de brasas no chão enquanto corre.', 'Quase imune a lava e queima inimigos encostados.'],
+  geada: ['Acertos deixam o alvo 18% mais lento.', '+4 de defesa depois de 1 s parado.', 'Escudo de gelo a cada 14 s (absorve dano).', 'Ao levar dano, congela e fere quem está perto (recarga de 8 s).', '+40% de dano em inimigos lentos ou congelados.'],
+  corisco: ['+5% de velocidade de movimento.', 'Um raio atinge o inimigo mais próximo a cada 5 s.', '+10% de crítico enquanto se move.', '15% dos acertos saltam para outro inimigo.', 'Aura elétrica fere inimigos que encostam.'],
+  mare: ['+15 de vida máxima.', 'Dentro da água, regenera 2 de vida por segundo.', 'Bolha de proteção a cada 16 s.', '+10 de dano enquanto estiver na água.', 'Regenera 1 de vida por segundo, sempre.'],
+  raiz: ['+2 de defesa e +8 de vida.', 'Espinhos: devolve 15% do dano recebido.', '+4 de defesa depois de 0,8 s parado.', 'Ao cair de alto, gera uma onda de choque ao aterrissar.', '+35 de vida e defesa que cresce conforme você perde vida.'],
+  veu: ['+5% de chance crítica.', 'Roubo de vida de 2% do dano causado.', '+9 de dano durante a noite.', 'Ao matar, ganha 1,2 s de evasão (+50% de esquiva).', '+25% de dano em inimigos abaixo de 35% de vida.'],
+  aurora: ['Regenera 1 de vida por segundo.', '+22 de vida e +1 de defesa.', 'Aumenta muito a luz ao seu redor.', '+30% de dano contra mortos-vivos.', 'Aura sagrada: cura você e queima inimigos próximos.'],
+  relogio: ['Recarga de poção 10% mais rápida.', '+6% de velocidade.', '10% de chance de repetir o golpe.', 'Libera o avanço (Shift) e reduz a recarga dele.', 'A cada 25 s, paralisa os inimigos por 1 s.'],
+  vazio: ['+4 de dano.', 'Ignora 15% da defesa dos inimigos.', 'Plana ao segurar o pulo durante a queda.', 'Atrai de longe os itens dropados.', '+14 de dano e ignora mais 10% da defesa.'],
+  origem: ['+6 de dano e +12 de vida.', '+8% de crítico e +20% de multiplicador crítico.', '+12 de dano.', '+50% de dano em inimigos abaixo de 15% de vida.', 'Uma vez a cada 150 s, renasce com 35% de vida.'],
+};
+GFAM_KEYS.forEach(fam => {
+  for (let t = 0; t < 5; t++) {
+    const ore = GORES[GFAM_KEYS.indexOf(fam) * 5 + t];
+    const id = 'armx_' + fam + '_' + t;
+    const nome = GARM_PIECE[t] + (t === 0 ? ' de ' : ' de ') + ore.nome;
+    const def = GARM_DEF[t];
+    item(id, nome, {
+      type: 'armor', tier: GTIER[t], stack: 1, def, color: ore.cor, fam, mech: fam + '_' + t,
+      ic: ['armor2', ore.cor, GFAM_KEYS.indexOf(fam), t],
+      desc: GARM_TXT[fam][t] + ' Conjunto ' + GFAM[fam].n + ' (defesa +' + def + ').',
+    });
+    rec(id, 1, ore.key + '_bar:' + [18, 22, 26, 30, 34][t] + (t ? ',celestial_frag:' + (t * 3) : ''), GARM_ST[t]);
+    GARMS.push({ id, fam, t, def, ore });
+  }
+});
+
+// ---------- 50 acessórios ----------
+// [família, chave, nome, ícone, stats, texto, fonte] — fonte: 'b:<chefe>' ou 'craft'
+const GACC_LIST = [
+  // ---- Tier 2 (9) ----
+  ['brasa', 'anel', 'Anel de Brasas', 'ring', { dmg: 2 }, 'Cada golpe incendeia o alvo (2 de dano/s por 3 s).', 'b:escorpiao'],
+  ['geada', 'anel', 'Anel Gélido', 'ring', { dmg: 2, def: 1 }, 'Acertos deixam o alvo 22% mais lento por 2 s.', 'b:aguaviva'],
+  ['corisco', 'anel', 'Anel do Corisco', 'ring', { dmg: 2, spd: .04 }, 'A cada 4 acertos, um raio salta para até 3 inimigos.', 'b:vespa'],
+  ['mare', 'anel', 'Anel das Marés', 'ring', { dmg: 2, def: 2 }, 'Acertos seguidos aceleram seu ataque (até +30% de velocidade).', 'b:caranguejo'],
+  ['raiz', 'anel', 'Anel de Pedra', 'ring', { def: 2, hp: 10 }, 'Ganha +1 de defesa a cada 20% de vida perdida (até +5).', 'b:carvalho'],
+  ['veu', 'anel', 'Anel do Véu', 'ring', { crit: .05 }, 'O primeiro golpe em cada inimigo é sempre crítico.', 'b:teceda'],
+  ['aurora', 'anel', 'Anel Solar', 'ring', { hp: 12 }, 'Regenera 1 de vida por segundo após 5 s sem levar dano.', 'b:cogumelo'],
+  ['relogio', 'anel', 'Anel do Instante', 'ring', { spd: .06, crit: .04 }, '12% de chance de repetir o golpe na hora (eco).', 'b:corvo'],
+  ['origem', 'anel', 'Anel do Primeiro', 'ring', { dmg: 5, hp: 15, def: 2, crit: .03 }, 'Atributos diretos: +5 dano, +15 vida, +2 defesa e +3% crítico.', 'b:slime'],
+  // ---- Tier 4 (16) ----
+  ['vazio', 'pingente', 'Pingente do Vazio', 'amulet', { dmg: 4 }, 'Ignora 30% da defesa dos inimigos.', 'b:golem_cristal'],
+  ['veu', 'pingente', 'Pingente Vampírico', 'amulet', { crit: .04 }, 'Cura 3% do dano dos acertos críticos.', 'b:rei_ossos'],
+  ['raiz', 'pingente', 'Pingente de Raízes', 'amulet', { def: 3 }, 'Ao aterrissar, empurra inimigos num raio de 70 e causa dano leve.', 'b:verme'],
+  ['geada', 'pingente', 'Pingente de Gelo', 'amulet', { dmg: 4 }, 'A cada 3 acertos, congela o alvo por 0,8 s.', 'b:lich_gelo'],
+  ['aurora', 'pingente', 'Pingente da Aurora', 'amulet', { hp: 20, def: 1 }, 'Poções curam +12% da vida máxima e removem debuffs.', 'b:banshee'],
+  ['brasa', 'fole', 'Fole do Ferreiro', 'bellows', { dmg: 5 }, 'A cada 6 golpes, sopra um cone de fogo na direção da mira.', 'b:minotauro'],
+  ['relogio', 'pingente', 'Pingente de Areia', 'amulet', { spd: .05 }, 'Recarga das poções 25% mais rápida.', 'b:relojoeiro'],
+  ['raiz', 'manopla', 'Manopla Sísmica', 'gauntlet', { dmg: 4, def: 2 }, 'A cada 3 golpes, uma onda de choque corre pelo relevo.', 'b:escaravelho'],
+  ['veu', 'manopla', 'Manopla do Executor', 'gauntlet', { dmg: 5 }, '+40% de dano em inimigos abaixo de 30% de vida.', 'b:cavaleiro'],
+  ['brasa', 'coracao', 'Coração de Magma', 'heart', { hp: 25 }, 'Ao levar dano, libera uma nova de fogo que incendeia e empurra (recarga de 5 s).', 'b:fenix_cinzas'],
+  ['corisco', 'botas', 'Botas do Trovão', 'boots', { spd: .05 }, 'Libera o avanço no ar (Shift) — um salto elétrico.', 'b:vento'],
+  ['mare', 'pingente', 'Pingente de Coral', 'amulet', { hp: 18 }, 'Na água, regenera 2% da vida máxima por segundo e cura ao entrar.', 'b:hidra'],
+  ['aurora', 'botas', 'Botas Leves', 'boots', { spd: .08 }, 'Planeia ao segurar o pulo durante a queda.', 'b:mariposa'],
+  ['vazio', 'botas', 'Botas do Abismo', 'boots', { def: 3 }, 'Cai devagar e leva metade do dano de lava.', 'b:gargula'],
+  ['corisco', 'pingente', 'Pingente Estático', 'amulet', { dmg: 3 }, 'Acumula carga ao correr: o próximo golpe causa até +100% de dano.', 'b:eye'],
+  ['raiz', 'couraca', 'Casca Viva', 'shield', { def: 5 }, 'Espinhos: devolve 25% do dano recebido.', 'b:guardian'],
+  // ---- Tier 7 (13 de chefe + 3 craftáveis) ----
+  ['veu', 'manto', 'Manto de Sombras', 'cloak', { dmg: 6 }, 'Ao matar, fica 1,5 s com +60% de esquiva.', 'b:ceifador'],
+  ['vazio', 'manopla', 'Manopla Devoradora', 'gauntlet', { dmg: 7 }, 'Roubo de vida de 6% e sangramento em cada golpe.', 'b:vampiro'],
+  ['geada', 'manopla', 'Manopla do Inverno', 'gauntlet', { dmg: 7 }, 'Alvos congelados levam +35% e soltam estilhaços que ferem os próximos.', 'b:medusa'],
+  ['mare', 'nadadeira', 'Nadadeiras Abissais', 'fin', { spd: .06 }, 'Nada 60% mais rápido e ganha dano dentro da água.', 'b:sereia'],
+  ['geada', 'manto', 'Manto de Cristal', 'cloak', { def: 6 }, 'Um escudo de gelo absorve dano a cada 15 s.', 'b:armadura'],
+  ['brasa', 'botas', 'Botas de Escória', 'boots', { spd: .05 }, 'Deixa um rastro de brasas que queima quem passa.', 'b:dragao'],
+  ['relogio', 'manopla', 'Manopla do Pulso', 'gauntlet', { dmg: 6 }, 'Cada acerto reduz a recarga do avanço e da poção.', 'b:gemeos'],
+  ['aurora', 'manopla', 'Manopla Radiante', 'gauntlet', { dmg: 6 }, '+50% de dano contra mortos-vivos e queima sombras.', 'b:prisma'],
+  ['vazio', 'anel', 'Anel Gravitacional', 'ring', { dmg: 5 }, 'Atrai itens e puxa inimigos próximos para perto de você.', 'b:magnetar'],
+  ['brasa', 'manopla', 'Manopla do Incendiário', 'gauntlet', { dmg: 7 }, 'Inimigos que morrem em chamas explodem.', 'b:titalava'],
+  ['corisco', 'coroa', 'Coroa de Nuvens', 'crown', { dmg: 5, crit: .05 }, 'Um raio cai no inimigo mais próximo a cada 4 s.', 'b:tempestade'],
+  ['vazio', 'singularidade', 'Núcleo Singular', 'void', { dmg: 8 }, 'A cada 12 acertos, abre um buraco negro que puxa e explode.', 'b:devorador'],
+  ['raiz', 'botas', 'Botas de Terra', 'boots', { def: 4 }, 'Sem dano de queda; cair de alto gera uma onda de choque.', 'b:espelho'],
+  ['geada', 'botas', 'Botas Nevadas', 'boots', { spd: .05 }, '+30% de velocidade por 2 s ao acertar um alvo lento.', 'craft'],
+  ['mare', 'manopla', 'Manopla da Maré', 'gauntlet', { dmg: 5, def: 2 }, 'Golpes geram uma onda que empurra todos os inimigos próximos.', 'craft'],
+  ['relogio', 'botas', 'Botas do Momento', 'boots', { spd: .07 }, 'Libera o avanço (Shift) no chão, com recarga de 2,4 s.', 'craft'],
+  // ---- Tier 10 (6 de chefe + colosso + 2 craftáveis) ----
+  ['aurora', 'coroa', 'Coroa da Alvorada', 'crown', { hp: 30, def: 4 }, 'Aura sagrada: queima inimigos num raio de 78 e ilumina tudo.', 'b:imperador_solar'],
+  ['veu', 'botas', 'Botas Silenciosas', 'boots', { spd: .1 }, 'Parado por 1 s: +50% de esquiva e +25% no próximo golpe.', 'b:lua_sangrenta'],
+  ['relogio', 'ampulheta', 'Ampulheta Partida', 'hourglass', { dmg: 8 }, 'A cada 20 s, congela todos os inimigos próximos por 1,2 s.', 'b:tempo'],
+  ['corisco', 'manopla', 'Manopla Condutora', 'gauntlet', { dmg: 9 }, '25% dos acertos saltam para outro inimigo próximo.', 'b:pulsar'],
+  ['mare', 'bolha', 'Bolha Protetora', 'bubble', { hp: 35 }, 'Uma bolha absorve dano a cada 12 s.', 'b:leviata'],
+  ['origem', 'pingente', 'Pingente do Último Nome', 'amulet', { dmg: 10 }, 'Executa inimigos comuns abaixo de 12% de vida.', 'b:arauto'],
+  ['origem', 'coroa', 'Coroa da Origem', 'crown', { hp: 20, def: 5 }, 'Uma vez a cada 120 s, renasce com metade da vida.', 'b:colossus'],
+  ['origem', 'botas', 'Botas do Começo', 'boots', { spd: .12 }, '+12% de velocidade e pulo mais alto.', 'craft'],
+  ['origem', 'manopla', 'Manopla do Gênese', 'gauntlet', { dmg: 12 }, 'O primeiro golpe em cada inimigo causa o dobro de dano.', 'craft'],
+];
+
+const GACCS = [];
+GACC_LIST.forEach(([fam, key, nome, icone, stats, txt, fonte], idx) => {
+  // a lista já está ordenada por tier: 9 de T2, 16 de T4, 16 de T7 e 9 de T10
+  const tier = idx < 9 ? 2 : idx < 25 ? 4 : idx < 41 ? 7 : 10;
+  const id = 'accx_' + fam + '_' + key;
+  item(id, nome, {
+    type: 'acc', tier, stack: 1, acc: stats, fam, mech: fam + '_' + key,
+    ic: ['acc2', GFAM[fam].col, icone, tier],
+    desc: txt + ' Conjunto ' + GFAM[fam].n + '.',
+  });
+  GACCS.push({ id, fam, key, nome, stats, txt, fonte, tier });
+});
+
+// ---------- 5 picaretas novas (poder 10 a 14) ----------
+const GPICKS = [
+  ['pick_obsidiana', 'Picareta de Obsidiana', 10, 8.0, '#4c1d95', 6, 'adamantite_bar:20,celestial_frag:10,obsidian:20'],
+  ['pick_estelar', 'Picareta Estelar', 11, 9.5, '#a5b4fc', 7, 'or_aurora_2_bar:12,or_corisco_2_bar:12,celestial_bar:8'],
+  ['pick_vazio', 'Picareta do Vazio', 12, 11.0, '#6366f1', 8, 'or_vazio_2_bar:14,or_vazio_1_bar:10,e_time:8'],
+  ['pick_primordial', 'Picareta Primordial', 13, 13.0, '#22d3ee', 9, 'or_origem_1_bar:14,or_vazio_2_bar:10,e_time:10'],
+  ['pick_origem', 'Picareta da Origem', 14, 15.0, '#f8fafc', 10, 'or_origem_2_bar:16,or_aurora_2_bar:12,mythic_core:2'],
+];
+GPICKS.forEach(([id, n, pw, spd, c, t, ing]) => {
+  item(id, n, { type: 'pick', tier: t, stack: 1, pow: pw, spd, ic: ['pick', c], desc: 'Mineração: poder ' + pw + ' · velocidade ' + spd.toFixed(2) + 'x. Mina os minérios mais duros do jogo.' });
+  rec(id, 1, ing, 'forge');
+});
+
+// receitas dos 5 acessórios forjáveis
+const GACC_CRAFT = [
+  ['accx_geada_botas', 1, 'or_geada_3_bar:8,or_geada_2_bar:6,frost_shard:20,e_ice:6', 'advanvil'],
+  ['accx_mare_manopla', 1, 'or_mare_2_bar:8,or_mare_1_bar:6,orichalcum_bar:8,e_water:6', 'advanvil'],
+  ['accx_relogio_botas', 1, 'or_relogio_2_bar:10,or_relogio_3_bar:8,e_time:8', 'advanvil'],
+  ['accx_origem_botas', 1, 'or_origem_4_bar:10,or_origem_2_bar:8,celestial_bar:10', 'forge'],
+  ['accx_origem_manopla', 1, 'or_origem_4_bar:14,or_origem_3_bar:10,mythic_core:1', 'forge'],
+];
+GACC_CRAFT.forEach(([id, n, ing, st]) => rec(id, n, ing, st));
+
+// ---------- chefes → acessórios ----------
+// 45 chefes (os 50 novos + os 4 clássicos) têm um acessório exclusivo.
+const BX_ACC = {};
+GACCS.forEach(a => { const m = a.fonte.match(/^b:(.+)$/); if (m) BX_ACC[m[1]] = a.id; });
+
+// nomes dos chefes clássicos usados no mapa acima
+const CLASSIC_ACC = { slime: BX_ACC.slime, eye: BX_ACC.eye, guardian: BX_ACC.guardian, colossus: BX_ACC.colossus };
+function gearBossDrop(d, dropItem, x, y) { const id = BX_ACC[d.id]; if (id) dropItem(id, 1, x, y, 0, -120); }
+function gearClassicDrop(kind, dropItem, x, y) { const id = CLASSIC_ACC[kind]; if (id) dropItem(id, 1, x, y, 0, -150); }
+
+// ---------- colocação dos minérios no mundo ----------
+function gearPlaceOres(ores, T, S, Y_HELL, bio, W) {
+  for (const o of GORES) {
+    const site = GORE_SITE[o.t];
+    const hosts = site.hosts === 'DS' ? [T.stone, T.dirt] : site.hosts === 'S' ? [T.stone] : site.hosts === 'AS' ? [T.ash, T.stone] : [T.ash];
+    const y0 = site.y0 === 'surf' ? (x => S(x) + site.d0) : site.y0;
+    const y1 = o.t >= 3 ? Math.min(474, site.y1) : site.y1;
+    const count = GORE_N[o.t];
+    const n = Math.round(count / 5) * 2 + 4;   // veios por minério
+    ores(T[o.key], n, y0, y1, 3 + o.t, 6 + o.t * 2, hosts, o.bio);
+  }
+}
+
+// ---------- conjuntos: resumo para a interface ----------
+function gearSetInfo(fam) {
+  const F = GFAM[fam]; if (!F) return null;
+  const arms = GARMS.filter(a => a.fam === fam), accs = GACCS.filter(a => a.fam === fam);
+  return { fam, nome: F.n, col: F.col, desc: F.desc, armaduras: arms.length, acessorios: accs.length };
+}
+
+
+// texto de origem mostrado no tooltip (resolve o nome do chefe em tempo de execução)
+function gearSourceText(id) {
+  const a = GACCS.find(x => x.id === id);
+  if (a) {
+    const m = a.fonte.match(/^b:(.+)$/);
+    if (m) { const d = (typeof BX !== 'undefined') && BX[m[1]]; return 'Dropa de: <b style="color:#fbbf24">' + (d ? d.n : m[1]) + '</b>'; }
+    return 'Forjado: veja a receita abaixo.';
+  }
+  const ar = GARMS.find(x => x.id === id);
+  if (ar) return 'Forjado na ' + (STATION_NAME[GARM_ST[ar.t]] || 'Bigorna') + '.';
+  const or = GORES.find(x => x.key === id);
+  if (or) return 'Minerado com picareta de poder ' + or.h + ' ou mais.';
+  return '';
+}
+
+;
 /* ===== 12_player.js ===== */
 /* ============================================================
    12_player: jogador, inventário, crafting, mineração, blocos
@@ -6023,7 +6925,9 @@ const INV_N = 40, KEYS = {}, PLAYER_W = 12, PLAYER_H = 26;
 function newPlayer() {
   return {
     x: 0, y: 0, w: PLAYER_W, h: PLAYER_H, vx: 0, vy: 0, onGround: false, face: 1, hp: 100, maxHp: 100, crystals: 0, inv_: 0, inv: new Array(INV_N).fill(null), sel: 0,
-    equip: { armor: null, acc: [null, null, null] }, stats: { def: 0, dmg: 0, crit: 0, cm: 1, spd: 0, steal: 0, kbr: 0, hp: 0 },
+    equip: { armor: null, acc: [null, null, null, null] },
+    stats: { def: 0, dmg: 0, crit: 0, cm: 1, spd: 0, steal: 0, kbr: 0, hp: 0, dodge: 0, pierce: 0, thorns: 0, cdr: 0, dash: 0, dashAir: 0, glide: 0, lavaRes: 0, fallSafe: 0, atkspd: 0, exec: 0, swim: 0 },
+    gear: [], sets: [], setCount: {}, gearState: {}, setState: {}, dashCd: 0, dashBuf: 0, dashHeld: false, lastHurtT: -99,
     cb: { cd: 0, side: 1, count: 0, inst: [], sw: null, hits: 0, swingT: 0, blockT: 0, blockPct: 0, main: null, lastHitT: 0 },
     buffs: {}, mine: { x: -1, y: -1, p: 0, t: 0 }, anim: { walk: 0, arm: 0 }, coyote: 0, jbuf: 0, kbT: 0, flash: 0, dead: false, respawnT: 0,
     potionCd: 0, fallStart: 0, inWater: false, inLava: false, slowfall: 0, placeT: 0, dmgInv: 0, lavaT: 0, lastCrystalMsg: 0, atkAim: 0, jumpHeld: false,
@@ -6083,12 +6987,22 @@ function doCraft(r) {
 }
 
 // ---------- equipamentos / estatísticas ----------
+// garante 4 slots de acessório e descarta ids que não existem mais (saves antigos)
+function normalizeEquip(eq) {
+  const out = { armor: null, acc: [null, null, null, null] };
+  if (eq && eq.armor && IT[eq.armor.id] && IT[eq.armor.id].type === 'armor') out.armor = { id: eq.armor.id, n: 1 };
+  const a = (eq && Array.isArray(eq.acc)) ? eq.acc : [];
+  for (let i = 0; i < 4; i++) { const s = a[i]; if (s && IT[s.id] && IT[s.id].type === 'acc') out.acc[i] = { id: s.id, n: 1 }; }
+  return out;
+}
+
 function recalcStats() {
-  const P = G.P, st = { def: 0, dmg: 0, crit: 0, cm: 1, spd: 0, steal: 0, kbr: 0, hp: 0 };
+  const P = G.P, st = { def: 0, dmg: 0, crit: 0, cm: 1, spd: 0, steal: 0, kbr: 0, hp: 0, dodge: 0, pierce: 0, thorns: 0, cdr: 0, dash: 0, dashAir: 0, glide: 0, lavaRes: 0, fallSafe: 0, atkspd: 0, exec: 0, swim: 0 };
   const ar = P.equip.armor; if (ar) st.def += IT[ar.id].def;
-  for (const a of P.equip.acc) if (a) { const s = IT[a.id].acc; st.dmg += s.dmg || 0; st.crit += s.crit || 0; st.cm += s.cm || 0; st.spd += s.spd || 0; st.steal += s.steal || 0; st.def += s.def || 0; st.kbr += s.kbr || 0; st.hp += s.hp || 0; }
+  for (const a of P.equip.acc) if (a) { const s = IT[a.id].acc; if (!s) continue; st.dmg += s.dmg || 0; st.crit += s.crit || 0; st.cm += s.cm || 0; st.spd += s.spd || 0; st.steal += s.steal || 0; st.def += s.def || 0; st.kbr += s.kbr || 0; st.hp += s.hp || 0; }
   const sw = heldSword(); P.cb.sw = sw;
   if (sw) fxCall(sw, 'stats', P, st);
+  rebuildGear(P); gearCall('stats', P, st);   /* acessórios, armaduras e conjuntos */
   P.stats = st;
   const mh = Math.min(400, 100 + P.crystals * 20) + st.hp; P.maxHp = mh; if (P.hp > mh) P.hp = mh;
 }
@@ -6202,7 +7116,7 @@ function useHeldItem(P, dt, pressed) {
 function useConsumable(P, s, it) {
   const creative = G.mode === 'creative';
   const consume = () => { if (creative) return; s.n--; if (s.n <= 0) P.inv[P.sel] = null; invDirty(); };
-  if (it.use === 'heal') { if (P.buffs.curse) { toast('Maldição: você não consegue se curar!', '#c084fc'); return; } if (P.potionCd > 0) { toast('Poção em recarga (' + Math.ceil(P.potionCd) + 's)', '#fbbf24'); return; } if (P.hp >= P.maxHp) return; healPlayer(it.heal); P.potionCd = creative ? 2 : 30; sfx('heal'); burst(P.x + P.w / 2, P.y + P.h / 2, 14, { col: ['#4ade80', '#bbf7d0'], spd: 90, g: -60, glow: true, life: .6 }); consume(); }
+  if (it.use === 'heal') { if (P.buffs.curse) { toast('Maldição: você não consegue se curar!', '#c084fc'); return; } if (P.potionCd > 0) { toast('Poção em recarga (' + Math.ceil(P.potionCd) + 's)', '#fbbf24'); return; } if (P.hp >= P.maxHp) return; gearCall('onPotion', P); healPlayer(it.heal); P.potionCd = creative ? 2 : 30 * (1 - (P.stats.cdr || 0)); sfx('heal'); burst(P.x + P.w / 2, P.y + P.h / 2, 14, { col: ['#4ade80', '#bbf7d0'], spd: 90, g: -60, glow: true, life: .6 }); consume(); }
   else if (it.use === 'life') { if (P.crystals >= 15) { toast('Vida máxima já no limite.', '#fbbf24'); return; } P.crystals++; recalcStats(); P.hp = P.maxHp; sfx('heal'); toast('Vida máxima aumentada! (' + P.maxHp + ')', '#f472b6'); consume(); }
   else if (it.use.startsWith('boss_')) { if (summonBoss(it.use.slice(5))) consume(); }
 }
@@ -6217,8 +7131,8 @@ function updatePlayer(dt) {
   for (const n in P.buffs) { const b = P.buffs[n]; b.t -= dt; if (b.t <= 0) { delete P.buffs[n]; continue; } if (n === 'bleed') { b.acc = (b.acc || 0) + dt; if (b.acc >= .5) { b.acc -= .5; hurtPlayer(Math.round((b.dmg || 4) * (b.stacks || 1)), undefined, 0, { pierce: true, inv: .1 }); } } if (n === 'regen') { b.acc = (b.acc || 0) + (b.hps || 1) * dt; if (b.acc >= 1) { healPlayer(1, true); b.acc -= 1; } } }
   // ambiente
   const liq = liqOf(P); P.inWater = liq.water > .3 || liq.lava > .3; P.inLava = liq.lava > .25;
-  const wasWater = P._wasWater; if (P.inWater && !wasWater) { sfx('splash'); burst(P.x + P.w / 2, P.y + P.h, 12, { col: ['#60a5fa', '#bfdbfe'], spd: 120, g: 400, life: .5, ang: -PI / 2, spread: 2 }); } P._wasWater = P.inWater;
-  if (P.inLava) { P.lavaT -= dt; if (P.lavaT <= 0) { P.lavaT = .5; hurtPlayer(22 + Math.round(G.stage * 6), undefined, 0, { pierce: true, inv: .3 }); } }
+  const wasWater = P._wasWater; if (P.inWater && !wasWater) { gearCall('onWater', P); sfx('splash'); burst(P.x + P.w / 2, P.y + P.h, 12, { col: ['#60a5fa', '#bfdbfe'], spd: 120, g: 400, life: .5, ang: -PI / 2, spread: 2 }); } P._wasWater = P.inWater;
+  if (P.inLava) { P.lavaT -= dt; if (P.lavaT <= 0) { P.lavaT = .5; hurtPlayer(Math.max(3, Math.round((22 + Math.round(G.stage * 6)) * (1 - (P.stats.lavaRes || 0)))), undefined, 0, { pierce: true, inv: .3 }); } }
   // entrada horizontal
   let dir = (k.KeyD || k.ArrowRight || k.PadRight ? 1 : 0) - (k.KeyA || k.ArrowLeft || k.PadLeft ? 1 : 0);
   if (P.buffs.confuse) dir = -dir; if (P.buffs.stun) dir = 0;   /* debuffs dos chefes */
@@ -6237,10 +7151,11 @@ function updatePlayer(dt) {
     if (jumpKey) P.vy = approach(P.vy, -170, 1200 * dt); else P.vy = approach(P.vy, 70, 400 * dt);
     if (P.inLava) P.vy = Math.min(P.vy, 60);
   } else {
-    if (P.jbuf > 0 && P.coyote > 0 && !P.buffs.stun) { P.vy = -470; P.jbuf = 0; P.coyote = 0; sfx('jump'); }
+    if (P.jbuf > 0 && P.coyote > 0 && !P.buffs.stun) { P.vy = -470 * (1 + (P.stats.jump || 0)); P.jbuf = 0; P.coyote = 0; sfx('jump'); gearCall('onJump', P); }
     if (!jumpKey && P.vy < -180) P.vy *= Math.pow(.0008, dt);
     let g = P.vy < 0 ? GRAV : GRAV * 1.12, maxFall = MAXFALL;
     if (P.slowfall) { g *= 1 - P.slowfall * .8; maxFall *= 1 - P.slowfall; }
+    if (P.stats.glide && jumpKey && P.vy > 0) { g *= .22; maxFall *= .32; }
     if (P.buffs.floaty) { g *= .32; maxFall *= .4; }
     P.vy = Math.min(P.vy + g * dt, maxFall);
     if (P.buffs.gravflip) { P.vy -= g * dt * 1.85; P.vy = Math.max(P.vy, -240); if (P.y < 3 * TS) { P.y = 3 * TS; P.vy = Math.max(0, P.vy); } }
@@ -6252,7 +7167,8 @@ function updatePlayer(dt) {
   bodyMove(P, dt, { stepUp: true });
   if (P.onGround && !wasG) {
     const tiles = (P.y - P.fallStart) / TS;
-    if (P.fallStart > 0 && tiles > 24 && !P.inWater && G.mode !== 'creative') { const dmg = Math.round((tiles - 24) * 5); hurtPlayer(dmg, undefined, 0, { pierce: true, inv: .3 }); addText(P.x + 6, P.y - 12, 'Queda!', '#fca5a5', 11); }
+    gearCall('onLand', P, tiles);
+    if (P.fallStart > 0 && tiles > 24 && !P.inWater && G.mode !== 'creative' && !P.stats.fallSafe) { const dmg = Math.round((tiles - 24) * 5); hurtPlayer(dmg, undefined, 0, { pierce: true, inv: .3 }); addText(P.x + 6, P.y - 12, 'Queda!', '#fca5a5', 11); }
     if (oldVy > 300) burst(P.x + P.w / 2, P.y + P.h, 4, { col: ['#a89070', '#c8b090'], spd: 50, g: 200, life: .3, ang: -PI / 2, spread: 2 });
     P.fallStart = 0;
   }
@@ -6265,6 +7181,19 @@ function updatePlayer(dt) {
   // sword hooks (tick) e estatísticas
   const sw = heldSword(); if (sw !== P.cb.sw || P._statSel !== P.sel) { P._statSel = P.sel; recalcStats(); }
   if (P.cb.sw) fxCall(P.cb.sw, 'tick', P, dt);
+  gearCall('tick', P, dt);   /* acessórios e conjuntos */
+  // avanço (acessórios com dash)
+  P.dashCd = Math.max(0, (P.dashCd || 0) - dt);
+  const dashKey = k.ShiftLeft || k.ShiftRight || k.PadDash;
+  if (dashKey && !P.dashHeld) P.dashBuf = .12;
+  P.dashHeld = !!dashKey; P.dashBuf = Math.max(0, (P.dashBuf || 0) - dt);
+  if (P.dashBuf > 0 && P.dashCd <= 0 && P.stats.dash && !ui && !P.buffs.stun && !P.buffs.silence && (P.onGround || P.stats.dashAir)) {
+    const a = dir ? (dir > 0 ? 0 : PI) : (P.face > 0 ? 0 : PI);
+    P.vx = Math.cos(a) * 560; P.vy = P.onGround ? -80 : Math.min(P.vy, -40);
+    P.dashCd = 2.4 * (1 - (P.stats.cdr || 0)) * (P.stats.dashCd ? P.stats.dashCd : 1); P.dashBuf = 0; P.inv_ = Math.max(P.inv_, .16);
+    burst(pcx(P), pcy(P), 10, { col: ['#fde047', '#fbcfe8', '#fff'], spd: 130, life: .4, glow: true });
+    addText(pcx(P), P.y - 8, 'Avanço', '#fde047', 11, .6); sfx('jump', .7); gearCall('onDash', P);
+  }
   // usar item
   const lmb = mouse.down[0] && !ui;
   if (lmb && !P.buffs.silence && !P.buffs.stun) useHeldItem(P, dt, mouse.pressed[0]); else { P.mine.p = Math.max(0, P.mine.p - dt * 2); }
@@ -6442,6 +7371,7 @@ function bossLoot(e) {
   if (e.d.bx) return bxLoot(e);
   const x = ecx(e), y = ecy(e), k = e.k;
   const rain = (id, n) => { for (let i = 0; i < n; i += Math.max(1, Math.ceil(n / 8))) dropItem(id, Math.min(Math.ceil(n / 8) || 1, n - i), x + rnd(-30, 30), y + rnd(-20, 10), rnd(-120, 120), rnd(-300, -150)); };
+  if (CLASSIC_ACC[k.slice(5)]) gearClassicDrop(k.slice(5), dropItem, x, y);   /* acessório exclusivo (11c_gear_x.js) */
   if (k === 'boss_slime') { rain('coin', rndi(70, 110)); rain('gel', rndi(40, 60)); dropItem('life_crystal', 1, x, y); dropItem(pick(['s003', 's009', 's011', 's015', 's017', 's010']), 1, x, y); dropItem('acc_boots', 1, x + 10, y); dropItem('potion1', 4, x - 10, y); }
   else if (k === 'boss_eye') { rain('coin', rndi(120, 180)); rain('platinum_bar', rndi(16, 24)); dropItem('life_crystal', 2, x, y); dropItem(pick(['s021', 's024', 's027', 's029', 's033', 's037']), 1, x, y); dropItem('acc_ring', 1, x + 12, y); dropItem('potion1', 6, x - 10, y); }
   else if (k === 'boss_guardian') { rain('coin', rndi(250, 360)); rain('hell_bar', rndi(10, 16)); rain('celestial_frag', rndi(14, 20)); dropItem('life_crystal', 3, x, y); dropItem('potion2', 5, x - 10, y); dropItem('acc_gauntlet', 1, x + 12, y); }
@@ -6828,7 +7758,10 @@ function summonBossX(id) {
     else { const p = freeSpot(ed.w, ed.h, pcx(P) + side * 200, pcy(P) - 60); x = p.x; y = p.y; }
   }
   bxTrimCache(id); bxWarmAll(id);   /* todos os quadros do chefe prontos antes da luta (escondido pelo clarão preto) */
-  const e = spawnEnemy('bx_' + id, x, y); G.boss = e; e.bossT = 0; bxInit(e);
+  const e = spawnEnemy('bx_' + id, x, y); G.boss = e; e.bossT = 0;
+  // os chefes novos foram calibrados para 3 acessórios; com o 4º slot eles ganham 12% de vida
+  e.hpMax = Math.round(e.hpMax * (1 + .03 * Math.min(4, (P.equip.acc || []).filter(Boolean).length))); e.hp = e.hpMax;
+  bxInit(e);
   sfx('boss'); shake(8); toast(d.msg || (d.n + ' despertou!'), d.acc, 5); flash('#000000', .35, .8);
   return true;
 }
@@ -7061,6 +7994,7 @@ function bxLoot(e) {
   rain('coin', rndi(d.coin[0], d.coin[1]));
   for (const [id, a, b] of A.mat) { const n = rndi(a, b); rain(id, n); }
   if (d.sword) dropItem(d.sword, 1, x, y);
+  gearBossDrop(d, dropItem, x, y);   /* acessório exclusivo do chefe (11c_gear_x.js) */
   if (d.i % 3 === 0) dropItem('life_crystal', 1, x + 8, y);
   dropItem(A.pot, 2 + d.act, x - 10, y);
   if (d.loot) d.loot(e, rain);
@@ -8293,6 +9227,12 @@ function tipHTML(id, o) {
     h += `<div class="ts">${TYPE_PT[it.type] || ''}${it.tier ? ' · ' + T_.n : ''}</div>`;
     if (it.type === 'pick') h += `<div class="st2"><span>Poder</span><b>${it.pow}</b><span>Velocidade</span><b>${it.spd.toFixed(2)}x</b></div>`;
     if (it.type === 'armor') h += `<div class="st2"><span>Defesa</span><b>+${it.def}</b></div>`;
+    if (it.fam && GFAM[it.fam]) {
+      const n = G.P ? gearSetCount(G.P, it.fam) : 0;
+      h += `<div class="ts" style="color:${GFAM[it.fam].col}">Conjunto ${GFAM[it.fam].n} · ${GFAM[it.fam].desc}</div>`;
+      if (n) h += `<div class="rcp">Peças equipadas: <b>${n}</b>${n >= 4 ? ' · bônus máximo ativo' : n >= 2 ? ' · bônus de 2 peças ativo' : ''}</div>`;
+    }
+    const src = gearSourceText(it.id); if (src) h += `<div class="rcp">${src}</div>`;
     if (it.desc) h += `<div class="mech">${escHtml(it.desc)}</div>`;
     if (!(o && o.noRecipe)) { const rt = recipeText(id); if (rt) h += `<div class="rcp">${rt}</div>`; }
   }
@@ -8314,7 +9254,7 @@ function buildSlotsUI() {
   const gr = $('inv-grid'); gr.innerHTML = ''; invEls = [];
   for (let i = 0; i < INV_N; i++) { const el = mkSlot('inv', i); gr.appendChild(el); invEls.push(el); }
   const eq = $('equip-row'); eq.innerHTML = '<span class="lbl">Equipamento:</span>'; eqEls = [];
-  const a = mkSlot('armor', 0); eq.appendChild(a); eqEls.push(['armor', 0, a]); for (let i = 0; i < 3; i++) { const e = mkSlot('acc', i); eq.appendChild(e); eqEls.push(['acc', i, e]); }
+  const a = mkSlot('armor', 0); eq.appendChild(a); eqEls.push(['armor', 0, a]); for (let i = 0; i < 4; i++) { const e = mkSlot('acc', i); eq.appendChild(e); eqEls.push(['acc', i, e]); }
   const tr = mkSlot('trash', 0); eq.appendChild(tr); const tl = document.createElement('span'); tl.className = 'lbl'; tl.textContent = '← lixeira'; eq.appendChild(tl);
   tr.addEventListener('mouseenter', ev => showTip('<div class="tn">Lixeira</div><div class="mech">Solte aqui o item que está no cursor para destruí-lo.</div>', ev));
   const cg = $('chest-grid'); cg.innerHTML = ''; chestEls = []; for (let i = 0; i < 20; i++) { const el = mkSlot('chest', i); cg.appendChild(el); chestEls.push(el); }
@@ -8350,7 +9290,8 @@ function refreshHUD() {
   const hp = Math.max(0, Math.ceil(P.hp)), f = clamp(P.hp / P.maxHp, 0, 1); $('hp-fill').style.width = (f * 100) + '%'; $('hp-txt').textContent = 'Vida: ' + hp + '/' + P.maxHp; drawHearts(P);
   const sh = P.buffs.shield; $('hp-shield').style.width = sh ? Math.min(100, sh.hp / P.maxHp * 100) + '%' : '0'; $('hp-bar').style.display = sh ? 'block' : 'none';
   const sw = heldSword(), st = P.stats;
-  $('stat-row').innerHTML = `<span>Defesa <b>${st.def}</b></span><span>Dano+ <b>${st.dmg}</b></span><span>Crít <b>${Math.round((st.crit + (sw ? sw.critChance : 0)) * 100)}%</b></span><span>Moedas <b>${invCount('coin')}</b></span>`;
+  $('stat-row').innerHTML = `<span>Defesa <b>${st.def}</b></span><span>Dano+ <b>${st.dmg}</b></span><span>Crít <b>${Math.round((st.crit + (sw ? sw.critChance : 0)) * 100)}%</b></span><span>Moedas <b>${invCount('coin')}</b></span>`
+    + (P.sets && P.sets.length ? `<span style="color:#c7d2fe">Conjuntos <b>${P.sets.map(x => GFAM[x.fam] ? GFAM[x.fam].n + ' (' + x.n + ')' : x.fam).join(', ')}</b></span>` : '');
   let bf = ''; const NM = { regen: 'Regeneração', speed: 'Velocidade', shield: 'Escudo', invuln: 'Invulnerável', invis: 'Invisível', haste: 'Rapidez', slow: 'Lentidão', confuse: 'Confusão', stun: 'Atordoado', silence: 'Silêncio', gravflip: 'Gravidade invertida', floaty: 'Flutuando', curse: 'Maldição', bleed: 'Sangramento', slowatk: 'Tempo lento' };
   for (const k in P.buffs) bf += `<span class="buff">${NM[k] || k} ${Math.ceil(P.buffs[k].t)}s</span>`; if (P.potionCd > 0) bf += `<span class="buff">Poção ${Math.ceil(P.potionCd)}s</span>`;
   if (bf !== G._bf) { $('buffs').innerHTML = bf; G._bf = bf; }
@@ -8418,7 +9359,7 @@ function renderArsenal() {
     body.appendChild(grid(swords.map(s => s.id), true));
     const note = document.createElement('div'); note.style.cssText = 'margin-top:10px;font-size:12px;color:var(--mut)'; note.textContent = cre ? 'Clique para pegar 1 espada. Passe o mouse para ver detalhes e receita.' : 'Passe o mouse sobre uma espada para ver atributos, mecânica e receita.'; body.appendChild(note);
   } else if (tab === 'items') {
-    const groups = [['Blocos', i => i.type === 'block' || i.type === 'wall'], ['Materiais', i => i.type === 'mat'], ['Ferramentas', i => i.type === 'pick'], ['Armaduras', i => i.type === 'armor'], ['Acessórios', i => i.type === 'acc'], ['Consumíveis e Invocações', i => i.type === 'use']];
+    const groups = [['Blocos', i => i.type === 'block' || i.type === 'wall'], ['Materiais', i => i.type === 'mat' && !/^or_/.test(i.id)], ['Minérios e barras', i => i.type === 'mat' && /^or_/.test(i.id)], ['Ferramentas', i => i.type === 'pick'], ['Armaduras', i => i.type === 'armor'], ['Acessórios (chefes)', i => i.type === 'acc' && String(i.id).indexOf('accx_') !== 0], ['Acessórios (conjuntos)', i => i.type === 'acc' && String(i.id).indexOf('accx_') === 0], ['Consumíveis e Invocações', i => i.type === 'use']];
     for (const [n, f] of groups) { const s = document.createElement('div'); s.className = 'sect'; s.textContent = n; body.appendChild(s); body.appendChild(grid(Object.keys(IT).filter(id => IT[id].type !== 'sword' && f(IT[id])), false)); }
   } else if (tab === 'enemies') {
     const row = document.createElement('div'); row.className = 'bar-row'; row.innerHTML = '<span style="font-size:12px;color:var(--mut)">Variante elemental (Hardmode):</span>';
@@ -8497,6 +9438,7 @@ function helpHTML() {
 <li><b>Tier 2</b>: platina, meteorito (ilhas do céu), Brasita do Inferno, gemas. Derrote o <b>Rei Slime</b> e o <b>Olho Colossal</b> (noite).</li>
 <li><b>Tier 3/4 (Hardmode)</b>: vá ao Inferno, use o <b>Boneco Infernal</b> contra o Guardião do Abismo. Surgem Cobalto, Paládio, Mithril, Orichalcum, Titânio, Adamantita e inimigos elementais que dropam Essências.</li>
 <li><b>Tier 5/6</b>: Fragmentos Celestes → Forja Celeste. Invoque o <b>Colosso Estelar</b> e forje as espadas míticas com o Núcleo Mítico.</li></ol>
+<p style="color:var(--mut);margin-top:10px">Equipamento: 1 armadura + <b>4 acessórios</b>. Cada peça tem uma passiva própria; peças da mesma <b>família</b> (Braseiro, Geada, Corisco, Maré, Raiz, Véu, Alvorada, Relojoaria, Vazio, Origem) ativam um <b>bônus de conjunto</b> com 2 e com 4 peças. Acessórios vêm dos chefes (um exclusivo por chefe) e das receitas de forja; armaduras são forjadas com os minérios da família. Acessórios que liberam <b>avanço</b> usam Shift.</p>
 <p style="color:var(--mut);margin-top:10px">Cores de raridade: <b style="color:#10b981">T1</b> <b style="color:#0284c7">T2</b> <b style="color:#7c3aed">T3</b> <b style="color:#d97706">T4</b> <b style="color:#dc2626">T5</b> <b style="color:#818cf8">T6</b>.</p>
 <div style="text-align:center;margin-top:12px"><button class="btn pri" id="help-close">Fechar</button></div>`;
 }
@@ -9456,8 +10398,9 @@ function sanitizeSave(raw) {
   if (!Array.isArray(Pp.inv) || Pp.inv.length !== INV_N) return bad('inventário inválido');
   const inv = []; for (const s of Pp.inv) { const c = cleanSlot(s); if (c === undefined) return bad('item inválido no inventário'); inv.push(c); }
   const eq = isO(Pp.equip) ? Pp.equip : {}, armor = cleanSlot(eq.armor, 'armor'); if (armor === undefined) return bad('armadura inválida');
-  const accIn = Array.isArray(eq.acc) ? eq.acc : [null, null, null]; if (accIn.length !== 3) return bad('acessórios inválidos');
+  const accIn = Array.isArray(eq.acc) ? eq.acc : []; if (accIn.length !== 3 && accIn.length !== 4) return bad('acessórios inválidos');
   const acc = accIn.map(s => cleanSlot(s, 'acc')); if (acc.includes(undefined)) return bad('acessório inválido');
+  while (acc.length < 4) acc.push(null);   /* saves antigos tinham 3 slots */
   const ns = raw.npcs === undefined ? [] : raw.npcs, npcs = [];
   if (!Array.isArray(ns) || ns.length > 100) return bad('NPCs inválidos');
   for (const n of ns) {
@@ -9732,7 +10675,7 @@ function finishLoad(sv) {
   const give = (id, n) => invAdd(id, n || 1);
   if (sv) {
     G.time = sv.time; G.day = sv.day; G.t = sv.t || 0; G.stage = sv.stage; G.flags = sv.flags; G.kills = sv.kills || 0; Object.assign(G.opts, sv.opts || {});
-    P.x = sv.P.x; P.y = sv.P.y; P.crystals = sv.P.crystals; P.inv = sv.P.inv; P.equip = sv.P.equip; P.sel = sv.P.sel || 0;
+    P.x = sv.P.x; P.y = sv.P.y; P.crystals = sv.P.crystals; P.inv = sv.P.inv; P.equip = normalizeEquip(sv.P.equip); P.sel = sv.P.sel || 0;
     for (const nd of sv.npcs || []) { const rm = { id: nd.home, cx: +nd.home.split(',')[0], cy: +nd.home.split(',')[1], minx: +nd.home.split(',')[0] - 3, maxx: +nd.home.split(',')[0] + 3 }; const n = spawnNpcQuiet(nd.type, rm); n.x = nd.x; n.y = nd.y; }
   } else if (G.mode === 'creative') { G.opts.god = false; give('pick_celestial'); give('s001'); give('s062'); give('s100'); give('s120'); give('s021'); give('s055'); give('torch', 99); give('potion3', 20); give('stone', 999); give('plank', 999); give('bench'); give('chest'); P.crystals = 15; }
   else { give('s001'); give('pick_copper'); give('torch', 12); give('potion1', 3); }

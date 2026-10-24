@@ -8,6 +8,7 @@ const ARM = 7;
 function atkSpeedMult(P) {
   let m = 1 + (P.buffs.haste ? P.buffs.haste.amt : 0) - (P.buffs.slowatk ? P.buffs.slowatk.amt : 0);
   const sw = P.cb.sw; if (sw) { const v = fxAll(sw, 'atkMult', P); if (v) m *= v; }
+  m *= gearAtkMult(P);
   return m;
 }
 function startSwing(P, sw, o) {
@@ -27,6 +28,7 @@ function startSwing(P, sw, o) {
     cb.cd = inst.cycle; cb.side = -cb.side; cb.count++; cb.swingT = Math.max(inst.dur, .15) + .1; cb.main = inst;
     sfx(sw.tierLevel >= 4 ? 'swing2' : 'swing');
     fxCall(sw, 'onSwing', P, inst, cb);
+    gearCall('onSwing', P, inst);
   }
   cb.inst.push(inst); return inst;
 }

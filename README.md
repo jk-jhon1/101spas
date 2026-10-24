@@ -19,6 +19,20 @@ Os tiers 1 a 6 vão do básico ao end-game; os tiers 7 a 10 são o pós-jogo, co
 
 Catálogo completo (com receitas): [`docs/catalogo_200_espadas.md`](docs/catalogo_200_espadas.md) e `.csv`.
 
+## Equipamento: 50 minérios, 50 armaduras e 50 acessórios
+
+Dez **famílias** — Braseiro, Geada, Corisco, Maré, Raiz, Véu, Alvorada, Relojoaria, Vazio e Origem —, cada uma com
+**5 minérios**, **5 armaduras** e **5 acessórios**. A armadura + acessórios da mesma família ativam um **bônus de conjunto**
+(2 peças: bônus pequeno; 4 peças: bônus completo). Você usa 1 armadura e **4 acessórios**.
+
+- **50 minérios** (e 50 barras): minerados por profundidade, do subterrâneo raso ao Inferno, com dureza de 2 a 14.
+- **5 picaretas novas** (poder 10 a 14), forjadas na Forja Celeste, destravam os minérios mais duros.
+- **50 armaduras** com passiva própria (não é só "+defesa"): incendeia, congela, devolve dano, renasce, executa…
+- **50 acessórios**, cada um com uma mecânica única: **45 vêm de chefes** (um exclusivo por chefe, inclusive os 4 clássicos)
+  e **5 são forjados** com os minérios novos.
+
+Catálogo do equipamento: [`docs/catalogo_equipamentos.md`](docs/catalogo_equipamentos.md).
+
 ---
 
 ## Capturas
@@ -145,7 +159,7 @@ casas válidas (sala fechada com paredes de fundo, luz, mesa/bancada, cadeira e 
 | **Melee**: arco θ0→θfinal em torno do ombro, direção (Cursor − Jogador), cursor do **mouse/analógico** | `09b_swing.js`: ombro como pivô, arco de ~143° centrado na mira, sentido alternado a cada golpe; Thrust/Beam usam a mesma direção. Mira por mouse ou por analógico direito (`15d_gamepad.js` converte a inclinação do analógico em um "cursor" no mundo) |
 | **Knockback** `F = normalize(Alvo−Jogador) × KB` com amortecimento por massa | `hitEnemy()` em `09_combat.js` (`F = KB·58 / (0,5+0,5·massa) · (1−resistência)`) |
 | **I-frames independentes** (jogador × inimigos) | Jogador: `P.inv_` dinâmico (0,55–1,1 s conforme o dano). Inimigos: imunidade **por fonte** (cada golpe/projétil guarda sua janela) — evita hits duplicados em colisões sobrepostas |
-| `DanoFinal = (DanoBase + ModAcessórios) × (1+CritMult) × ModResistência` | `hitEnemy()`: acessórios somam dano plano; crítico `×(1+CritMult)`; resistência `60/(60+defesa)` |
+| `DanoFinal = (DanoBase + ModAcessórios) × (1+CritMult) × ModResistência` | `hitEnemy()`: acessórios somam dano plano; crítico `×(1+CritMult)`; resistência `60/(60+defesa×(1−perfuração))`; execução `<15%` de vida multiplica por 1,5 |
 | Projéteis herdam **100% da direção do arco no ápice** | `shoot()` em `10_fx.js` dispara em `inst.aim` a partir de `inst.tip` no meio do arco |
 | **Inventário**: slots, IDs únicos, stack ≤ 999, metadados de raridade | 40 slots + 4 de equipamento; `STACK_MAX = 999`; `item.tier` define cor de borda/nome/tooltip (`TIERS` em `01_data.js`) |
 | **Tiers e cores** (T6 índigo/dourado) | `TIERS`: `#10b981 #0284c7 #7c3aed #d97706 #dc2626 #4f46e5` + brilho dourado no T6 |

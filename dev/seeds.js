@@ -1,11 +1,12 @@
 const fs = require('fs'), vm = require('vm');
-const files = ['00_util','01_data','02_world','03_worldgen','04_light'];
+const files = ['00_util','01_data','02_world','03_worldgen','04_light','08_phys','10b_gear_fx','11c_gear_x'];
 let code = files.map(f => fs.readFileSync(__dirname + '/../src/' + f + '.js', 'utf8')).join('\n;\n');
 code += `\n;globalThis.__api = { World, genWorld, TD, T, WW, WH, SOLID };`;
+// (08_phys traz o objeto G usado pelo gerador)
 const ctx = { console, Math, Date, Uint8Array, Int16Array, Float32Array, Set, Map, Array, Object, String, Number, JSON };
 ctx.globalThis = ctx; vm.createContext(ctx); vm.runInContext(code, ctx);
 const { World, genWorld, TD, T, WW, WH } = ctx.__api;
-const keys = ['obsidian','hellstone','meteorite','platinum','gold','silver','amber','frostcrystal','ruby','lifecrystal','chest','mushroom','thornbush','cactus','trunk','cloud'];
+const keys = ['obsidian','hellstone','meteorite','platinum','gold','silver','amber','frostcrystal','ruby','lifecrystal','chest','mushroom','thornbush','cactus','trunk','cloud','or_brasa_0','or_geada_4','or_vazio_2','or_origem_4'];
 for (const seed of [1, 2, 3, 99, 2024, 31337, 777, 12345]) {
   const t0 = Date.now(), wd = new World(WW, WH, seed); for (const _ of genWorld(wd, seed)) { }
   const cnt = {}; for (let i = 0; i < wd.t.length; i++) cnt[wd.t[i]] = (cnt[wd.t[i]] || 0) + 1;

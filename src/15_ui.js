@@ -88,6 +88,12 @@ function tipHTML(id, o) {
     h += `<div class="ts">${TYPE_PT[it.type] || ''}${it.tier ? ' · ' + T_.n : ''}</div>`;
     if (it.type === 'pick') h += `<div class="st2"><span>Poder</span><b>${it.pow}</b><span>Velocidade</span><b>${it.spd.toFixed(2)}x</b></div>`;
     if (it.type === 'armor') h += `<div class="st2"><span>Defesa</span><b>+${it.def}</b></div>`;
+    if (it.fam && GFAM[it.fam]) {
+      const n = G.P ? gearSetCount(G.P, it.fam) : 0;
+      h += `<div class="ts" style="color:${GFAM[it.fam].col}">Conjunto ${GFAM[it.fam].n} · ${GFAM[it.fam].desc}</div>`;
+      if (n) h += `<div class="rcp">Peças equipadas: <b>${n}</b>${n >= 4 ? ' · bônus máximo ativo' : n >= 2 ? ' · bônus de 2 peças ativo' : ''}</div>`;
+    }
+    const src = gearSourceText(it.id); if (src) h += `<div class="rcp">${src}</div>`;
     if (it.desc) h += `<div class="mech">${escHtml(it.desc)}</div>`;
     if (!(o && o.noRecipe)) { const rt = recipeText(id); if (rt) h += `<div class="rcp">${rt}</div>`; }
   }
@@ -109,7 +115,7 @@ function buildSlotsUI() {
   const gr = $('inv-grid'); gr.innerHTML = ''; invEls = [];
   for (let i = 0; i < INV_N; i++) { const el = mkSlot('inv', i); gr.appendChild(el); invEls.push(el); }
   const eq = $('equip-row'); eq.innerHTML = '<span class="lbl">Equipamento:</span>'; eqEls = [];
-  const a = mkSlot('armor', 0); eq.appendChild(a); eqEls.push(['armor', 0, a]); for (let i = 0; i < 3; i++) { const e = mkSlot('acc', i); eq.appendChild(e); eqEls.push(['acc', i, e]); }
+  const a = mkSlot('armor', 0); eq.appendChild(a); eqEls.push(['armor', 0, a]); for (let i = 0; i < 4; i++) { const e = mkSlot('acc', i); eq.appendChild(e); eqEls.push(['acc', i, e]); }
   const tr = mkSlot('trash', 0); eq.appendChild(tr); const tl = document.createElement('span'); tl.className = 'lbl'; tl.textContent = '← lixeira'; eq.appendChild(tl);
   tr.addEventListener('mouseenter', ev => showTip('<div class="tn">Lixeira</div><div class="mech">Solte aqui o item que está no cursor para destruí-lo.</div>', ev));
   const cg = $('chest-grid'); cg.innerHTML = ''; chestEls = []; for (let i = 0; i < 20; i++) { const el = mkSlot('chest', i); cg.appendChild(el); chestEls.push(el); }
@@ -145,7 +151,8 @@ function refreshHUD() {
   const hp = Math.max(0, Math.ceil(P.hp)), f = clamp(P.hp / P.maxHp, 0, 1); $('hp-fill').style.width = (f * 100) + '%'; $('hp-txt').textContent = 'Vida: ' + hp + '/' + P.maxHp; drawHearts(P);
   const sh = P.buffs.shield; $('hp-shield').style.width = sh ? Math.min(100, sh.hp / P.maxHp * 100) + '%' : '0'; $('hp-bar').style.display = sh ? 'block' : 'none';
   const sw = heldSword(), st = P.stats;
-  $('stat-row').innerHTML = `<span>Defesa <b>${st.def}</b></span><span>Dano+ <b>${st.dmg}</b></span><span>Crít <b>${Math.round((st.crit + (sw ? sw.critChance : 0)) * 100)}%</b></span><span>Moedas <b>${invCount('coin')}</b></span>`;
+  $('stat-row').innerHTML = `<span>Defesa <b>${st.def}</b></span><span>Dano+ <b>${st.dmg}</b></span><span>Crít <b>${Math.round((st.crit + (sw ? sw.critChance : 0)) * 100)}%</b></span><span>Moedas <b>${invCount('coin')}</b></span>`
+    + (P.sets && P.sets.length ? `<span style="color:#c7d2fe">Conjuntos <b>${P.sets.map(x => GFAM[x.fam] ? GFAM[x.fam].n + ' (' + x.n + ')' : x.fam).join(', ')}</b></span>` : '');
   let bf = ''; const NM = { regen: 'Regeneração', speed: 'Velocidade', shield: 'Escudo', invuln: 'Invulnerável', invis: 'Invisível', haste: 'Rapidez', slow: 'Lentidão', confuse: 'Confusão', stun: 'Atordoado', silence: 'Silêncio', gravflip: 'Gravidade invertida', floaty: 'Flutuando', curse: 'Maldição', bleed: 'Sangramento', slowatk: 'Tempo lento' };
   for (const k in P.buffs) bf += `<span class="buff">${NM[k] || k} ${Math.ceil(P.buffs[k].t)}s</span>`; if (P.potionCd > 0) bf += `<span class="buff">Poção ${Math.ceil(P.potionCd)}s</span>`;
   if (bf !== G._bf) { $('buffs').innerHTML = bf; G._bf = bf; }
@@ -213,7 +220,7 @@ function renderArsenal() {
     body.appendChild(grid(swords.map(s => s.id), true));
     const note = document.createElement('div'); note.style.cssText = 'margin-top:10px;font-size:12px;color:var(--mut)'; note.textContent = cre ? 'Clique para pegar 1 espada. Passe o mouse para ver detalhes e receita.' : 'Passe o mouse sobre uma espada para ver atributos, mecânica e receita.'; body.appendChild(note);
   } else if (tab === 'items') {
-    const groups = [['Blocos', i => i.type === 'block' || i.type === 'wall'], ['Materiais', i => i.type === 'mat'], ['Ferramentas', i => i.type === 'pick'], ['Armaduras', i => i.type === 'armor'], ['Acessórios', i => i.type === 'acc'], ['Consumíveis e Invocações', i => i.type === 'use']];
+    const groups = [['Blocos', i => i.type === 'block' || i.type === 'wall'], ['Materiais', i => i.type === 'mat' && !/^or_/.test(i.id)], ['Minérios e barras', i => i.type === 'mat' && /^or_/.test(i.id)], ['Ferramentas', i => i.type === 'pick'], ['Armaduras', i => i.type === 'armor'], ['Acessórios (chefes)', i => i.type === 'acc' && String(i.id).indexOf('accx_') !== 0], ['Acessórios (conjuntos)', i => i.type === 'acc' && String(i.id).indexOf('accx_') === 0], ['Consumíveis e Invocações', i => i.type === 'use']];
     for (const [n, f] of groups) { const s = document.createElement('div'); s.className = 'sect'; s.textContent = n; body.appendChild(s); body.appendChild(grid(Object.keys(IT).filter(id => IT[id].type !== 'sword' && f(IT[id])), false)); }
   } else if (tab === 'enemies') {
     const row = document.createElement('div'); row.className = 'bar-row'; row.innerHTML = '<span style="font-size:12px;color:var(--mut)">Variante elemental (Hardmode):</span>';
@@ -292,6 +299,7 @@ function helpHTML() {
 <li><b>Tier 2</b>: platina, meteorito (ilhas do céu), Brasita do Inferno, gemas. Derrote o <b>Rei Slime</b> e o <b>Olho Colossal</b> (noite).</li>
 <li><b>Tier 3/4 (Hardmode)</b>: vá ao Inferno, use o <b>Boneco Infernal</b> contra o Guardião do Abismo. Surgem Cobalto, Paládio, Mithril, Orichalcum, Titânio, Adamantita e inimigos elementais que dropam Essências.</li>
 <li><b>Tier 5/6</b>: Fragmentos Celestes → Forja Celeste. Invoque o <b>Colosso Estelar</b> e forje as espadas míticas com o Núcleo Mítico.</li></ol>
+<p style="color:var(--mut);margin-top:10px">Equipamento: 1 armadura + <b>4 acessórios</b>. Cada peça tem uma passiva própria; peças da mesma <b>família</b> (Braseiro, Geada, Corisco, Maré, Raiz, Véu, Alvorada, Relojoaria, Vazio, Origem) ativam um <b>bônus de conjunto</b> com 2 e com 4 peças. Acessórios vêm dos chefes (um exclusivo por chefe) e das receitas de forja; armaduras são forjadas com os minérios da família. Acessórios que liberam <b>avanço</b> usam Shift.</p>
 <p style="color:var(--mut);margin-top:10px">Cores de raridade: <b style="color:#10b981">T1</b> <b style="color:#0284c7">T2</b> <b style="color:#7c3aed">T3</b> <b style="color:#d97706">T4</b> <b style="color:#dc2626">T5</b> <b style="color:#818cf8">T6</b>.</p>
 <div style="text-align:center;margin-top:12px"><button class="btn pri" id="help-close">Fechar</button></div>`;
 }
