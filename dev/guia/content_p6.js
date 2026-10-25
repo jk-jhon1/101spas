@@ -123,6 +123,7 @@ function part6(d, o) {
     ['Criador e desenvolvedor', '**Jhon Maklayn Mozer dos Santo** — sozinho: programação, arte, dados, textos e testes.'],
     ['Jogo', 'Espadas Do Destino — sandbox 2D de plataforma, exploração, mineração e combate.'],
     ['Onde roda', 'No navegador (um único index.html), sem instalar nada; teclado, controle ou toque.'],
+    ['Som', 'Música de fundo **Alert at Rest** (docs/Alert at Rest.mp3), em loop, e efeitos sintetizados; liga/desliga no botão de som do menu ou em Pausado → Som.'],
     ['Conteúdo', '200 espadas em 10 tiers, 94 chefes em 6 atos + 4 da progressão, 433 receitas, 628 itens, 50 minérios, 50 armaduras, 50 acessórios, 14 picaretas e 429 conquistas.'],
     ['Este guia', '113 páginas, gerado a partir do código do próprio jogo (as tabelas, os ícones e os retratos saem do jogo).'],
     ['Créditos', 'Todos os textos, os sistemas, a arte em pixel-art e este guia: Jhon Maklayn Mozer dos Santo.'],
