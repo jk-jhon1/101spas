@@ -13,6 +13,17 @@ documento **"GDD & MASTER PROMPT: SANDBOX 2D PLATFORMER"** (PDF enviado).
 
 ---
 
+## Prompt do jogo em PDF — "Chicotes do Destino"
+
+O prompt completo para recriar este jogo trocando a arma central: **200 chicotes em 10 tiers**. São **11 partes em
+13 páginas** — identidade, as **7 mecânicas obrigatórias** do chicote, stack, os números fechados (200 chicotes,
+94 chefes, 433 receitas, 628 itens e 429 conquistas), os 10 tiers, a curva de dano, a nomenclatura, os chefes,
+as conquistas com os 12 segredos mascarados, a interface e os critérios de aceite com o prompt curto para colar.
+
+[`docs/chicotes_do_destino_prompt.pdf`](docs/chicotes_do_destino_prompt.pdf) · gerado por `node dev/pdf/prompt.js`
+
+> **Baixar direto:** **https://jk-jhon1.github.io/101spas/docs/chicotes_do_destino_prompt.pdf**
+
 ## Catálogo de espadas
 
 **200 espadas** em 10 tiers — 20 por tier —, cada uma com nome, atributos, mecânica e receita próprios.
@@ -254,7 +265,7 @@ src/
   15g_touch.js          controles de toque: direcional virtual, botão de ação com mira por arrasto, pulo, interagir, painéis
   15h_ach.js            conquistas: 429 registradas (200 de espada e 94 de chefe geradas das tabelas), painel com abas, aviso, perfil no navegador e saneamento na importação
   16_main.js            loop, câmera, renderização em camadas (cena em baixa resolução + zoom inteiro), input
-docs/                 catálogo de 200 espadas e dos equipamentos (md/csv), capturas de tela (img/), logo (img/logo.jpg) e a música do jogo (Alert at Rest.mp3)
+docs/                 catálogo de 200 espadas e dos equipamentos (md/csv), capturas de tela (img/), logo (img/logo.jpg), a música do jogo (Alert at Rest.mp3) e o prompt do jogo em PDF (chicotes_do_destino_prompt.pdf)
 dev/                  scripts de teste (Node + Playwright)
 ```
 
