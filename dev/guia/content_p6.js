@@ -113,7 +113,7 @@ function part6(d, o) {
 
   d.h2('A.2', 'Sobre o jogo e o criador', { mark: 'sa2', parent: 'p7' });
   d.para('Este guia foi gerado **a partir do próprio jogo**: as tabelas (espadas, receitas, chefes, inimigos, itens e conquistas) saem do código-fonte, e as imagens (ícones, sprites dos chefes e telas) foram feitas no jogo de verdade. Por isso os números batem com a versão publicada.');
-  d.para(`A versão deste guia é a **${o.version || '5f149fb'}** do repositório, com 200 espadas, 94 chefes, 433 receitas, 628 itens e 429 conquistas. O jogo não tem música (só efeitos sonoros sintetizados) e não tem multiplayer.`);
+  d.para(`A versão deste guia é a **${o.version || '5f149fb'}** do repositório, com 200 espadas, 94 chefes, 433 receitas, 628 itens e 429 conquistas. A música de fundo é a faixa **Alert at Rest** (arquivo "Alert at Rest.mp3", na pasta docs), em loop, somada aos efeitos sonoros sintetizados; dá para desligar tudo no botão de som do menu ou em **Pausado → Som**. O jogo não tem multiplayer.`);
   d.creditBox('JHON MAKLAYN MOZER DOS SANTO', 'Criado e desenvolvido por', [
     '**Espadas Do Destino** foi idealizado, programado, desenhado e escrito **inteiramente por Jhon Maklayn Mozer dos Santo, sozinho** — do motor do jogo à arte em pixel-art, das 200 espadas aos 94 chefes, das 429 conquistas a este guia.',
     'Cada sistema do jogo (mundo, luz, combate, criação, chefes, conquistas, salvamento) e cada peça visual saíram das mãos dele. Nada aqui foi feito por uma equipe: é o trabalho de uma pessoa só, do começo ao fim.',

@@ -6,7 +6,8 @@ documento **"GDD & MASTER PROMPT: SANDBOX 2D PLATFORMER"** (PDF enviado).
 > **Jogar online:** **https://jk-jhon1.github.io/101spas/** — direto no navegador, sem instalar nada.
 >
 > **Offline:** abra o arquivo **`index.html`** num navegador moderno (Chrome, Edge, Firefox, Safari). É um único
-> arquivo autocontido — sem instalação, sem internet, sem assets externos. Use teclado + mouse, um controle (gamepad) com mira analógica, ou **toque** (celular/tablet: direcional virtual e botão de ação com mira por arrasto).
+> arquivo autocontido — sem instalação e sem internet. A única coisa externa é a música de fundo (`docs/Alert at Rest.mp3`):
+> se ela não estiver ao lado do `index.html`, o jogo abre e joga normalmente, só sem música. Use teclado + mouse, um controle (gamepad) com mira analógica, ou **toque** (celular/tablet: direcional virtual e botão de ação com mira por arrasto).
 >
 > **Visual:** o jogo inteiro segue o estilo pixel-art do *Terraria mobile*: céu com nuvens e colinas de pixels, árvores com tronco de casca marcada, galhos e **copas redondas de folhas pontiagudas sobrepostas, com contorno escuro** (desenhadas por vizinhança em `05c_canopy.js`), tijolos chanfrados, paredes de toras, portas com almofadas, personagens de frente com dois olhos, cabelo, roupa e botas, itens e inimigos com contorno e luz vinda de cima à esquerda. Os **94 chefes** (os 4 originais e **90 novos**, cada um com visual e mecânica únicos) têm sprites próprios, pintados quadro a quadro (`05d_bosspaint.js`, `05e_bossart.js`, `05f..05l_bxart*.js`): corpo escuro e um brilho forte de uma cor para cada um (ciano, carmesim, brasa, ouro), com halo semitransparente que também soma luz no escuro, íris que acompanha o jogador, lanterna que balança e rachaduras que aparecem nas fases. A **interface** (painéis, abas, botões, balões, barra de itens na parte inferior, corações de pixel pequenos e controles de toque) é toda no **azul do Terraria mobile**. A cena é desenhada em baixa resolução (1 pixel do mundo = 1 pixel do canvas) e ampliada por um fator **inteiro** sem suavização, então os pixels ficam quadrados e nítidos em qualquer tela.
 
@@ -131,7 +132,7 @@ Multitoque funciona (andar e atacar ao mesmo tempo). O código está em `src/15g
 
 - **GitHub Pages (este repositório):** já ativado — o jogo está em `https://jk-jhon1.github.io/101spas/`. Para ativar numa cópia/fork: *Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch `main`, pasta `/ (root)` → Save* (em 1–2 minutos o jogo fica em `https://SEU_USUARIO.github.io/NOME_DO_REPO/`). O `index.html` já está na raiz e o arquivo `.nojekyll` dispensa o processamento do Jekyll.
 - **Local:** `node serve.js` (ou `npm run serve`) abre o jogo em `http://localhost:8080/` (servido por http, o salvamento e o controle funcionam em qualquer navegador).
-- **Outras hospedagens:** o jogo é um único `index.html`; qualquer hospedagem estática serve — por exemplo **itch.io** (*Kind of project: HTML*, envie um `.zip` com o `index.html` na raiz e marque *"This file will be played in the browser"*) ou **Netlify Drop** (`netlify.com/drop`, arraste a pasta; crie uma conta gratuita para o site não expirar).
+- **Outras hospedagens:** o jogo é um único `index.html`; qualquer hospedagem estática serve — por exemplo **itch.io** (*Kind of project: HTML*, envie um `.zip` com o `index.html` na raiz **e a pasta `docs/` com `Alert at Rest.mp3`**, e marque *"This file will be played in the browser"*) ou **Netlify Drop** (`netlify.com/drop`, arraste a pasta; crie uma conta gratuita para o site não expirar). Sem o MP3 o jogo funciona, mas fica sem a música.
 
 ### Controle (gamepad) — mira analógica
 
@@ -253,7 +254,7 @@ src/
   15g_touch.js          controles de toque: direcional virtual, botão de ação com mira por arrasto, pulo, interagir, painéis
   15h_ach.js            conquistas: 429 registradas (200 de espada e 94 de chefe geradas das tabelas), painel com abas, aviso, perfil no navegador e saneamento na importação
   16_main.js            loop, câmera, renderização em camadas (cena em baixa resolução + zoom inteiro), input
-docs/                 catálogo de 200 espadas e dos equipamentos (md/csv) e capturas de tela (img/)
+docs/                 catálogo de 200 espadas e dos equipamentos (md/csv), capturas de tela (img/), logo (img/logo.jpg) e a música do jogo (Alert at Rest.mp3)
 dev/                  scripts de teste (Node + Playwright)
 ```
 
@@ -295,7 +296,7 @@ Os dados (tiles, itens, receitas, 200 espadas) estão em tabelas simples, fácei
 - **Controle** (`dev/test_gamepad.js`, gamepad simulado, 80 verificações): menus, andar/pular, ângulo real do arco para ↑ → ← ↖ ↘, distância pela inclinação, acerto de inimigo só na direção da mira, minerar/colocar bloco, interagir, mundos salvos (Continuar, Meus Mundos, Jogar, Y exclui), cursor virtual (hover, clique, craft, comprar do NPC), pausa/guia, volta do mouse e API bloqueada.
 
 ## Limitações conhecidas
-- Sem música (apenas efeitos sonoros sintetizados); sem multiplayer. O suporte a controle foi validado com gamepad simulado e o de toque com eventos de toque emulados (não com hardware real); o som só liga após o primeiro clique/tecla/botão, regra dos navegadores.
+- Música de fundo **Alert at Rest** (`docs/Alert at Rest.mp3`) em loop, mais os efeitos sonoros sintetizados; liga/desliga no botão de som do menu ou em **Pausado → Som**. Sem multiplayer. O suporte a controle foi validado com gamepad simulado e o de toque com eventos de toque emulados (não com hardware real); o som só liga após o primeiro clique/tecla/botão, regra dos navegadores.
 - Mundo de tamanho fixo (1400×480). Os mundos salvos ficam no IndexedDB do navegador (não funciona dentro de iframes *sandbox*: lá duram só a sessão; abra o HTML direto no navegador ou por http) e não são sincronizados automaticamente entre aparelhos: use *Exportar* / *Importar mapa* (ver acima). Os navegadores podem apagar dados de sites em casos extremos — o Safari (iPhone, iPad e Mac), por exemplo, limpa os de sites que ficam cerca de uma semana sem uso —, então guarde um backup com *Exportar* dos mapas que importam. Painéis de pré-visualização (iframe *sandbox*) bloqueiam o armazenamento e também o download.
 - Balanceamento de chefes/drops validado por simulação, mas não por playtest humano extenso — ajuste os números em `13_enemies.js` / `11_swords.js` se quiser.
 - As espadas dos tiers 2, 4 e 6 foram escritas para completar o catálogo; ajustar qualquer uma é só editar a linha em `src/11_swords.js` e rodar `node build.js`.

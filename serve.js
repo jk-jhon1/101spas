@@ -21,6 +21,8 @@ const TYPES = {
   '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.ico': 'image/x-icon',
+  '.pdf': 'application/pdf',   // guia do jogo abre no navegador
+  '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.m4a': 'audio/mp4',   // música do jogo (docs/Alert at Rest.mp3)
 };
 const HEADERS = { 'Cache-Control': 'no-cache' };   // sempre a versão mais recente do jogo
 
@@ -73,12 +75,27 @@ const server = http.createServer((req, res) => {
       return res.end(req.method === 'HEAD' ? undefined : html);
     }
   }
-  res.writeHead(200, {
+  const base = {
     ...HEADERS,
     'Content-Type': TYPES[path.extname(r.file).toLowerCase()] || 'application/octet-stream',
-    'Content-Length': st.size,
+    'Accept-Ranges': 'bytes',
     'Last-Modified': st.mtime.toUTCString(),
-  });
+  };
+  // Range (bytes=início-fim): usado pelo <audio> para tocar e avançar o MP3 sem baixar tudo de novo
+  const m = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range || '').trim());
+  if (m && !(m[1] === '' && m[2] === '')) {
+    let start, end;
+    if (m[1] === '') { const n = Number(m[2]); start = Math.max(0, st.size - n); end = st.size - 1; }
+    else { start = Number(m[1]); end = m[2] === '' ? st.size - 1 : Math.min(Number(m[2]), st.size - 1); }
+    if (!Number.isFinite(start) || !Number.isFinite(end) || start > end || start >= st.size) {
+      res.writeHead(416, { ...HEADERS, 'Content-Range': `bytes */${st.size}` });
+      return res.end();
+    }
+    res.writeHead(206, { ...base, 'Content-Range': `bytes ${start}-${end}/${st.size}`, 'Content-Length': end - start + 1 });
+    if (req.method === 'HEAD') return res.end();
+    return fs.createReadStream(r.file, { start, end }).on('error', () => res.destroy()).pipe(res);
+  }
+  res.writeHead(200, { ...base, 'Content-Length': st.size });
   if (req.method === 'HEAD') return res.end();
   fs.createReadStream(r.file).on('error', () => res.destroy()).pipe(res);
 });
@@ -93,5 +110,5 @@ server.on('error', (e) => {
   process.exit(1);
 });
 server.listen(porta, '0.0.0.0', () => {
-  console.log(`120 Espadas em http://localhost:${porta}/   (Ctrl+C para parar)`);
+  console.log(`Espadas Do Destino em http://localhost:${porta}/   (Ctrl+C para parar)`);
 });

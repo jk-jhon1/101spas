@@ -1,19 +1,46 @@
 /* ============================================================
-   08b_audio: efeitos sonoros sintetizados (WebAudio, sem arquivos)
+   08b_audio: efeitos sonoros sintetizados (WebAudio) + música de fundo em MP3, em loop
    ============================================================ */
 const Snd = {
   ctx: null, master: null, muted: false, vol: .5, last: {}, nbuf: null,
+  // música de fundo: arquivo MP3 em loop (docs/Alert at Rest.mp3)
+  music: null, musicDead: false, musicVol: .55, musicSrc: 'docs/Alert%20at%20Rest.mp3', musicWired: false,
   init() {
-    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); this.musicStart(); return; }
     try {
-      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) { this.musicStart(); return; }
       this.ctx = new AC(); const comp = this.ctx.createDynamicsCompressor(); this.master = this.ctx.createGain(); this.master.gain.value = this.vol;
       this.master.connect(comp); comp.connect(this.ctx.destination);
       const n = this.ctx.sampleRate * 1; this.nbuf = this.ctx.createBuffer(1, n, this.ctx.sampleRate); const d = this.nbuf.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
     } catch (e) { this.ctx = null; }
+    this.musicStart();
   },
-  setVol(v) { this.vol = v; if (this.master) this.master.gain.value = this.muted ? 0 : v; },
-  mute(m) { this.muted = m; if (this.master) this.master.gain.value = m ? 0 : this.vol; },
+  // nível da música (0..1) já considerando o volume geral e o mudo
+  musicLevel() { return this.muted ? 0 : Math.max(0, Math.min(1, this.vol * this.musicVol)); },
+  musicStart() {
+    if (!this.music && !this.musicDead) {
+      try {
+        const a = new Audio();
+        a.src = this.musicSrc; a.loop = true; a.preload = 'auto'; a.volume = this.musicLevel();
+        a.setAttribute('playsinline', ''); a.addEventListener('error', () => { this.musicDead = true; this.music = null; });
+        this.music = a;
+      } catch (e) { this.musicDead = true; this.music = null; }
+    }
+    if (!this.musicWired && typeof document !== 'undefined' && this.music) {
+      this.musicWired = true;
+      // não deixa a música tocando com a aba escondida
+      document.addEventListener('visibilitychange', () => { if (this.music) { if (document.hidden) this.music.pause(); else this.musicSync(); } });
+    }
+    this.musicSync();
+  },
+  musicSync() {
+    const a = this.music; if (!a) return;
+    a.volume = this.musicLevel();
+    if (this.muted) { if (!a.paused) a.pause(); }
+    else if (a.paused) { const p = a.play(); if (p && p.catch) p.catch(() => { }); }
+  },
+  setVol(v) { this.vol = v; if (this.master) this.master.gain.value = this.muted ? 0 : v; this.musicSync(); },
+  mute(m) { this.muted = m; if (this.master) this.master.gain.value = m ? 0 : this.vol; this.musicSync(); },
   tone(f, dur, type = 'square', vol = .15, to = 0, delay = 0) {
     if (!this.ctx || this.muted) return; const c = this.ctx, t = c.currentTime + delay;
     const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if (to) o.frequency.exponentialRampToValueAtTime(Math.max(20, to), t + dur);

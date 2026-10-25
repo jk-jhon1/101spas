@@ -65,7 +65,7 @@ function tocEntries(d) {
 (async () => {
   const ver = gitVer(), dt = dataPt();
   const indexBytes = fs.existsSync(path.join(ROOT, 'index.html')) ? fs.statSync(path.join(ROOT, 'index.html')).size : 0;
-  await A.preload(['01_menu.png', '02_combate.png', '03_biomas_e_camadas.png', '04_arco_de_ataque.png',
+  await A.preload(['logo.jpg', '01_menu.png', '02_combate.png', '03_biomas_e_camadas.png', '04_arco_de_ataque.png',
     '05_efeitos_tier4.png', '06_efeitos_tier5_6.png', '07_interface.png', '10_meus_mundos.png',
     '12_chefes.png', '13_chefes_novos.png']);
 
@@ -78,6 +78,7 @@ function tocEntries(d) {
     tiers: X.TIERS,
     swordRow,
     shot: '02_combate.png',
+    logo: 'logo.jpg',
     stats: [['200', 'espadas'], ['94', 'chefes'], ['429', 'conquistas'], ['628', 'itens']],
     tagline: 'Guia completo · 10 tiers · 6 atos · do primeiro tronco à Apoteose',
     credit: 'Jhon Maklayn Mozer dos Santo',

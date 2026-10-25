@@ -54,7 +54,11 @@ window.addEventListener('mousemove', e => { G.mouse.sx = e.clientX; G.mouse.sy =
 window.addEventListener('contextmenu', e => e.preventDefault());
 window.addEventListener('wheel', e => { if (G.state !== 'play' || G.paused || G.ui.open) return; const P = G.P; P.sel = (P.sel + (e.deltaY > 0 ? 1 : 9)) % 10; G.invChanged = true; e.preventDefault(); }, { passive: false });
 window.addEventListener('resize', resize);
-function setPause(p) { G.paused = p; $('pause-world').textContent = G.worldName || ''; $('pause').classList.toggle('hidden', !p); G.mouse.down = [false, false, false]; if (p) closePanels(true); else showAch(false); setBlocking(); G.ui.blocking = G.ui.blocking || p; }
+function soundUI() {
+  const p = $('p-sound'); if (p) p.textContent = 'Som: ' + (Snd.muted ? 'desligado' : 'ligado');
+  const m = $('music-toggle'); if (m) { m.classList.toggle('off', Snd.muted); m.title = Snd.muted ? 'Música desligada' : 'Música ligada'; }
+}
+function setPause(p) { if (p) soundUI(); G.paused = p; $('pause-world').textContent = G.worldName || ''; $('pause').classList.toggle('hidden', !p); G.mouse.down = [false, false, false]; if (p) closePanels(true); else showAch(false); setBlocking(); G.ui.blocking = G.ui.blocking || p; }
 
 // ---------- geração assíncrona + início ----------
 function resetGameState(mode) {
@@ -273,7 +277,14 @@ function initGame() {
   $('btn-ach').onclick = () => showAch(true); $('p-ach').onclick = () => showAch(true);   // as duas entradas exigidas: menu e pausa
   achLabels();
   $('p-resume').onclick = () => setPause(false); $('p-help').onclick = () => showHelp(true);
-  $('p-sound').onclick = () => { Snd.mute(!Snd.muted); $('p-sound').textContent = 'Som: ' + (Snd.muted ? 'desligado' : 'ligado'); };
+  $('p-sound').onclick = () => { Snd.mute(!Snd.muted); soundUI(); };
+  const mt = $('music-toggle');
+  if (mt) mt.onclick = (e) => { e.stopPropagation(); Snd.init(); Snd.mute(!Snd.muted); soundUI(); };
+  soundUI();
+  // a música (arquivo MP3) só pode começar depois de um gesto do usuário — regra dos navegadores
+  const firstGesture = () => { try { Snd.init(); } catch (e) { } };
+  window.addEventListener('pointerdown', firstGesture, { once: true });
+  window.addEventListener('keydown', firstGesture, { once: true });
   requestAnimationFrame(frame);
 }
 initGame();

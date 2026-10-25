@@ -19,8 +19,12 @@ const js = files.map((f) => `/* ===== ${f} ===== */\n` + read(f)).join('\n;\n');
 const css = read('style.css');
 const tpl = read('template.html');
 
+// ícone da aba embutido como data URI (mantém o index.html autocontido, sem arquivos externos)
+const b64 = (f, mime) => `data:${mime};base64,` + fs.readFileSync(path.join(src, f)).toString('base64');
+
 let html = replaceAll(tpl, '/*__STYLE__*/', css);
 html = replaceAll(html, '/*__SCRIPT__*/', replaceAll(js, '</script>', '<\\/script>'));
+html = replaceAll(html, '__ICON__', b64('logo_icon.png', 'image/png'));
 
 const out = path.join(root, 'index.html');
 fs.writeFileSync(out, html, 'utf8');

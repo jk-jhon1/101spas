@@ -233,40 +233,40 @@ function cover(o) {
     g.fillStyle = 'rgba(210,225,255,' + (.25 + rnd(i + 77) * .65).toFixed(2) + ')'; g.fillRect(Math.round(x), Math.round(y), s, s);
   }
 
-  // título em pixel-art
+  // logo do jogo (arte oficial escolhida) em destaque no topo
   g.textAlign = 'left';
   for (let i = 0; i < 5; i++) { g.fillStyle = 'rgba(120,160,255,' + (.05 - i * .008) + ')'; g.fillRect(0, 96 + i, W, 1); }
-  pixelText(g, 'GUIA COMPLETO DO JOGO', Math.round((W - pixelWidth('GUIA COMPLETO DO JOGO', 5, 2)) / 2), 150, 5, '#ffd447', {});
-  const t1 = 'ESPADAS', t2 = 'DO DESTINO';
-  const fitPx = (text, maxW) => Math.max(4, Math.floor(maxW / ((5 + 1) * [...text].length - 1)));
-  const glow = (text, y, maxW) => {
-    const px = fitPx(text, maxW);
-    const x0 = Math.round((W - pixelWidth(text, px, 1)) / 2);
-    for (const [dx, dy, col] of [[-4, 0, 'rgba(255,170,20,.16)'], [4, 0, 'rgba(255,170,20,.16)'], [0, -4, 'rgba(255,170,20,.16)'], [0, 4, 'rgba(255,170,20,.16)'], [-8, -8, 'rgba(255,140,0,.10)'], [8, 8, 'rgba(255,140,0,.10)']]) {
-      pixelText(g, text, x0 + dx, y + dy, px, col, {});
-    }
-    pixelText(g, text, x0, y, px, '#ffc21a', { shadow: '#8a4600', outline: '#5c2a00' });
-    return 7 * px;
-  };
-  const h1 = glow(t1, 226, W - 260);
-  const h2 = glow(t2, 226 + h1 + 26, W - 200);
-  pixelText(g, 'SANDBOX 2D PLATFORMER', Math.round((W - pixelWidth('SANDBOX 2D PLATFORMER', 5, 3)) / 2), 226 + h1 + h2 + 82, 5, '#9db9f2', {});
+  const logoImg = loadImg(o.logo || 'logo.jpg');
+  const LS = 540, lx = Math.round((W - LS) / 2), ly = 64;
+  const halo = g.createRadialGradient(W / 2, ly + LS / 2, LS * .18, W / 2, ly + LS / 2, LS * 1.0);
+  halo.addColorStop(0, 'rgba(255,150,50,.28)'); halo.addColorStop(.55, 'rgba(255,90,20,.10)'); halo.addColorStop(1, 'rgba(255,90,20,0)');
+  g.fillStyle = halo; g.fillRect(0, 0, W, ly + LS + 170);
+  if (logoImg) {
+    g.save(); g.shadowColor = 'rgba(0,0,0,.7)'; g.shadowBlur = 36; g.fillStyle = '#0a0709';
+    g.fillRect(lx - 12, ly - 12, LS + 24, LS + 24); g.restore();
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    g.drawImage(logoImg, lx, ly, LS, LS);
+    g.strokeStyle = '#f5c445'; g.lineWidth = 5; g.strokeRect(lx - 2.5, ly - 2.5, LS + 5, LS + 5);
+  }
+  // etiqueta do guia
+  const labY = ly + LS + 30;
+  pixelText(g, 'GUIA COMPLETO DO JOGO', Math.round((W - pixelWidth('GUIA COMPLETO DO JOGO', 5, 2)) / 2), labY, 5, '#ffd447', {});
 
   // barras dos 10 tiers
   const cols = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(k => o.tiers[k].col);
   const bw = Math.round(W * .52 / cols.length) - 12;
   let bx = Math.round((W - (bw + 12) * cols.length) / 2);
-  const barY = 226 + h1 + h2 + 118;
+  const barY = labY + 62;
   cols.forEach(col => { g.fillStyle = col; g.fillRect(bx, barY, bw, 14); bx += bw + 12; });
 
   // fileira de espadas (amostra dos 10 tiers)
   const row = o.swordRow;
-  const cell = 104, y0 = barY + 40;
+  const cell = 96, y0 = barY + 44;
   let x0 = Math.round((W - cell * row.length) / 2);
   row.forEach(s => { const ic = X.iconCanvas(s.id); g.drawImage(ic, x0, y0, cell, cell); x0 += cell; });
 
   // moldura do screenshot
-  const fx = 92, fy = y0 + cell + 34, fw = W - 184, fh = Math.round(fw * .56);
+  const fx = 110, fw = W - 220, fy = y0 + cell + 30, fh = Math.round(fw * .5625);
   g.fillStyle = '#f5c445'; g.fillRect(fx - 8, fy - 8, fw + 16, fh + 16);
   g.fillStyle = '#c9971d'; g.fillRect(fx - 8, fy + fh + 6, fw + 16, 4);
   const shot = loadImg(o.shot || '02_combate.png');
@@ -274,13 +274,13 @@ function cover(o) {
   else { g.fillStyle = '#0b1020'; g.fillRect(fx, fy, fw, fh); }
 
   // caixas de números
-  const stats = o.stats, n = stats.length, gap = 22, sw = Math.round((W - 184 - gap * (n - 1)) / n), sy = fy + fh + 56;
+  const stats = o.stats, n = stats.length, gap = 20, sw = Math.round((fw - gap * (n - 1)) / n), sy = fy + fh + 34;
   stats.forEach(([num, label], i) => {
-    const sx = 92 + i * (sw + gap);
-    g.fillStyle = '#1b2c6b'; g.fillRect(sx, sy, sw, 128);
-    g.fillStyle = '#2f4590'; g.fillRect(sx, sy, sw, 3); g.fillRect(sx, sy + 125, sw, 3);
-    g.fillStyle = '#ffc21a'; g.font = 'bold 46px DejaVuBold'; g.textAlign = 'center'; g.fillText(String(num), sx + sw / 2, sy + 62);
-    g.fillStyle = '#c9d6ff'; g.font = '19px DejaVu'; g.fillText(label, sx + sw / 2, sy + 98);
+    const sx = fx + i * (sw + gap);
+    g.fillStyle = '#1b2c6b'; g.fillRect(sx, sy, sw, 112);
+    g.fillStyle = '#2f4590'; g.fillRect(sx, sy, sw, 3); g.fillRect(sx, sy + 109, sw, 3);
+    g.fillStyle = '#ffc21a'; g.font = 'bold 44px DejaVuBold'; g.textAlign = 'center'; g.fillText(String(num), sx + sw / 2, sy + 56);
+    g.fillStyle = '#c9d6ff'; g.font = '19px DejaVu'; g.fillText(label, sx + sw / 2, sy + 88);
     g.textAlign = 'left';
   });
 
@@ -289,16 +289,16 @@ function cover(o) {
   if (o.credit) {
     const spaced = (t, px) => [...t.toUpperCase()].join(' ');
     g.font = '14px DejaVuMono'; g.fillStyle = '#9fb0e6';
-    g.fillText(spaced('criado e desenvolvido por', 0), W / 2, H - 132);
+    g.fillText(spaced('criado e desenvolvido por', 0), W / 2, H - 112);
     g.font = 'bold 25px DejaVuBold'; g.fillStyle = '#ffd447';
-    g.fillText(String(o.credit).toUpperCase(), W / 2, H - 106);
+    g.fillText(String(o.credit).toUpperCase(), W / 2, H - 86);
   }
   // rodapé
   g.fillStyle = '#ffc21a'; g.fillRect(0, H - 8, W, 8);
   g.font = '15px DejaVu'; g.fillStyle = '#a9b8e6'; g.textAlign = 'center';
-  g.fillText(o.tagline, W / 2, H - 78);
+  g.fillText(o.tagline, W / 2, H - 56);
   g.font = '14px DejaVuMono'; g.fillStyle = '#7f8fbf';
-  g.fillText(o.gen, W / 2, H - 48);
+  g.fillText(o.gen, W / 2, H - 30);
   g.textAlign = 'left';
   return c.toBuffer('image/png');
 }
