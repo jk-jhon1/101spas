@@ -284,6 +284,15 @@ function cover(o) {
     g.textAlign = 'left';
   });
 
+  // crédito do criador
+  g.textAlign = 'center';
+  if (o.credit) {
+    const spaced = (t, px) => [...t.toUpperCase()].join(' ');
+    g.font = '14px DejaVuMono'; g.fillStyle = '#9fb0e6';
+    g.fillText(spaced('criado e desenvolvido por', 0), W / 2, H - 132);
+    g.font = 'bold 25px DejaVuBold'; g.fillStyle = '#ffd447';
+    g.fillText(String(o.credit).toUpperCase(), W / 2, H - 106);
+  }
   // rodapé
   g.fillStyle = '#ffc21a'; g.fillRect(0, H - 8, W, 8);
   g.font = '15px DejaVu'; g.fillStyle = '#a9b8e6'; g.textAlign = 'center';

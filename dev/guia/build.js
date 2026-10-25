@@ -51,7 +51,7 @@ const TOC = [
   ['6.1', 'Como o jogo é montado', 's61'], ['6.2', 'As ideias por trás do código', 's62'],
   ['6.3', 'A pasta dev/: testes', 's63'], ['6.4', 'docs/, a raiz e as pastas de apoio', 's64'],
   { group: 'Apêndice' },
-  ['A.1', 'Glossário', 'sa1'], ['A.2', 'Sobre este guia', 'sa2'],
+  ['A.1', 'Glossário', 'sa1'], ['A.2', 'Sobre o jogo e o criador', 'sa2'],
 ];
 
 function tocEntries(d) {
@@ -69,7 +69,7 @@ function tocEntries(d) {
     '05_efeitos_tier4.png', '06_efeitos_tier5_6.png', '07_interface.png', '10_meus_mundos.png',
     '12_chefes.png', '13_chefes_novos.png']);
 
-  const d = new Doc({ Title: 'Espadas do Destino — Guia completo do jogo', Author: 'Espadas do Destino', Subject: 'Guia do jogo: 200 espadas, 94 chefes, 429 conquistas', Keywords: 'espadas, terraria, guia, pixel-art' });
+  const d = new Doc({ Title: 'Espadas do Destino — Guia completo do jogo', Author: 'Jhon Maklayn Mozer dos Santo', Creator: 'Jhon Maklayn Mozer dos Santo', Subject: 'Guia do jogo: 200 espadas, 94 chefes, 429 conquistas', Keywords: 'espadas, terraria, guia, pixel-art' });
   d.tiers = X.TIERS;
 
   // ---------- capa ----------
@@ -80,6 +80,7 @@ function tocEntries(d) {
     shot: '02_combate.png',
     stats: [['200', 'espadas'], ['94', 'chefes'], ['429', 'conquistas'], ['628', 'itens']],
     tagline: 'Guia completo · 10 tiers · 6 atos · do primeiro tronco à Apoteose',
+    credit: 'Jhon Maklayn Mozer dos Santo',
     gen: `Gerado em ${dt} · versão ${ver}`,
   });
   d.coverPage(coverPng);

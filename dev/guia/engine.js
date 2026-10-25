@@ -240,6 +240,23 @@ class Doc {
     }
     this.y += 10; return this;
   }
+  // caixa de crédito do criador (fundo azul, nome em dourado)
+  creditBox(name, role, lines) {
+    const pad = 16, size = 8.9, inner = CW - pad * 2 - 10;
+    const ls = (lines || []).map(t => this.layout(t, inner, size));
+    const bodyH = ls.reduce((a, l) => a + l.length * this.lineHeight(size) + 4, 0);
+    const hgt = pad * 2 + 26 + 15 + bodyH + 2;
+    this.ensure(hgt + 12);
+    const y0 = this.y;
+    this.doc.roundedRect(ML, y0, CW, hgt, 6).fill('#1e3a8a');
+    this.doc.rect(ML, y0, CW, 2.6).fill(C.gold);
+    this.doc.font('bold').fontSize(7.6).fillColor('#ffd447').text((role || 'CRIADO E DESENVOLVIDO POR').toUpperCase(), ML + pad, y0 + pad, { characterSpacing: 1.6, lineBreak: false });
+    this.doc.font('bold').fontSize(15.5).fillColor('#ffffff').text(String(name).toUpperCase(), ML + pad, y0 + pad + 14, { lineBreak: false, width: inner });
+    let yy = y0 + pad + 38;
+    for (const l of ls) { for (const ln of l) { this.drawLine(ln, ML + pad, yy, inner, size, '#c7d2fe', false, true); yy += this.lineHeight(size); } yy += 4; }
+    this.y = y0 + hgt + 12;
+    return this;
+  }
   // grade de nomes (conquistas) sem cabeçalho
   nameGrid(items, o = {}) {
     const cols = o.cols || 4, size = o.size || 7.4, pad = 4, lh = this.lineHeight(size), cw = CW / cols;

@@ -87,7 +87,7 @@ function part6(d, o) {
   d.para(`Resumo em números: **51 arquivos de código-fonte** em src/ (${D.ni(totalLines)} linhas), 21 de testes em dev/, 16 de documentação em docs/ e 8 na raiz. O index.html publicado tem ${D.ni(o.indexBytes || 0)} bytes.`, { size: 8.6 });
 
   // ---------------- apêndice ----------------
-  d.partBand(7, 'Apêndice', 'Glossário, sobre este guia e o que conferir antes de usar.');
+  d.partBand(7, 'Apêndice', 'Glossário, ficha técnica e os créditos de quem fez o jogo.');
   d.h2('A.1', 'Glossário', { mark: 'sa1', parent: 'p7' });
   d.table(['Termo', 'Significado'], [
     ['Arsenal', 'Painel do Modo Criativo (tecla B) com todas as espadas, itens, inimigos e chefes. Na Aventura vira o Catálogo das 200 espadas.'],
@@ -111,10 +111,22 @@ function part6(d, o) {
     ['Prof.', 'Profundidade mostrada no relógio do jogo: a linha y do bloco menos 120 (o chão fica perto de 0).'],
   ], [.24, .76], { size: 7.8 });
 
-  d.h2('A.2', 'Sobre este guia', { mark: 'sa2', parent: 'p7' });
+  d.h2('A.2', 'Sobre o jogo e o criador', { mark: 'sa2', parent: 'p7' });
   d.para('Este guia foi gerado **a partir do próprio jogo**: as tabelas (espadas, receitas, chefes, inimigos, itens e conquistas) saem do código-fonte, e as imagens (ícones, sprites dos chefes e telas) foram feitas no jogo de verdade. Por isso os números batem com a versão publicada.');
-  d.para(`A versão deste guia é a **${o.version || '5f149fb'}** do repositório, com 200 espadas, 94 chefes, 433 receitas, 628 itens e 429 conquistas. O jogo não tem música (só efeitos sonoros sintetizados) e não tem multiplayer. O suporte a controle e a toque foi testado com simulações, não com aparelhos de verdade. O equilíbrio dos chefes e dos drops foi validado por simulação.`);
-  d.callout('info', 'O que conferir', 'Se um número aqui não bater com o jogo, o jogo é a fonte: rode `node dev/validate.js` para ver o catálogo atualizado e `npm test` para a bateria de testes. Este PDF foi gerado pelo script em `dev/guia/build.js`.');
+  d.para(`A versão deste guia é a **${o.version || '5f149fb'}** do repositório, com 200 espadas, 94 chefes, 433 receitas, 628 itens e 429 conquistas. O jogo não tem música (só efeitos sonoros sintetizados) e não tem multiplayer.`);
+  d.creditBox('JHON MAKLAYN MOZER DOS SANTO', 'Criado e desenvolvido por', [
+    '**Espadas Do Destino** foi idealizado, programado, desenhado e escrito **inteiramente por Jhon Maklayn Mozer dos Santo, sozinho** — do motor do jogo à arte em pixel-art, das 200 espadas aos 94 chefes, das 429 conquistas a este guia.',
+    'Cada sistema do jogo (mundo, luz, combate, criação, chefes, conquistas, salvamento) e cada peça visual saíram das mãos dele. Nada aqui foi feito por uma equipe: é o trabalho de uma pessoa só, do começo ao fim.',
+  ]);
+  d.h3('Ficha técnica', { top: 4 });
+  d.table(['Item', 'Detalhe'], [
+    ['Criador e desenvolvedor', '**Jhon Maklayn Mozer dos Santo** — sozinho: programação, arte, dados, textos e testes.'],
+    ['Jogo', 'Espadas Do Destino — sandbox 2D de plataforma, exploração, mineração e combate.'],
+    ['Onde roda', 'No navegador (um único index.html), sem instalar nada; teclado, controle ou toque.'],
+    ['Conteúdo', '200 espadas em 10 tiers, 94 chefes em 6 atos + 4 da progressão, 433 receitas, 628 itens, 50 minérios, 50 armaduras, 50 acessórios, 14 picaretas e 429 conquistas.'],
+    ['Este guia', '113 páginas, gerado a partir do código do próprio jogo (as tabelas, os ícones e os retratos saem do jogo).'],
+    ['Créditos', 'Todos os textos, os sistemas, a arte em pixel-art e este guia: Jhon Maklayn Mozer dos Santo.'],
+  ], [.28, .72], { size: 8 });
 }
 
 module.exports = { part6 };
