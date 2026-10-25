@@ -40,10 +40,11 @@ function part1(d, A) {
     '**Modo Criativo** — cria um mundo novo com o Arsenal completo.',
     '**Meus Mundos** — lista os mundos salvos, com miniatura do mapa; dá para renomear, excluir, exportar e importar.',
     '**Controles e Guia** — resumo dos controles dentro do jogo.',
+    '**Botão de som (canto superior direito, ícone de nota musical)** — liga e desliga a música de fundo (Alert at Rest, em loop) junto com os efeitos sonoros; o ícone fica riscado quando está desligado. O mesmo ajuste aparece em **Pausado → Som**.',
   ]);
   d.para('Não existe campo de semente: cada mundo novo é **sorteado na hora e nunca se repete**. O jogo salva sozinho a cada minuto. Se você está de controle na mão, aperte qualquer botão nele para o jogo reconhecê-lo.');
   d.callout('info', 'Roteiro rápido da Aventura', 'O passo a passo completo está na seção 2.4. Em resumo: 1) corte árvores e faça uma Bancada; 2) mine cobre e ferro, faça uma Fornalha e uma Bigorna; 3) forje espadas do Tier 1 e invoque o Rei Slime; 4) junte Lentes Demoníacas à noite e derrote o Olho Colossal; 5) vá ao Inferno, invoque o Guardião do Abismo — começa o Hardmode; 6) minere os minérios novos, faça a Bigorna Avançada e a Forja Celeste; 7) derrote o Colosso Estelar; 8) siga os Atos I a VI dos 90 chefes novos, feche as 200 espadas e enfrente a Apoteose.');
-  shot(d, A, '01_menu.png', 300, 'Tela inicial do jogo, com os cinco botões e a espada girando ao fundo.');
+  shot(d, A, '01_menu.png', 300, 'Tela inicial do jogo, com os cinco botões, o botão de som no canto superior direito e a espada girando ao fundo.');
 
   // ---------------- 1.3 ----------------
   d.h2('1.3', 'Controles', { mark: 's13', parent: 'p1' });
@@ -59,7 +60,7 @@ function part1(d, A) {
     ['Q', 'Beber uma poção de cura'],
     ['M', 'Mapa do mundo'],
     ['+ / -', 'Aproximar / afastar a câmera (zoom)'],
-    ['Esc', 'Pausar e fechar painéis (no menu de pausa: Continuar, Controles e Guia, Som, Controles de toque, Salvar mundo, Salvar e voltar ao menu)'],
+    ['Esc', 'Pausar e fechar painéis (no menu de pausa: Continuar, Controles e Guia, Som — música e efeitos —, Controles de toque, Salvar mundo, Salvar e voltar ao menu)'],
     ['F3', 'Informações de depuração'],
   ], [.24, .76]);
   d.h3('Controle (gamepad)');
