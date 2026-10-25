@@ -10,7 +10,7 @@ fs.mkdirSync(outDir, { recursive: true });
 for (const n of pages) {
   if (n > doc.numPages) continue;
   const page = await doc.getPage(n);
-  const vp = page.getViewport({ scale: 1.6 });
+  const vp = page.getViewport({ scale: Number(process.env.SCALE || 1.6) });
   const canvas = createCanvas(Math.round(vp.width), Math.round(vp.height));
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
