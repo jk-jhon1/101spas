@@ -12955,6 +12955,8 @@ function ach(id, cat, n, d, p, r) {
   ACH[id] = o; ACH_LIST.push(o); return o;
 }
 const achDone = o => !!(G.ach && G.ach.un && G.ach.un[o.id]);
+// conquista da categoria "Segredos" que o jogador ainda não desbloqueou: nome e descrição ficam escondidos
+const achHidden = o => o.cat === 'sec' && !achDone(o);
 function achProg(o) { try { const r = o.p() || [0, 1]; const goal = Math.max(.0001, +r[1] || 1); return [Math.max(0, Math.min(goal, +r[0] || 0)), goal]; } catch (e) { return [0, 1]; } }
 function achCount() { let n = 0; for (const o of ACH_LIST) if (achDone(o)) n++; return n; }
 function achPct() { return Math.round(achCount() / ACH_LIST.length * 100); }
@@ -13179,6 +13181,13 @@ function achLabels() {
 }
 function achRowHTML(o) {
   const done = achDone(o), [c, g] = achProg(o), cat = ACH_CATS.find(x => x.k === o.cat) || ACH_CATS[0], rar = ACH_RAR[o.r] || ACH_RAR[1];
+  // segredo ainda não desbloqueado: nada de nome, descrição, raridade nem contador
+  if (!done && o.cat === 'sec') {
+    return `<div class="ach-row off" data-ach-secret="1" style="border-left-color:#4c1d95">
+    <div class="ach-ic" style="background:rgba(232,121,249,.10);color:#a855f7">?</div>
+    <div style="flex:1;min-width:0"><div class="ach-nm" style="color:#c4b5fd;letter-spacing:3px">???</div>
+    <div class="ach-ds">Conquista secreta — o nome e a descrição aparecem quando você desbloquear.</div></div></div>`;
+  }
   const pct = Math.round(c / g * 100);
   const prog = done ? '' : `<div class="ach-bar"><i style="width:${pct}%;background:${rar.col}"></i></div>`;
   const right = done ? '<span class="ach-pct" style="color:#86efac">✔</span>' : `<span class="ach-pct">${Math.round(c)}/${Math.round(g)}</span>`;
@@ -13192,8 +13201,8 @@ function achHTML() {
   const tab = (G.ui && G.ui.achTab) || 'all';
   const cat = ACH_CATS.find(c => c.k === tab);
   let list = ACH_LIST.filter(o => tab === 'all' || o.cat === tab);
-  const order = o => (achDone(o) ? 2 : (achProg(o)[0] / achProg(o)[1]) > 0 ? 0 : 1);
-  list = list.slice().sort((a, b) => order(a) - order(b) || a.n.localeCompare(b.n));
+  const order = o => (achDone(o) ? 3 : achHidden(o) ? 2 : (achProg(o)[0] / achProg(o)[1]) > 0 ? 0 : 1);
+  list = list.slice().sort((a, b) => order(a) - order(b) || (achHidden(a) && achHidden(b) ? a.id.localeCompare(b.id) : a.n.localeCompare(b.n)));
   const tabs = [['all', 'Todas', ACH_LIST.length]].concat(ACH_CATS.map(c => [c.k, c.n, ACH_LIST.filter(o => o.cat === c.k).length]));
   const done = achCount(), tot = ACH_LIST.length, pct = Math.round(done / tot * 100);
   let h = `<h2 style="display:flex;justify-content:space-between;align-items:center;gap:10px">Conquistas <span style="font-size:12px;font-weight:400;color:var(--mut)">${done} de ${tot} · ${pct}%</span><button class="btn" id="ach-close">Fechar</button></h2>`;
@@ -13201,7 +13210,7 @@ function achHTML() {
   h += `<div class="ach-tabs">` + tabs.map(([k, n, c]) => `<div class="tab ${tab === k ? 'on' : ''}" data-ach-tab="${k}">${n} <span style="opacity:.7">${c}</span></div>`).join('') + `</div>`;
   if (cat) { const cd = list.filter(achDone).length; h += `<div style="font-size:12px;color:var(--mut);margin:0 0 8px">${cat.n}: ${cd} de ${list.length}</div>`; }
   h += `<div style="max-height:58vh;overflow-y:auto;padding-right:4px">` + list.map(achRowHTML).join('') + `</div>`;
-  h += `<div style="margin-top:10px;font-size:11.5px;color:var(--mut)">As conquistas ficam guardadas no navegador e dentro do mundo (também vão junto no arquivo exportado). No modo Criativo tudo conta normalmente — o Arsenal acelera a coleção.</div>`;
+  h += `<div style="margin-top:10px;font-size:11.5px;color:var(--mut)">As conquistas ficam guardadas no navegador e dentro do mundo (também vão junto no arquivo exportado). No modo Criativo tudo conta normalmente — o Arsenal acelera a coleção. As conquistas de <b>Segredos</b> aparecem como <b>???</b> até você desbloquear: só então o nome e a descrição são revelados.</div>`;
   return h;
 }
 function achRefresh() {

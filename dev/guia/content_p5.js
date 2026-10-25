@@ -57,7 +57,7 @@ function part5(d) {
     d.h3(`${cat.n} — ${list.length}`, { size: 9.4, top: 4, keep: 60 });
     d.table(['Conquista', 'Descrição', 'Raridade'], list.map(a => [a.n, a.d, RAR(a.r).n]), [.26, .58, .16], { size: 7.6 });
   }
-  d.callout('ok', 'Conquistas de segredo', 'As 12 conquistas de **Segredos** não aparecem com o nome antes de serem feitas: o jogo mostra “???” e a dica. Algumas dependem de coisas que ninguém faz sem querer — como deixar a Fênix renascer, quebrar o Axioma na hora certa ou voltar de uma luta com 1 de vida.');
+  d.callout('ok', 'Conquistas de segredo', 'No jogo, as 12 conquistas de **Segredos** aparecem como **???**: sem nome, sem descrição, sem raridade e sem contador, até você desbloquear. Só então o texto é revelado. Esta lista é a cola: algumas dependem de coisas que ninguém faz sem querer — como deixar a Fênix renascer, quebrar o Axioma na hora certa ou voltar de uma luta com 1 de vida.');
 }
 
 module.exports = { part5 };
